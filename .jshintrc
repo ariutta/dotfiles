@@ -1,0 +1,28 @@
+{
+  "browser": true,
+  "curly": true,
+  "eqeqeq": false,
+  "loopfunc": false,
+  "noarg": true,
+  "trailing": true,
+  "undef": true,
+  "unused": false,
+  "laxcomma": true,
+  "asi": true,
+  "-W097": false,
+
+  "globals": {
+    "__dirname": true,
+    "$": true,
+    "alert": true,
+    "async": true,
+    "console": true,
+    "global": true,
+    "module": true,
+    "Modernizr": true,
+    "process": true,
+    "root": true,
+    "self":true,
+    "require": true
+  }
+}
