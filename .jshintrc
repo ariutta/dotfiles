@@ -19,7 +19,6 @@
     "console": true,
     "global": true,
     "module": true,
-    "Modernizr": true,
     "process": true,
     "root": true,
     "self":true,
