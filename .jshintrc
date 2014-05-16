@@ -1,14 +1,17 @@
 {
   "browser": true,
   "curly": true,
-  "eqeqeq": false,
+  "eqeqeq": true,
+  "eqnull": true,
+  "expr": true,
+  "immed": true,
   "loopfunc": false,
   "noarg": true,
+  "node": true,
+  "quotmark": "single",
   "trailing": true,
   "undef": true,
-  "unused": false,
   "laxcomma": true,
-  "asi": true,
   "-W097": false,
 
   "globals": {
