@@ -1,101 +1,140 @@
  " ***********************
  " not sure what these are
  " ***********************
- set nocompatible               " be iMproved
- filetype off                   " required!
+	 set nocompatible               " be iMproved
+	 filetype off                   " required!
 
  " ***********************
  " Vundle to manage vim bundles
  " ***********************
- set rtp+=~/.vim/bundle/Vundle.vim/
- call vundle#begin()
+	 set rtp+=~/.vim/bundle/Vundle.vim/
+	 call vundle#begin()
 
- " let Vundle manage Vundle
- " required! 
- Plugin 'gmarik/Vundle.vim'
+	 " let Vundle manage Vundle
+	 " required! 
+	 Plugin 'gmarik/Vundle.vim'
 
- " My Plugins here:
- "
- " original repos on github
- Plugin 'jelera/vim-javascript-syntax'
- Plugin 'heavenshell/vim-jsdoc'
- Plugin 'marijnh/tern_for_vim'
- 	" to finish installing tern, cd to wherever .vim/bundle/tern_for_vim/
-	" is located and then run 'npm install'
- Plugin 'nathanaelkane/vim-indent-guides'
- Plugin 'Raimondi/delimitMate'
- Plugin 'altercation/vim-colors-solarized'
- Plugin 'scrooloose/nerdtree'
- Plugin 'tpope/vim-fugitive'
- Plugin 'tpope/vim-abolish'
- Plugin 'Lokaltog/vim-easymotion'
- Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
- Plugin 'pangloss/vim-javascript'
- Plugin 'elzr/vim-json'
- Plugin 'hail2u/vim-css3-syntax'
- Plugin 'tpope/vim-surround'
- Plugin 'ariutta/Css-Pretty'
- Plugin 'Valloric/YouCompleteMe'
- 	" to finish installation, it may be necessary to set which python to
-	" use like this:
-	" http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
- Plugin 'moll/vim-node'
- " vim-scripts repos
- Plugin 'L9'
- Plugin 'FuzzyFinder'
- Plugin 'Syntastic'
- Plugin 'keepcase.vim'
- 
- " non github repos
- 	" helper for opening files. start it with \t
- Plugin 'git://git.wincent.com/command-t.git'
-	 " :q closes NERDtree
- Plugin 'https://gist.github.com/8290763.git'
- " git repos on your local machine (ie. when working on your own plugin)
- " Plugin 'file:///Users/ariutta/.vim/bundle/Css-Pretty2/plugin/csspretty.vim'
- " Plugin 'file:///Users/ariutta/.vim/bundle/FixCSS.vim'
- " Plugin 'file:///Users/gmarik/path/to/plugin'
- " ...
+	 " ***********************
+	 " original repos on github
+	 " ***********************
+	 Plugin 'jelera/vim-javascript-syntax'
+	 Plugin 'heavenshell/vim-jsdoc'
+
+	 " Tern provides JavaScript-based editing support.
+	 " To finish installing tern,
+	 " cd to .vim/bundle/tern_for_vim/
+	 " run 'npm install'
+	 Plugin 'marijnh/tern_for_vim'
+
+	 Plugin 'nathanaelkane/vim-indent-guides'
+	 Plugin 'Raimondi/delimitMate'
+	 Plugin 'altercation/vim-colors-solarized'
+	 Plugin 'scrooloose/nerdtree'
+	 Plugin 'tpope/vim-fugitive'
+	 Plugin 'tpope/vim-abolish'
+	 Plugin 'Lokaltog/vim-easymotion'
+	 Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
+	 Plugin 'pangloss/vim-javascript'
+	 Plugin 'elzr/vim-json'
+	 Plugin 'hail2u/vim-css3-syntax'
+	 Plugin 'tpope/vim-surround'
+	 Plugin 'ariutta/Css-Pretty'
+
+	 " YouCompleteMe provides autocomplete functionality.
+	 " To finish installation, it may be necessary
+	 " to set which python to use, as describe here:
+	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
+	 Plugin 'Valloric/YouCompleteMe'
+
+	 Plugin 'moll/vim-node'
+
+	 " ctrlp makes it easier to open files, buffers, etc.
+	 " the C extension makes the finding faster.
+	 " After running PluginInstall, you need to compile the C extension,
+	 " as described here:
+	 " https://github.com/JazzCore/ctrlp-cmatcher/
+	 " Call it with :CtrlPMixed or Command+p
+	 Plugin 'kien/ctrlp.vim'
+	 Plugin 'JazzCore/ctrlp-cmatcher'
+
+	 " ***********************
+	 " vim-scripts repos
+	 " ***********************
+	 Plugin 'L9'
+	 Plugin 'Syntastic'
+	 Plugin 'keepcase.vim'
+	 
+	 " ***********************
+	 " non github repos
+	 " ***********************
+	 
+	 " This script makes :q close both current file and NERDtree
+	 Plugin 'https://gist.github.com/8290763.git'
+
+	 " ***********************
+	 " git repos on your local machine (ie. when working on your own plugin)
+	 " ***********************
+	 " Plugin 'file:///Users/ariutta/.vim/bundle/Css-Pretty2/plugin/csspretty.vim'
+	 " Plugin 'file:///Users/ariutta/.vim/bundle/FixCSS.vim'
+	 " Plugin 'file:///Users/gmarik/path/to/plugin'
+	 " ...
 
 
  " ***********************
  " My custom additions to .vimrc
  " ***********************
  
- call vundle#end()
- " Indent plugin
- filetype plugin indent on     " required!
+	 call vundle#end()
+	 " Indent plugin
+	 filetype plugin indent on     " required!
 
- " F5 inserts current date as markdown header
- nnoremap <silent> a<C-R>=strftime('%a %d %b %Y')<CR><CR>===============<CR><CR><Esc>
+	 " F5 inserts current date as markdown header
+	 nnoremap <silent> a<C-R>=strftime('%a %d %b %Y')<CR><CR>===============<CR><CR><Esc>
 
- " Add newline with Ctrl-C
- let delimitMate_expand_cr = 1
+	 " make backspace behave 'normally'
+	 set backspace=indent,eol,start
 
- "Show hidden files in NerdTree
- let NERDTreeShowHidden=1
+	 " Add newline with Ctrl-C
+	 let delimitMate_expand_cr = 1
+	 let delimitMate_expand_space = 0
 
- "autopen NERDTree
- autocmd VimEnter * NERDTree
- "focus cursor in new document
- autocmd VimEnter * wincmd p
- "close NERDTree if it's the only buffer left open
- autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
+	 " needed to make ctrlp use the C extension for matching
+	 let g:ctrlp_match_func = {'match' : 'matcher#cmatch' }
+	 " add commands for initiating CtrlP
+	 let g:ctrlp_map = '<c-p>'
+	 let g:ctrlp_cmd = 'CtrlP'
+	 " ignore files for CtrlP
+	 set wildignore+=*/tmp/*,*.so,*.swp,*.zip     " MacOSX/Linux
+	 "set wildignore+=*\\tmp\\*,*.swp,*.zip,*.exe  " Windows
+	 let g:ctrlp_custom_ignore = '\v[\/]\.(git|hg|svn)$'
+	 " Use a custom file listing command
+	 let g:ctrlp_user_command = 'find %s -type f'        " MacOSX/Linux
+	 " let g:ctrlp_user_command = 'dir %s /-n /b /s /a-d'  " Windows
 
- " Not sure whether this is related to indent plugin
- syntax enable
+	 "Show hidden files in NerdTree
+	 let NERDTreeShowHidden=1
 
- " colorscheme
- set background=dark
- colorscheme solarized
+	 "autopen NERDTree
+	 autocmd VimEnter * NERDTree
+	 "focus cursor in new document
+	 autocmd VimEnter * wincmd p
+	 "close NERDTree if it's the only buffer left open
+	 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
 
- " settings for Syntastic, the syntax helper
- let g:syntastic_mode_map = { 'mode': 'active',
- 	\ 'active_filetypes': [],
- 	\ 'passive_filetypes': [] }
+	 " Not sure whether this is related to indent plugin
+	 syntax enable
 
- " make Syntastic work with ng-whatever from angular
- let g:syntastic_html_tidy_ignore_errors=[" proprietary attribute \"ng-"," proprietary attribute \"required"," proprietary attribute \"novalidate"]
+	 " colorscheme
+	 set background=dark
+	 colorscheme solarized
+
+	 " settings for Syntastic, the syntax helper
+	 let g:syntastic_mode_map = { 'mode': 'active',
+		\ 'active_filetypes': [],
+		\ 'passive_filetypes': [] }
+
+	 " make Syntastic work with ng-whatever from angular
+	 let g:syntastic_html_tidy_ignore_errors=[" proprietary attribute \"ng-"," proprietary attribute \"required"," proprietary attribute \"novalidate"]
 
  " ***********************
  " Help
