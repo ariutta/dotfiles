@@ -1,0 +1,30 @@
+{
+  "browser": true,
+  "curly": true,
+  "eqeqeq": true,
+  "eqnull": true,
+  "expr": true,
+  "immed": true,
+  "loopfunc": false,
+  "noarg": true,
+  "node": true,
+  "quotmark": "single",
+  "trailing": true,
+  "undef": true,
+  "laxcomma": true,
+  "-W097": false,
+
+  "globals": {
+    "__dirname": true,
+    "$": true,
+    "alert": true,
+    "async": true,
+    "console": true,
+    "global": true,
+    "module": true,
+    "process": true,
+    "root": true,
+    "self":true,
+    "require": true
+  }
+}
