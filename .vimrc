@@ -97,6 +97,9 @@
  " make Syntastic work with ng-whatever from angular
  let g:syntastic_html_tidy_ignore_errors=[" proprietary attribute \"ng-"," proprietary attribute \"required"," proprietary attribute \"novalidate"]
 
+ " show line numbers by default
+ set number
+
  " ***********************
  " Help
  " ***********************
