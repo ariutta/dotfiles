@@ -30,6 +30,9 @@
 	 Plugin 'Raimondi/delimitMate'
 	 Plugin 'altercation/vim-colors-solarized'
 	 Plugin 'scrooloose/nerdtree'
+	 " look at conflict with syntastic:
+	 " http://stackoverflow.com/questions/24500281/youcompleteme-and-syntastic-compatibility
+	 Plugin 'scrooloose/syntastic'
 	 Plugin 'tpope/vim-fugitive'
 	 Plugin 'tpope/vim-abolish'
 	 Plugin 'Lokaltog/vim-easymotion'
@@ -61,7 +64,6 @@
 	 " vim-scripts repos
 	 " ***********************
 	 Plugin 'L9'
-	 Plugin 'Syntastic'
 	 Plugin 'keepcase.vim'
 	 
 	 " ***********************
