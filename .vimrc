@@ -142,16 +142,15 @@
  " ***********************
  " Help
  " ***********************
- "
- " # Vundle:
- " :PluginList          - list configured bundles
- " I don't know what the exclamation point means
- " :PluginInstall(!)    - install(update) bundles
- " :PluginSearch(!) foo - search(or refresh cache first) for foo
- " :PluginClean(!)      - confirm(or auto-approve) removal of unused bundles
- "
- " see :h vundle for more details or wiki for FAQ
- " NOTE: comments after Plugin command are not allowed.
- " 
- " # Refresh vimrc: 
- " so $MYVIMRC
+	 " # Vundle:
+	 " :PluginList          - list configured bundles
+	 " I don't know what the exclamation point means
+	 " :PluginInstall(!)    - install(update) bundles
+	 " :PluginSearch(!) foo - search(or refresh cache first) for foo
+	 " :PluginClean(!)      - confirm(or auto-approve) removal of unused bundles
+	 "
+	 " see :h vundle for more details or wiki for FAQ
+	 " NOTE: comments after Plugin command are not allowed.
+	 " 
+	 " # Refresh vimrc: 
+	 " so $MYVIMRC
