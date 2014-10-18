@@ -95,6 +95,9 @@
 
 	 " F5 inserts current date as markdown header
 	 nnoremap <silent> a<C-R>=strftime('%a %d %b %Y')<CR><CR>===============<CR><CR><Esc>
+	 
+	 " turn off beep (at least when hitting "Esc")
+	 set visualbell
 
 	 " make backspace behave 'normally'
 	 set backspace=indent,eol,start

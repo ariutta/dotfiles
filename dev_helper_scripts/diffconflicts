@@ -18,6 +18,11 @@
 # diff.
 #
 # Add this file to your shell PATH
+#	In the terminal, go the the directory containing this file,
+#	enter "pwd" to get the file path
+#	add that file path to the .bash_profile or .bashrc in the
+#	export PATH section
+#	(tested to work on Mac OS X)
 # Mark it as executable (chmod +x diffconflicts)
 #
 # Add this mergetool to your ~/.gitconfig (you can substitute mvim or gvim for vim):
