@@ -30,9 +30,11 @@
 	 Plugin 'Raimondi/delimitMate'
 	 Plugin 'altercation/vim-colors-solarized'
 	 Plugin 'scrooloose/nerdtree'
-	 " look at conflict with syntastic:
-	 " http://stackoverflow.com/questions/24500281/youcompleteme-and-syntastic-compatibility
 	 Plugin 'scrooloose/syntastic'
+
+	 " Git wrapper
+	 " For screencasts on how to use:
+	 " https://github.com/tpope/vim-fugitive#screencasts
 	 Plugin 'tpope/vim-fugitive'
 	 Plugin 'tpope/vim-abolish'
 	 Plugin 'Lokaltog/vim-easymotion'
@@ -71,6 +73,7 @@
 	 " ***********************
 	 
 	 " This script makes :q close both current file and NERDtree
+	 " TODO look at line 127. It appears to be a dup with this.
 	 Plugin 'https://gist.github.com/8290763.git'
 
 	 " ***********************
@@ -134,6 +137,9 @@
 	 let g:syntastic_mode_map = { 'mode': 'active',
 		\ 'active_filetypes': [],
 		\ 'passive_filetypes': [] }
+
+	 " use jshint and jscs for javascript
+	 let g:syntastic_javascript_checkers = ['jshint', 'jscs']
 
 	 " make Syntastic work with ng-whatever from angular
 	 let g:syntastic_html_tidy_ignore_errors=[" proprietary attribute \"ng-"," proprietary attribute \"required"," proprietary attribute \"novalidate"]
