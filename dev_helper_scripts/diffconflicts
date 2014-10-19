@@ -25,7 +25,15 @@
 #	(tested to work on Mac OS X)
 # Mark it as executable (chmod +x diffconflicts)
 #
-# Add this mergetool to your ~/.gitconfig (you can substitute mvim or gvim for vim):
+# Add this mergetool to your ~/.gitconfig:
+#  (Optional: substitute "mvim" or "gvim" for "vim" below,
+#	or alias vim to mvim or gvim by adding this to .bashrc or .bash_profile:
+# 	alias vim='mvim -v'
+# 	alias vim='mvimdiff -v'
+#	or [untested]:
+# 	alias vim='gvim -v'
+# 	alias vim='gvimdiff -v'
+#  )
 #
 # git config --global merge.tool diffconflicts
 # git config --global mergetool.diffconflicts.cmd 'diffconflicts vim $BASE $LOCAL $REMOTE $MERGED'
