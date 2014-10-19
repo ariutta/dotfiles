@@ -1,0 +1,14 @@
+[core]
+	excludesfile = ~/.gitignore_global
+	editor = vim
+[user]
+	name = Anders Riutta
+	email = git@andersriutta.com
+[diff]
+	tool = vimdiff
+[merge]
+	tool = diffconflicts
+[mergetool "diffconflicts"]
+	cmd = diffconflicts vim $BASE $LOCAL $REMOTE $MERGED
+	trustExitCode = true
+	keepBackup = false
