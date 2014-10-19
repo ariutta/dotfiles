@@ -73,8 +73,8 @@
 	 " ***********************
 	 
 	 " This script makes :q close both current file and NERDtree
-	 " TODO look at line 127. It appears to be a dup with this.
-	 Plugin 'https://gist.github.com/8290763.git'
+	 " TODO look at line 130. It appears to be a dup with this.
+	 "Plugin 'https://gist.github.com/8290763.git'
 
 	 " ***********************
 	 " git repos on your local machine (ie. when working on your own plugin)
