@@ -46,6 +46,9 @@
 	 Plugin 'ariutta/Css-Pretty'
 
 	 " YouCompleteMe provides autocomplete functionality.
+	 " On OS X, you may need to compile it:
+	 "	 cd ~/.vim/bundle/YouCompleteMe
+	 "	 ./install.sh --clang-completer
 	 " To finish installation, it may be necessary
 	 " to set which python to use, as describe here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
@@ -142,7 +145,7 @@
 		\ 'passive_filetypes': [] }
 
 	 " use jshint and jscs for javascript
-	 let g:syntastic_javascript_checkers = ['jshint', 'jscs']
+	 let g:syntastic_javascript_checkers = ['jscs', 'jshint']
 
 	 " make Syntastic work with ng-whatever from angular
 	 let g:syntastic_html_tidy_ignore_errors=[" proprietary attribute \"ng-"," proprietary attribute \"required"," proprietary attribute \"novalidate"]
