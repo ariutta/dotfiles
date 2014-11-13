@@ -1,6 +1,7 @@
 *
 !.vimrc
 !.jshintrc
+!.jscsrc
 !.gitignore
 !.gitconfig
 !dev_helper_scripts/
