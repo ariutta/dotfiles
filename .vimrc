@@ -50,12 +50,13 @@ set nocompatible               " be iMproved
 	 Plugin 'ariutta/Css-Pretty'
 
 	 " YouCompleteMe provides autocomplete functionality.
-	 " On OS X, you may need to compile it:
-	 "	 cd ~/.vim/bundle/YouCompleteMe
-	 "	 ./install.sh --clang-completer
-	 " To finish installation, it may be necessary
-	 " to set which python to use, as describe here:
+	 " Before running :PluginInstall, it may be necessary
+	 " 	to set which python to use, as describe here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
+	 " After running :PluginInstall, you need to compile it (at least on OS X)
+	 "	 ~/.vim/bundle/YouCompleteMe/install.sh --clang-completer
+	 " or if that command gives an error, try telling it to use the system libclang:
+	 " ~/.vim/bundle/YouCompleteMe/install.sh --clang-completer --system-libclang
 	 Plugin 'Valloric/YouCompleteMe'
 
 	 Plugin 'moll/vim-node'
