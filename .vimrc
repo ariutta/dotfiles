@@ -1,12 +1,15 @@
- " ***********************
- " not sure what these are
- " ***********************
+" nocompatible means Vim doesn't have to support
+" backwards compatibility with Vi.
+" Usually this line does nothing.
 	 set nocompatible               " be iMproved
-	 filetype off                   " required!
 
  " ***********************
  " Vundle to manage vim bundles
  " ***********************
+	" This is a workaround for a bug that affects Vundle.
+	" filetype is turned back on at the end of this
+	" Vundle section.
+	 filetype off                   " required!
 	 set rtp+=~/.vim/bundle/Vundle.vim/
 	 call vundle#begin()
 
@@ -87,14 +90,14 @@
 	 " Plugin 'file:///Users/gmarik/path/to/plugin'
 	 " ...
 
+	 call vundle#end()
+ 
+	 " Indent plugin
+	 filetype plugin indent on     " required!
 
  " ***********************
  " My custom additions to .vimrc
  " ***********************
- 
-	 call vundle#end()
-	 " Indent plugin
-	 filetype plugin indent on     " required!
 
 	 " F5 inserts current date as markdown header
 	 nnoremap <silent> a<C-R>=strftime('%a %d %b %Y')<CR><CR>===============<CR><CR><Esc>
