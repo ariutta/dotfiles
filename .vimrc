@@ -145,6 +145,8 @@
 		\ 'passive_filetypes': [] }
 
 	 " use jshint and jscs for javascript
+	 " install jscs with "npm install -g jscs"
+	 " and jshint with "npm install -g jshint"
 	 let g:syntastic_javascript_checkers = ['jscs', 'jshint']
 
 	 " make Syntastic work with ng-whatever from angular
