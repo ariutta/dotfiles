@@ -1,7 +1,7 @@
 " nocompatible means Vim doesn't have to support
 " backwards compatibility with Vi.
 " Usually this line does nothing.
-	 set nocompatible               " be iMproved
+set nocompatible               " be iMproved
 
  " ***********************
  " Vundle to manage vim bundles
@@ -10,6 +10,7 @@
 	" filetype is turned back on at the end of this
 	" Vundle section.
 	 filetype off                   " required!
+
 	 set rtp+=~/.vim/bundle/Vundle.vim/
 	 call vundle#begin()
 
