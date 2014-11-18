@@ -62,12 +62,12 @@ set nocompatible               " be iMproved
 	 Plugin 'moll/vim-node'
 
 	 " ctrlp makes it easier to open files, buffers, etc.
-	 " the C extension makes the finding faster.
-	 " After running PluginInstall, you need to compile the C extension,
+	 " Call it with :CtrlPMixed or Ctrl+p
+	 Plugin 'kien/ctrlp.vim'
+	 " This C extension speeds up ctrlp's finder.
+	 " After running PluginInstall, you need to finish installation,
 	 " as described here:
 	 " https://github.com/JazzCore/ctrlp-cmatcher/
-	 " Call it with :CtrlPMixed or Command+p
-	 Plugin 'kien/ctrlp.vim'
 	 Plugin 'JazzCore/ctrlp-cmatcher'
 
 	 " ***********************
