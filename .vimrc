@@ -134,6 +134,8 @@ set nocompatible               " be iMproved
 	 autocmd VimEnter * NERDTree
 	 "focus cursor in new document
 	 autocmd VimEnter * wincmd p
+	 " Open NERDTree with CTRL-n
+	 map <C-n> :NERDTreeToggle<CR>
 	 "close NERDTree if it's the only buffer left open
 	 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
 
@@ -155,7 +157,21 @@ set nocompatible               " be iMproved
 	 let g:syntastic_javascript_checkers = ['jscs', 'jshint']
 
 	 " make Syntastic work with ng-whatever from angular
-	 let g:syntastic_html_tidy_ignore_errors=[" proprietary attribute \"ng-"," proprietary attribute \"required"," proprietary attribute \"novalidate"]
+	 " first, install the HTML5 version of HTML Tidy
+	 "   brew tap homebrew/dupes
+	 "   brew install homebrew/dupes/tidy --HEAD
+	 " for more info on the options:
+	 " https://github.com/scrooloose/syntastic/wiki/HTML:---tidy
+	 let g:syntastic_html_tidy_ignore_errors=[
+				 \ "trimming empty <i>",
+				 \ "<meta> proprietary attribute \"property",
+				 \ " proprietary attribute \"required",
+				 \ " proprietary attribute \"novalidate",
+				 \ "unescaped & which should be written as &amp;",
+				 \ "'<' + '/' + letter not allowed here",
+				 \ "<img> lacks \"src\" attribute"
+				 \ ]
+	 let g:syntastic_html_tidy_blocklevel_tags=["tab", "tab-heading", "tabset"]
 
 	 " show line numbers by default
 	 set number
