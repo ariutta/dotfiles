@@ -120,11 +120,12 @@ set nocompatible               " be iMproved
 	 let g:ctrlp_map = '<c-p>'
 	 let g:ctrlp_cmd = 'CtrlP'
 	 " ignore files for CtrlP
+	 set wildignore+=*/.git/*,*.git,*/node_modules/*,*/frontend\/lib/*     " All
 	 set wildignore+=*/tmp/*,*.so,*.swp,*.zip     " MacOSX/Linux
 	 "set wildignore+=*\\tmp\\*,*.swp,*.zip,*.exe  " Windows
 	 let g:ctrlp_custom_ignore = '\v[\/]\.(git|hg|svn)$'
 	 " Use a custom file listing command
-	 let g:ctrlp_user_command = 'find %s -type f'        " MacOSX/Linux
+	 "let g:ctrlp_user_command = 'find %s -type f'        " MacOSX/Linux
 	 " let g:ctrlp_user_command = 'dir %s /-n /b /s /a-d'  " Windows
 
 	 "Show hidden files in NerdTree
