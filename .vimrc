@@ -19,7 +19,7 @@ set nocompatible               " be iMproved
 	 Plugin 'gmarik/Vundle.vim'
 
 	 " ***********************
-	 " original repos on github
+	 " original (not a fork) repos on github
 	 " ***********************
 	 Plugin 'jelera/vim-javascript-syntax'
 	 Plugin 'heavenshell/vim-jsdoc'
@@ -40,13 +40,16 @@ set nocompatible               " be iMproved
 	 " For screencasts on how to use:
 	 " https://github.com/tpope/vim-fugitive#screencasts
 	 Plugin 'tpope/vim-fugitive'
+
 	 Plugin 'tpope/vim-abolish'
 	 Plugin 'Lokaltog/vim-easymotion'
 	 Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
 	 Plugin 'pangloss/vim-javascript'
 	 Plugin 'elzr/vim-json'
 	 Plugin 'hail2u/vim-css3-syntax'
+
 	 Plugin 'tpope/vim-surround'
+
 	 Plugin 'ariutta/Css-Pretty'
 
 	 " YouCompleteMe provides autocomplete functionality.
@@ -58,6 +61,8 @@ set nocompatible               " be iMproved
 	 " or if that command gives an error, try telling it to use the system libclang:
 	 " ~/.vim/bundle/YouCompleteMe/install.sh --clang-completer --system-libclang
 	 Plugin 'Valloric/YouCompleteMe'
+
+	 Plugin 'Valloric/MatchTagAlways'
 
 	 Plugin 'moll/vim-node'
 
@@ -103,6 +108,9 @@ set nocompatible               " be iMproved
 
 	 " F5 inserts current date as markdown header
 	 nnoremap <silent> a<C-R>=strftime('%a %d %b %Y')<CR><CR>===============<CR><CR><Esc>
+
+	 " Use '%' to jump to the other XML/HTML tag in a pair
+	 nnoremap <leader>% :MtaJumpToOtherTag<cr>
 	 
 	 " turn off beep (at least when hitting "Esc")
 	 set visualbell

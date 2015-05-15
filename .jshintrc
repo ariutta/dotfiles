@@ -1,4 +1,6 @@
 {
+  "browser": true,
+  "browserify": true,
   "curly": true,
   "eqeqeq": true,
   "immed": true,
