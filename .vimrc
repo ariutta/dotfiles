@@ -21,6 +21,8 @@ set nocompatible               " be iMproved
 	 " ***********************
 	 " original repos on github
 	 " ***********************
+	 Plugin 'othree/html5.vim'
+
 	 Plugin 'jelera/vim-javascript-syntax'
 	 Plugin 'heavenshell/vim-jsdoc'
 
@@ -101,8 +103,12 @@ set nocompatible               " be iMproved
  " My custom additions to .vimrc
  " ***********************
 
+ 	 " riotjs .tag files are best handled as html files
+	 " for syntax checking and highlighting
+	 autocmd BufRead,BufNewFile *.tag set filetype=html
+
 	 " F5 inserts current date as markdown header
-	 nnoremap <silent> a<C-R>=strftime('%a %d %b %Y')<CR><CR>===============<CR><CR><Esc>
+	 nnoremap <silent> <F5> a<C-R>=strftime('%Y-%m-%d %a')<CR><CR>===============<CR><CR><Esc>
 	 
 	 " turn off beep (at least when hitting "Esc")
 	 set visualbell
@@ -157,6 +163,15 @@ set nocompatible               " be iMproved
 	 " and jshint with "npm install -g jshint"
 	 let g:syntastic_javascript_checkers = ['jscs', 'jshint']
 
+	 " checking JS in HTML appears to be working. Not sure
+	 " whether it was this line below, or whether it was
+	 " running this:
+	 " jshint --extract=always ./demo/wikipathways-pathvisiojs.tag
+	 " http://jshint.com/docs/cli/
+	 " or maybe even this from in Vim when a tag file was open:
+	 " setfiletype html.javascript
+	 let g:syntastic_html_checkers = ['jscs', 'jshint']
+
 	 " make Syntastic work with ng-whatever from angular
 	 " first, install the HTML5 version of HTML Tidy
 	 "   brew tap homebrew/dupes
@@ -165,17 +180,42 @@ set nocompatible               " be iMproved
 	 " https://github.com/scrooloose/syntastic/wiki/HTML:---tidy
 	 let g:syntastic_html_tidy_ignore_errors=[
 				 \ "trimming empty <i>",
+				 \ "trimming empty <span>",
+				 \ "trimming empty <button>",
 				 \ "<meta> proprietary attribute \"property",
 				 \ " proprietary attribute \"required",
 				 \ " proprietary attribute \"novalidate",
 				 \ "unescaped & which should be written as &amp;",
 				 \ "'<' + '/' + letter not allowed here",
-				 \ "<img> lacks \"src\" attribute"
+				 \ "<img> lacks \"src\" attribute",
+				 \ "<style isn't allowed in <wikipathways-pathvisiojs> elements",
 				 \ ]
-	 let g:syntastic_html_tidy_blocklevel_tags=["tab", "tab-heading", "tabset"]
+	 let g:syntastic_html_tidy_blocklevel_tags=[
+				 \ "tab",
+				 \ "tab-heading",
+				 \ "tabset",
+				 \ "bridgedb-xref-specifier",
+				 \ "bridgedb-gpml-type-selector",
+				 \ "bridgedb-dataset-selector",
+				 \ "bridgedb-xref-search",
+				 \ "bridgedb-xref-search-results",
+				 \ "wikipathways-pathvisiojs",
+				 \ ]
+	 let g:syntastic_html_tidy_inline_tags=[]
+	 let g:syntastic_html_tidy_empty_tags=["i"]
 
 	 " show line numbers by default
 	 set number
+
+	 " disable arrow keys
+	 map <up> <nop>
+	 map <down> <nop>
+	 map <left> <nop>
+	 map <right> <nop>
+	 imap <up> <nop>
+	 imap <down> <nop>
+	 imap <left> <nop>
+	 imap <right> <nop>
 
  " ***********************
  " Help
@@ -191,4 +231,4 @@ set nocompatible               " be iMproved
 	 " NOTE: comments after Plugin command are not allowed.
 	 " 
 	 " # Refresh vimrc: 
-	 " so $MYVIMRC
+	 " :so $MYVIMRC
