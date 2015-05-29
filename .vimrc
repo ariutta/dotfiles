@@ -66,6 +66,21 @@ set nocompatible               " be iMproved
 
 	 Plugin 'Valloric/MatchTagAlways'
 
+	 " ultisnips provides snippets (basically context-specific code-completion)
+	 " Track the engine.
+	 Plugin 'SirVer/ultisnips'
+
+	 " Snippets are separated from the engine. Add this if you want them:
+	 Plugin 'honza/vim-snippets'
+
+	 " Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
+	 let g:UltiSnipsExpandTrigger="<c-tab>"
+	 let g:UltiSnipsJumpForwardTrigger="<c-b>"
+	 let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+
+	 " If you want :UltiSnipsEdit to split your window.
+	 let g:UltiSnipsEditSplit="vertical"
+
 	 Plugin 'moll/vim-node'
 
 	 " ctrlp makes it easier to open files, buffers, etc.
@@ -107,6 +122,23 @@ set nocompatible               " be iMproved
  " ***********************
  " My custom additions to .vimrc
  " ***********************
+ 
+ 	 " powerline enhances the status bar in vim.
+	 " It can also work for bash, etc.
+ 	 " To install powerline:
+	 " https://powerline.readthedocs.org/en/latest/installation.html
+	 " On OSX, the steps were:
+	 " $ pip install powerline-status
+	 " Get the patched fonts: https://github.com/powerline/fonts
+	 " $ git clone git@github.com:powerline/fonts.git
+	 " $ cd ./fonts
+	 " $ bash ./install.sh
+	 " Set terminal and MacVim to use 'Liberation Mono for Powerline'
+	 " Then add the following here to .vimrc, as taken from:
+	 " https://powerline.readthedocs.org/en/latest/usage/other.html#vim-statusline
+	 python from powerline.vim import setup as powerline_setup
+	 python powerline_setup()
+	 python del powerline_setup
 
  	 " riotjs .tag files are best handled as html files
 	 " for syntax checking and highlighting
