@@ -73,10 +73,15 @@ set nocompatible               " be iMproved
 	 " Snippets are separated from the engine. Add this if you want them:
 	 Plugin 'honza/vim-snippets'
 
-	 " Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
-	 let g:UltiSnipsExpandTrigger="<c-tab>"
-	 let g:UltiSnipsJumpForwardTrigger="<c-b>"
-	 let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+	 " Trigger configuration to make ultisnips work with
+	 " https://github.com/Valloric/YouCompleteMe.
+	 " Ctrl-n to select completion and Tab to trigger snippet.
+	 let g:ycm_key_list_select_completion=['<C-n>', '<Down>']
+	 let g:ycm_key_list_previous_completion=['<C-p>', '<Up>']
+
+	 let g:UltiSnipsExpandTrigger="<Tab>"
+	 let g:UltiSnipsJumpForwardTrigger="<Tab>"                                           
+	 let g:UltiSnipsJumpBackwardTrigger="<S-Tab>"
 
 	 " If you want :UltiSnipsEdit to split your window.
 	 let g:UltiSnipsEditSplit="vertical"
@@ -190,11 +195,13 @@ set nocompatible               " be iMproved
 	 let g:syntastic_mode_map = { 'mode': 'active',
 		\ 'active_filetypes': [],
 		\ 'passive_filetypes': [] }
+	 " display errors from multiple checkers, e.g., jshint and jscs
+	 let g:syntastic_aggregate_errors = 1
 
 	 " use jshint and jscs for javascript
 	 " install jscs with "npm install -g jscs"
 	 " and jshint with "npm install -g jshint"
-	 let g:syntastic_javascript_checkers = ['jscs', 'jshint']
+	 let g:syntastic_javascript_checkers = ['jshint', 'jscs']
 
 	 " checking JS in HTML appears to be working. Not sure
 	 " whether it was this line below, or whether it was
@@ -203,7 +210,7 @@ set nocompatible               " be iMproved
 	 " http://jshint.com/docs/cli/
 	 " or maybe even this from in Vim when a tag file was open:
 	 " setfiletype html.javascript
-	 let g:syntastic_html_checkers = ['jscs', 'jshint']
+	 let g:syntastic_html_checkers = ['jshint', 'jscs']
 
 	 " make Syntastic work with ng-whatever from angular
 	 " first, install the HTML5 version of HTML Tidy
@@ -240,6 +247,8 @@ set nocompatible               " be iMproved
 	 " show line numbers by default
 	 set number
 
+	 " Typing j twice quickly leaves insert mode
+	 inoremap jj <Esc>
 	 " disable arrow keys
 	 map <up> <nop>
 	 map <down> <nop>
