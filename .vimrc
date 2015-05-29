@@ -140,10 +140,6 @@ set nocompatible               " be iMproved
 	 python powerline_setup()
 	 python del powerline_setup
 
- 	 " riotjs .tag files are best handled as html files
-	 " for syntax checking and highlighting
-	 autocmd BufRead,BufNewFile *.tag set filetype=html
-
 	 " F5 inserts current date as markdown header
 	 nnoremap <silent> <F5> a<C-R>=strftime('%Y-%m-%d %a')<CR><CR>===============<CR><CR><Esc>
 	 
