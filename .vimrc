@@ -76,12 +76,12 @@ set nocompatible               " be iMproved
 	 " Trigger configuration to make ultisnips work with
 	 " https://github.com/Valloric/YouCompleteMe.
 	 " Ctrl-n to select completion and Tab to trigger snippet.
-	 let g:ycm_key_list_select_completion=['<C-n>', '<Down>']
-	 let g:ycm_key_list_previous_completion=['<C-p>', '<Up>']
+	 "let g:ycm_key_list_select_completion=['<C-n>', '<Down>']
+	 "let g:ycm_key_list_previous_completion=['<C-p>', '<Up>']
 
-	 let g:UltiSnipsExpandTrigger="<Tab>"
-	 let g:UltiSnipsJumpForwardTrigger="<Tab>"                                           
-	 let g:UltiSnipsJumpBackwardTrigger="<S-Tab>"
+	 "let g:UltiSnipsExpandTrigger="<Tab>"
+	 "let g:UltiSnipsJumpForwardTrigger="<Tab>"                                           
+	 "let g:UltiSnipsJumpBackwardTrigger="<S-Tab>"
 
 	 " If you want :UltiSnipsEdit to split your window.
 	 let g:UltiSnipsEditSplit="vertical"
