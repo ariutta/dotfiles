@@ -54,6 +54,10 @@ set nocompatible               " be iMproved
 
 	 Plugin 'ariutta/Css-Pretty'
 
+	 " Needed to make ycm and ultisnips work together:
+	 " http://stackoverflow.com/questions/14896327/ultisnips-and-youcompleteme
+	 Plugin 'ervandew/supertab'
+
 	 " YouCompleteMe provides autocomplete functionality.
 	 " Before running :PluginInstall, it may be necessary
 	 " 	to set which python to use, as describe here:
@@ -70,18 +74,18 @@ set nocompatible               " be iMproved
 	 " Track the engine.
 	 Plugin 'SirVer/ultisnips'
 
+	 " make YCM compatible with UltiSnips (using supertab)
+	 let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
+	 let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
+	 let g:SuperTabDefaultCompletionType = '<C-n>'
+
+	 " better key bindings for UltiSnipsExpandTrigger
+	 let g:UltiSnipsExpandTrigger = "<tab>"
+	 let g:UltiSnipsJumpForwardTrigger = "<tab>"
+	 let g:UltiSnipsJumpBackwardTrigger = "<s-tab>""
+
 	 " Snippets are separated from the engine. Add this if you want them:
 	 Plugin 'honza/vim-snippets'
-
-	 " Trigger configuration to make ultisnips work with
-	 " https://github.com/Valloric/YouCompleteMe.
-	 " Ctrl-n to select completion and Tab to trigger snippet.
-	 "let g:ycm_key_list_select_completion=['<C-n>', '<Down>']
-	 "let g:ycm_key_list_previous_completion=['<C-p>', '<Up>']
-
-	 "let g:UltiSnipsExpandTrigger="<Tab>"
-	 "let g:UltiSnipsJumpForwardTrigger="<Tab>"                                           
-	 "let g:UltiSnipsJumpBackwardTrigger="<S-Tab>"
 
 	 " If you want :UltiSnipsEdit to split your window.
 	 let g:UltiSnipsEditSplit="vertical"
