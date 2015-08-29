@@ -206,14 +206,6 @@ set nocompatible               " be iMproved
 	 " install jscs with "npm install -g jscs"
 	 " and jshint with "npm install -g jshint"
 	 let g:syntastic_javascript_checkers = ['jshint', 'jscs']
-
-	 " checking JS in HTML appears to be working. Not sure
-	 " whether it was this line below, or whether it was
-	 " running this:
-	 " jshint --extract=always ./demo/wikipathways-pathvisiojs.tag
-	 " http://jshint.com/docs/cli/
-	 " or maybe even this from in Vim when a tag file was open:
-	 " setfiletype html.javascript
 	 let g:syntastic_html_checkers = ['jshint', 'jscs']
 
 	 " make Syntastic work with ng-whatever from angular
@@ -232,7 +224,7 @@ set nocompatible               " be iMproved
 				 \ "unescaped & which should be written as &amp;",
 				 \ "'<' + '/' + letter not allowed here",
 				 \ "<img> lacks \"src\" attribute",
-				 \ "<style isn't allowed in <wikipathways-pathvisiojs> elements",
+				 \ "<style isn't allowed in <wikipathways-pvjs> elements",
 				 \ ]
 	 let g:syntastic_html_tidy_blocklevel_tags=[
 				 \ "tab",
@@ -243,7 +235,7 @@ set nocompatible               " be iMproved
 				 \ "bridgedb-dataset-selector",
 				 \ "bridgedb-xref-search",
 				 \ "bridgedb-xref-search-results",
-				 \ "wikipathways-pathvisiojs",
+				 \ "wikipathways-pvjs",
 				 \ ]
 	 let g:syntastic_html_tidy_inline_tags=[]
 	 let g:syntastic_html_tidy_empty_tags=["i"]
@@ -251,8 +243,8 @@ set nocompatible               " be iMproved
 	 " show line numbers by default
 	 set number
 
-	 " Typing j twice quickly leaves insert mode
-	 inoremap jj <Esc>
+	 " Typing "jk" quickly leaves insert mode
+	 inoremap jk <Esc>
 	 " disable arrow keys
 	 map <up> <nop>
 	 map <down> <nop>
