@@ -59,9 +59,23 @@ set nocompatible               " be iMproved
 	 Plugin 'ervandew/supertab'
 
 	 " YouCompleteMe provides autocomplete functionality.
-	 " Before running :PluginInstall, it may be necessary
-	 " 	to set which python to use, as describe here:
+	 " Before running :PluginInstall, I had to see which python to use:
+	 " First get the current homebrew version of python `python --version`
+	 " Then run this, replacing the version with your version:
+	 "
+" cd /System/Library/Frameworks/Python.framework/Versions
+" sudo mv Current Current-sys
+" sudo mv 2.7 2.7-sys
+" sudo ln -s /usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/2.7 Current
+" sudo ln -s /usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/2.7 2.7
+" brew rm macvim # optional, only if you had it installed previously  
+" brew install macvim --with-override-system-vim
+" sudo mv Current-sys Current
+" sudo mv 2.7-sys 2.7
+	 "
+	 " This was based on the instructions here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
+	 "
 	 " After running :PluginInstall, you need to compile it (at least on OS X)
 	 "	 ~/.vim/bundle/YouCompleteMe/install.sh --clang-completer
 	 " or if that command gives an error, try telling it to use the system libclang:
@@ -72,7 +86,8 @@ set nocompatible               " be iMproved
 
 	 " ultisnips provides snippets (basically context-specific code-completion)
 	 " Track the engine.
-	 Plugin 'SirVer/ultisnips'
+	 "::
+	 "Plugin 'SirVer/ultisnips'
 
 	 " make YCM compatible with UltiSnips (using supertab)
 	 let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
@@ -251,8 +266,8 @@ set nocompatible               " be iMproved
 	 " show line numbers by default
 	 set number
 
-	 " Typing j twice quickly leaves insert mode
-	 inoremap jj <Esc>
+	 " Typing jk quickly leaves insert mode
+	 inoremap jk <Esc>
 	 " disable arrow keys
 	 map <up> <nop>
 	 map <down> <nop>
