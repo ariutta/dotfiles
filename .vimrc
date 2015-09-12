@@ -59,8 +59,13 @@ set nocompatible               " be iMproved
 	 Plugin 'ervandew/supertab'
 
 	 " YouCompleteMe provides autocomplete functionality.
-	 " Before running :PluginInstall, I had to see which python to use:
-	 " First get the current homebrew version of python `python --version`
+	 " Before running :PluginInstall, I had to make sure Vim was compiled
+	 " with Python support. To do this, run:
+	 " 	:python import sys; print(sys.version)
+	 " If it doesn't print a Python version, recompile with Python
+	 " support. First get the current homebrew version of python from
+	 " terminal:
+	 " 	`python --version`
 	 " Then run this, replacing the version with your version:
 	 "
 " cd /System/Library/Frameworks/Python.framework/Versions
@@ -76,10 +81,8 @@ set nocompatible               " be iMproved
 	 " This was based on the instructions here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
 	 "
-	 " After running :PluginInstall, you need to compile it (at least on OS X)
-	 "	 ~/.vim/bundle/YouCompleteMe/install.sh --clang-completer
-	 " or if that command gives an error, try telling it to use the system libclang:
-	 " ~/.vim/bundle/YouCompleteMe/install.sh --clang-completer --system-libclang
+	 " After ensuring Python support, compile YouCompleteMe (at least on OS X)
+	 " 	.vim/bundle/YouCompleteMe/install.py
 	 Plugin 'Valloric/YouCompleteMe'
 
 	 Plugin 'Valloric/MatchTagAlways'
