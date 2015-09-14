@@ -81,8 +81,10 @@ set nocompatible               " be iMproved
 	 " This was based on the instructions here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
 	 "
-	 " After ensuring Python support, compile YouCompleteMe (at least on OS X)
-	 " 	.vim/bundle/YouCompleteMe/install.py
+	 " After ensuring Python support,
+	 " run :PluginInstall (takes a long time),
+	 " then compile YouCompleteMe:
+	 " 	.vim/bundle/YouCompleteMe/install.py --clang-completer
 	 Plugin 'Valloric/YouCompleteMe'
 
 	 Plugin 'Valloric/MatchTagAlways'
@@ -263,6 +265,27 @@ set nocompatible               " be iMproved
 
 	 " Typing "jk" quickly leaves insert mode
 	 inoremap jk <Esc>
+
+	 " Run TypeScript formatter on current file with `\tsf`
+	 " Before running, need to install npm dependencies:
+	 " npm install -g typescript typescript-formatter
+	 funct! Tsfmt()
+		 let current_line = line(".")
+		 redir => output
+		 silent exec "!tsfmt " . expand('%:p')
+		 redir END
+		 let output = substitute(output, "", "", "g")
+		 let @o = output
+		 silent execute "1,$d"
+		 silent execute "put o"
+		 silent execute "1,3d"
+		 :execute "normal! " current_line . "G"
+		 " Note we need to return something in order for
+		 " us to get the cursor back to its original line.
+		 return ""
+	 endfunct!
+	 nmap <leader>tsf :execute Tsfmt()<CR>
+
 	 " disable arrow keys
 	 map <up> <nop>
 	 map <down> <nop>
