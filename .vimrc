@@ -278,13 +278,25 @@ set nocompatible               " be iMproved
 		 let @o = output
 		 silent execute "1,$d"
 		 silent execute "put o"
+		 " TODO we are currently clipping the first two lines
+		 " from the formatted result because they are not the
+		 " desired code but instead are just print logs saying
+		 " we ran the ts formatter.
+		 " Check why are we getting log-style lines included
+		 " in stdout?
 		 silent execute "1,3d"
+		 " TODO removing the last line, because it's blank.
+		 " This seems like the wrong spot to do this.
+		 " Why is this still being added, even though I've
+		 " set .editorconfig and tslint.json to indicate
+		 " NOT adding a final newline?
+		 :execute "normal! Gdd"
 		 :execute "normal! " current_line . "G"
 		 " Note we need to return something in order for
 		 " us to get the cursor back to its original line.
 		 return ""
 	 endfunct!
-	 nmap <leader>tsf :execute Tsfmt()<CR>
+	 nmap <leader>tsf :silent execute Tsfmt()<CR>
 
 	 " disable arrow keys
 	 map <up> <nop>
