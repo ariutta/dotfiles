@@ -21,10 +21,20 @@ set nocompatible               " be iMproved
 	 " ***********************
 	 " original (not a fork) repos on github
 	 " ***********************
+
 	 Plugin 'othree/html5.vim'
 
+	 Plugin 'scrooloose/syntastic'
+
+	 " js syntax
 	 Plugin 'jelera/vim-javascript-syntax'
 	 Plugin 'heavenshell/vim-jsdoc'
+
+	 " js and ts indenting
+	 Plugin 'jason0x43/vim-js-indent'
+
+	 " typescript syntax
+	 Plugin 'leafgarland/typescript-vim'
 
 	 " Tern provides JavaScript-based editing support.
 	 " To finish installing tern,
@@ -32,11 +42,12 @@ set nocompatible               " be iMproved
 	 " run 'npm install'
 	 Plugin 'marijnh/tern_for_vim'
 
+	 "visually display indent levels
 	 Plugin 'nathanaelkane/vim-indent-guides'
+
 	 Plugin 'Raimondi/delimitMate'
 	 Plugin 'altercation/vim-colors-solarized'
 	 Plugin 'scrooloose/nerdtree'
-	 Plugin 'scrooloose/syntastic'
 
 	 " Git wrapper
 	 " For screencasts on how to use:
@@ -225,6 +236,9 @@ set nocompatible               " be iMproved
 	 " use jshint and jscs for javascript
 	 " install jscs with "npm install -g jscs"
 	 " and jshint with "npm install -g jshint"
+	 let g:loaded_syntastic_typescript_tsc_checker = ['tsc']
+	 "let g:syntastic_typescript_checkers = ['tshint', 'tsc']
+	 let g:syntastic_javascript_checkers = ['jshint', 'jscs']
 	 let g:syntastic_javascript_checkers = ['jshint', 'jscs']
 	 let g:syntastic_html_checkers = ['jshint', 'jscs']
 
@@ -265,6 +279,13 @@ set nocompatible               " be iMproved
 
 	 " Typing "jk" quickly leaves insert mode
 	 inoremap jk <Esc>
+
+	 "let g:typescript_indent_disable = 1
+
+	 " enable indent guides by default
+	 "autocmd <leader> ig
+
+	 autocmd FileType typescript setlocal shiftwidth=2 tabstop=2
 
 	 " Run TypeScript formatter on current file with `\tsf`
 	 " Before running, need to install npm dependencies:
