@@ -219,7 +219,7 @@ set nocompatible               " be iMproved
 	 "close NERDTree if it's the only buffer left open
 	 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
 
-	 " Not sure whether this is related to indent plugin
+	 " I think this just enables using colors to show language syntax.
 	 syntax enable
 
 	 " colorscheme
@@ -238,7 +238,6 @@ set nocompatible               " be iMproved
 	 " and jshint with "npm install -g jshint"
 	 let g:loaded_syntastic_typescript_tsc_checker = ['tsc']
 	 "let g:syntastic_typescript_checkers = ['tshint', 'tsc']
-	 let g:syntastic_javascript_checkers = ['jshint', 'jscs']
 	 let g:syntastic_javascript_checkers = ['jshint', 'jscs']
 	 let g:syntastic_html_checkers = ['jshint', 'jscs']
 
@@ -280,11 +279,10 @@ set nocompatible               " be iMproved
 	 " Typing "jk" quickly leaves insert mode
 	 inoremap jk <Esc>
 
-	 "let g:typescript_indent_disable = 1
-
 	 " enable indent guides by default
-	 "autocmd <leader> ig
+	 autocmd BufReadPre,FileReadPre * :IndentGuidesEnable
 
+	 " Use Google's JS indent style for typescript
 	 autocmd FileType typescript setlocal shiftwidth=2 tabstop=2
 
 	 " Run TypeScript formatter on current file with `\tsf`
