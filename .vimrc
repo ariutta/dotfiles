@@ -76,14 +76,14 @@ set nocompatible               " be iMproved
 	 " If it doesn't print a Python version, recompile with Python
 	 " support. First get the current homebrew version of python from
 	 " terminal:
-	 " 	`python --version`
+	 " 	python --version
 	 " Then run this, replacing the version with your version:
 	 "
 " cd /System/Library/Frameworks/Python.framework/Versions
 " sudo mv Current Current-sys
 " sudo mv 2.7 2.7-sys
-" sudo ln -s /usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/2.7 Current
-" sudo ln -s /usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/2.7 2.7
+" sudo ln -s /usr/local/Cellar/python/2.7.2/Frameworks/Python.framework/Versions/2.7 Current
+" sudo ln -s /usr/local/Cellar/python/2.7.2/Frameworks/Python.framework/Versions/2.7 2.7
 " brew rm macvim # optional, only if you had it installed previously  
 " brew install macvim --with-override-system-vim
 " sudo mv Current-sys Current
@@ -236,8 +236,8 @@ set nocompatible               " be iMproved
 	 " use jshint and jscs for javascript
 	 " install jscs with "npm install -g jscs"
 	 " and jshint with "npm install -g jshint"
-	 let g:loaded_syntastic_typescript_tsc_checker = ['tsc']
-	 "let g:syntastic_typescript_checkers = ['tshint', 'tsc']
+	 "let g:loaded_syntastic_typescript_tsc_checker = ['tsc']
+	 let g:syntastic_typescript_checkers = ['tslint', 'tsc']
 	 let g:syntastic_javascript_checkers = ['jshint', 'jscs']
 	 let g:syntastic_html_checkers = ['jshint', 'jscs']
 
