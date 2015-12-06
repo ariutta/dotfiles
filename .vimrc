@@ -27,9 +27,9 @@ set nocompatible               " be iMproved
 	 Plugin 'heavenshell/vim-jsdoc'
 
 	 " Tern provides JavaScript-based editing support.
-	 " To finish installing tern,
-	 " cd to .vim/bundle/tern_for_vim/
-	 " run 'npm install'
+	 " To finish installing tern:
+	 "     cd ~/.vim/bundle/tern_for_vim/
+	 "     npm install
 	 Plugin 'marijnh/tern_for_vim'
 
 	 Plugin 'nathanaelkane/vim-indent-guides'
@@ -59,13 +59,13 @@ set nocompatible               " be iMproved
 	 Plugin 'ervandew/supertab'
 
 	 " YouCompleteMe provides autocomplete functionality.
-	 " Before running :PluginInstall, I had to make sure Vim was compiled
+	 " Before running :PluginInstall, Make sure Vim was compiled
 	 " with Python support. To do this, run:
 	 " 	:python import sys; print(sys.version)
 	 " If it doesn't print a Python version, recompile with Python
 	 " support. First get the current homebrew version of python from
 	 " terminal:
-	 " 	`python --version`
+	 " 	python --version
 	 " Then run this, replacing the version with your version:
 	 "
 " cd /System/Library/Frameworks/Python.framework/Versions
@@ -74,14 +74,14 @@ set nocompatible               " be iMproved
 " sudo ln -s /usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/2.7 Current
 " sudo ln -s /usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/2.7 2.7
 " brew rm macvim # optional, only if you had it installed previously  
-" brew install macvim --with-override-system-vim
+" brew install macvim
 " sudo mv Current-sys Current
 " sudo mv 2.7-sys 2.7
 	 "
-	 " This was based on the instructions here:
+	 " The steps above were modified from the instructions here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
 	 "
-	 " After ensuring Python support, compile YouCompleteMe (at least on OS X)
+	 " After ensuring Python support, compile YouCompleteMe:
 	 " 	.vim/bundle/YouCompleteMe/install.py
 	 Plugin 'Valloric/YouCompleteMe'
 
@@ -115,9 +115,25 @@ set nocompatible               " be iMproved
 	 Plugin 'kien/ctrlp.vim'
 	 " This C extension speeds up ctrlp's finder.
 	 " After running PluginInstall, you need to finish installation,
-	 " as described here:
+	 "   cd ~/.vim/bundle/ctrlp-cmatcher
+	 "   ./install.sh
+	 " Further info:
 	 " https://github.com/JazzCore/ctrlp-cmatcher/
 	 Plugin 'JazzCore/ctrlp-cmatcher'
+
+	 " Write markdown in vim and see live preview in browser
+	 " launch the Livedown server and preview your markdown file
+	 " :LivedownPreview
+	 "
+	 " " stop the Livedown server
+	 " :LivedownKill
+	 "
+	 " " launch/kill the Livedown server
+	 " :LivedownToggle
+	 Plugin 'shime/vim-livedown'
+
+	 " Syntax support for  github-flavored markdown
+	 Plugin 'gabrielelana/vim-markdown'
 
 	 " ***********************
 	 " vim-scripts repos
