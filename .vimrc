@@ -21,10 +21,20 @@ set nocompatible               " be iMproved
 	 " ***********************
 	 " original (not a fork) repos on github
 	 " ***********************
+
 	 Plugin 'othree/html5.vim'
 
+	 Plugin 'scrooloose/syntastic'
+
+	 " js syntax
 	 Plugin 'jelera/vim-javascript-syntax'
 	 Plugin 'heavenshell/vim-jsdoc'
+
+	 " js and ts indenting
+	 Plugin 'jason0x43/vim-js-indent'
+
+	 " typescript syntax
+	 Plugin 'leafgarland/typescript-vim'
 
 	 " Tern provides JavaScript-based editing support.
 	 " To finish installing tern:
@@ -32,11 +42,12 @@ set nocompatible               " be iMproved
 	 "     npm install
 	 Plugin 'marijnh/tern_for_vim'
 
+	 "visually display indent levels
 	 Plugin 'nathanaelkane/vim-indent-guides'
+
 	 Plugin 'Raimondi/delimitMate'
 	 Plugin 'altercation/vim-colors-solarized'
 	 Plugin 'scrooloose/nerdtree'
-	 Plugin 'scrooloose/syntastic'
 
 	 " Git wrapper
 	 " For screencasts on how to use:
@@ -81,8 +92,10 @@ set nocompatible               " be iMproved
 	 " The steps above were modified from the instructions here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
 	 "
-	 " After ensuring Python support, compile YouCompleteMe:
-	 " 	.vim/bundle/YouCompleteMe/install.py
+	 " After ensuring Python support,
+	 " run :PluginInstall (takes a long time),
+	 " then compile YouCompleteMe:
+	 " 	.vim/bundle/YouCompleteMe/install.py --clang-completer
 	 Plugin 'Valloric/YouCompleteMe'
 
 	 Plugin 'Valloric/MatchTagAlways'
@@ -222,7 +235,7 @@ set nocompatible               " be iMproved
 	 "close NERDTree if it's the only buffer left open
 	 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
 
-	 " Not sure whether this is related to indent plugin
+	 " I think this just enables using colors to show language syntax.
 	 syntax enable
 
 	 " colorscheme
@@ -239,6 +252,8 @@ set nocompatible               " be iMproved
 	 " use jshint and jscs for javascript
 	 " install jscs with "npm install -g jscs"
 	 " and jshint with "npm install -g jshint"
+	 "let g:loaded_syntastic_typescript_tsc_checker = ['tsc']
+	 let g:syntastic_typescript_checkers = ['tslint', 'tsc']
 	 let g:syntastic_javascript_checkers = ['jshint', 'jscs']
 	 let g:syntastic_html_checkers = ['jshint', 'jscs']
 
@@ -279,6 +294,46 @@ set nocompatible               " be iMproved
 
 	 " Typing "jk" quickly leaves insert mode
 	 inoremap jk <Esc>
+
+	 " enable indent guides by default
+	 autocmd BufReadPre,FileReadPre * :IndentGuidesEnable
+
+	 " Use Google's JS indent style for typescript
+	 autocmd FileType typescript setlocal shiftwidth=2 tabstop=2
+
+	 " Run TypeScript formatter on current file with `\tsf`
+	 " Before running, need to install npm dependencies:
+	 " npm install -g typescript typescript-formatter
+	 funct! Tsfmt()
+		 let current_line = line(".")
+		 redir => output
+		 silent exec "!tsfmt " . expand('%:p')
+		 redir END
+		 let output = substitute(output, "
+", "", "g")
+		 let @o = output
+		 silent execute "1,$d"
+		 silent execute "put o"
+		 " TODO we are currently clipping the first two lines
+		 " from the formatted result because they are not the
+		 " desired code but instead are just print logs saying
+		 " we ran the ts formatter.
+		 " Check why are we getting log-style lines included
+		 " in stdout?
+		 silent execute "1,3d"
+		 " TODO removing the last line, because it's blank.
+		 " This seems like the wrong spot to do this.
+		 " Why is this still being added, even though I've
+		 " set .editorconfig and tslint.json to indicate
+		 " NOT adding a final newline?
+		 :execute "normal! Gdd"
+		 :execute "normal! " current_line . "G"
+		 " Note we need to return something in order for
+		 " us to get the cursor back to its original line.
+		 return ""
+	 endfunct!
+	 nmap <leader>tsf :silent execute Tsfmt()<CR>
+
 	 " disable arrow keys
 	 map <up> <nop>
 	 map <down> <nop>

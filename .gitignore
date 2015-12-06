@@ -3,5 +3,6 @@
 !.jshintrc
 !.jscsrc
 !.gitignore
-!.gitconfig
+!.gitignore_global
+!.gitconfig_sample
 !dev_helper_scripts/
