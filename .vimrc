@@ -223,6 +223,11 @@ set nocompatible               " be iMproved
 	 "let g:ctrlp_user_command = 'find %s -type f'        " MacOSX/Linux
 	 " let g:ctrlp_user_command = 'dir %s /-n /b /s /a-d'  " Windows
 
+	 " In the quickfix window, <CR> is used to jump to the error under the
+	 " cursor, so undefine the mapping there.
+	 " from http://superuser.com/questions/815416/hitting-enter-in-the-quickfix-window-doesnt-work
+	 autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
+	 
 	 "Show hidden files in NerdTree
 	 let NERDTreeShowHidden=1
 
