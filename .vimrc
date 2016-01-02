@@ -362,7 +362,7 @@ set nocompatible               " be iMproved
 	 "		d) revert python symlinks
 	 " 			sudo mv Current-sys Current
 	 " 			sudo mv 2.7-sys 2.7
-	 " B) Open Vim and run :PluginInstall (may take a long time)
+	 " B) Open ~/.vimrc in Vim and run :PluginInstall (may take a long time)
 	 " C) Finish installing tern (instructions in Vundle section above)
 	 " D) Compile YouCompleteMe (instructions in Vundle section above)
 	 "
