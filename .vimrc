@@ -343,21 +343,28 @@ set nocompatible               " be iMproved
 	 "
 	 " (TODO: at one point I did something like download solarized color scheme files and set a different default font for the terminal. What were the steps?)
 	 "
-	 " 1) Get the current homebrew version of python from terminal:
-	 " 	python --version
-	 " 2) Run the following commands (use your version in place of the specified version, and check that the directories you’re changing from actually exist, because you may get a value like “Python 2.7.10” from —version but actually need to use a value like “2.7.10_2”):
-	 " 	cd /System/Library/Frameworks/Python.framework/Versions
-	 " 	sudo mv Current Current-sys
-	 " 	sudo mv 2.7 2.7-sys
-	 " 	sudo ln -s /usr/local/Cellar/python/2.7.11/Frameworks/Python.framework/Versions/2.7 Current
-	 " 	sudo ln -s /usr/local/Cellar/python/2.7.11/Frameworks/Python.framework/Versions/2.7 2.7
-	 " 	brew rm macvim # optional, only if you had it installed previously  
-	 " 	brew install macvim --with-override-system-vim
-	 " 	sudo mv Current-sys Current
-	 " 	sudo mv 2.7-sys 2.7
-	 " 3) Open Vim and run :PluginInstall (may take a long time)
-	 " 4) Finish installing tern (instructions in Vundle section above)
-	 " 5) Compile YouCompleteMe (instructions in Vundle section above)
+	 " A) Check whether python (not python3) is included in list of items installed via brew:
+	 " 	brew list
+	 "
+	 " 	1) If no, install macvim: 
+	 " 		brew rm macvim # optional, only if you had it installed previously  
+	 " 		brew install macvim --with-override-system-vim
+	 " 	2) If yes
+	 "		a) get the current homebrew version of python from terminal:
+	 " 			python --version
+	 "		b) symlink to homebrew python (use your version in place of the specified version, and check that the directories you’re changing from actually exist, because you may get a value like “Python 2.7.10” from —version but actually need to use a value like “2.7.10_2”):
+	 " 			cd /System/Library/Frameworks/Python.framework/Versions
+	 " 			sudo mv Current Current-sys
+	 " 			sudo mv 2.7 2.7-sys
+	 " 			sudo ln -s /usr/local/Cellar/python/2.7.11/Frameworks/Python.framework/Versions/2.7 Current
+	 " 			sudo ln -s /usr/local/Cellar/python/2.7.11/Frameworks/Python.framework/Versions/2.7 2.7
+	 "		c) install macvim as per step 1) above
+	 "		d) revert python symlinks
+	 " 			sudo mv Current-sys Current
+	 " 			sudo mv 2.7-sys 2.7
+	 " B) Open Vim and run :PluginInstall (may take a long time)
+	 " C) Finish installing tern (instructions in Vundle section above)
+	 " D) Compile YouCompleteMe (instructions in Vundle section above)
 	 "
 	 " The steps above were modified from the instructions here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
