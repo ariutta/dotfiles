@@ -71,17 +71,20 @@ set nocompatible               " be iMproved
 	 Plugin 'ervandew/supertab'
 
 	 " YouCompleteMe provides autocomplete functionality.
-	 " Before running :PluginInstall, make sure Vim was compiled
-	 " with Python support. To do this, run:
+	 " Before running :PluginInstall, make sure Vim was compiled with Python support:
 	 " 	:python import sys; print(sys.version)
-	 " If it doesn't print a Python version, recompile with Python
-	 " support as described in the Help section at the bottom of this file.
+	 " 
+	 "	If it doesn't print a Python version, recompile with Python
+	 " 	support as described in the Help section at the bottom of this file.
 	 "
-	 " After ensuring Python support,
-	 " run :PluginInstall (may take a long time),
-	 " finish installing tern,
-	 " then compile YouCompleteMe:
-	 " 	~/.vim/bundle/YouCompleteMe/install.py --clang-completer
+	 " After ensuring Python support:
+	 " 	A) Open .vimrc and run :PluginInstall (may take a long time),
+	 " 	B) Finish installing tern (as described near Plugin 'marijnh/tern_for_vim' above)
+	 "	C) Check whether cmake is installed, and if not, install it:
+	 "		which cmake
+	 "		brew install cmake # only if above command returned nothing
+	 " 	D) Compile YouCompleteMe:
+	 " 		~/.vim/bundle/YouCompleteMe/install.py --clang-completer
 	 Plugin 'Valloric/YouCompleteMe'
 
 	 Plugin 'Valloric/MatchTagAlways'
@@ -341,7 +344,8 @@ set nocompatible               " be iMproved
 	 "
 	 " *** Install Vim and MacVim on OS/X
 	 "
-	 " (TODO: at one point I did something like download solarized color scheme files and set a different default font for the terminal. What were the steps?)
+	 " (TODO: at one point I did something like download solarized color scheme files and
+	 "  set a different default font for the terminal. What were the steps?)
 	 "
 	 " A) Check whether python (not python3) is included in list of items installed via brew:
 	 " 	brew list
@@ -352,19 +356,23 @@ set nocompatible               " be iMproved
 	 " 	2) If yes
 	 "		a) get the current homebrew version of python from terminal:
 	 " 			python --version
-	 "		b) symlink to homebrew python (use your version in place of the specified version, and check that the directories you’re changing from actually exist, because you may get a value like “Python 2.7.10” from —version but actually need to use a value like “2.7.10_2”):
+	 "		b) symlink to homebrew python (use your version in place of the specified version, and
+	 "                 check that the directories you’re changing from actually exist, because you may get a
+	 "                 value like “Python 2.7.10” from —version but actually need to use a value like “2.7.10_2”):
 	 " 			cd /System/Library/Frameworks/Python.framework/Versions
 	 " 			sudo mv Current Current-sys
 	 " 			sudo mv 2.7 2.7-sys
 	 " 			sudo ln -s /usr/local/Cellar/python/2.7.11/Frameworks/Python.framework/Versions/2.7 Current
 	 " 			sudo ln -s /usr/local/Cellar/python/2.7.11/Frameworks/Python.framework/Versions/2.7 2.7
 	 "		c) install macvim as per step 1) above
-	 "		d) revert python symlinks
-	 " 			sudo mv Current-sys Current
-	 " 			sudo mv 2.7-sys 2.7
-	 " B) Open ~/.vimrc in Vim and run :PluginInstall (may take a long time)
-	 " C) Finish installing tern (instructions in Vundle section above)
-	 " D) Compile YouCompleteMe (instructions in Vundle section above)
+	 " B) Install vundle:
+	 "	git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+	 " C) Open ~/.vimrc in Vim and run :PluginInstall (may take a long time)
+	 " D) Finish installing tern (instructions in Vundle section above)
+	 " E) Compile YouCompleteMe (instructions in Vundle section above)
+	 " F) If python was installed via brew (A2 above), revert the python symlinks:
+	 " 	sudo mv Current-sys Current
+	 " 	sudo mv 2.7-sys 2.7
 	 "
 	 " The steps above were modified from the instructions here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
