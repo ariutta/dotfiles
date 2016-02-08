@@ -371,6 +371,7 @@ set nocompatible               " be iMproved
 	 " D) Finish installing tern (instructions in Vundle section above)
 	 " E) Compile YouCompleteMe (instructions in Vundle section above)
 	 " F) If python was installed via brew (A2 above), revert the python symlinks:
+	 "	cd /System/Library/Frameworks/Python.framework/Versions
 	 " 	sudo mv Current-sys Current
 	 " 	sudo mv 2.7-sys 2.7
 	 "
