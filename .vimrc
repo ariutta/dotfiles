@@ -372,7 +372,9 @@ set nocompatible               " be iMproved
 	 " E) Compile YouCompleteMe (instructions in Vundle section above)
 	 " F) If python was installed via brew (A2 above), revert the python symlinks:
 	 "	cd /System/Library/Frameworks/Python.framework/Versions
+	 " 	sudo rm Current
 	 " 	sudo mv Current-sys Current
+	 " 	sudo rm 2.7
 	 " 	sudo mv 2.7-sys 2.7
 	 "
 	 " The steps above were modified from the instructions here:
