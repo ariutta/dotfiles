@@ -47,8 +47,16 @@ set nocompatible               " be iMproved
 	 Plugin 'nathanaelkane/vim-indent-guides'
 
 	 Plugin 'Raimondi/delimitMate'
-	 Plugin 'altercation/vim-colors-solarized'
 	 Plugin 'scrooloose/nerdtree'
+
+	 " Pretty colors
+	 " Installation:
+	 " 	A) Download and unzip http://ethanschoonover.com/solarized/files/solarized.zip
+	 " 	B) If using iTerm2, import the colors:
+	 " 		Preferences > Profiles > Colors > Load Presets > Import >
+	 " 			solarized/iterm2-colors-solarized/Solarized Dark.itermcolors
+	 " 	C) Repeat for Solarized Light.itermcolors
+	 Plugin 'altercation/vim-colors-solarized'
 
 	 " Git wrapper
 	 " For screencasts on how to use:
@@ -170,17 +178,18 @@ set nocompatible               " be iMproved
  
  	 " powerline enhances the status bar in vim.
 	 " It can also work for bash, etc.
- 	 " To install powerline:
-	 " https://powerline.readthedocs.org/en/latest/installation.html
-	 " On OSX, the steps were:
-	 " $ pip install powerline-status
-	 " Get the patched fonts: https://github.com/powerline/fonts
-	 " $ git clone git@github.com:powerline/fonts.git
-	 " $ cd ./fonts
-	 " $ bash ./install.sh
-	 " Set terminal and MacVim to use 'Liberation Mono for Powerline'
-	 " Then add the following here to .vimrc, as taken from:
-	 " https://powerline.readthedocs.org/en/latest/usage/other.html#vim-statusline
+	 "
+ 	 " Powerline Installation Instructions: https://powerline.readthedocs.org/en/latest/installation.html
+	 "
+	 " The following are the steps that worked for me on OS/X:
+	 " A) Run:
+	 " 	pip install powerline-status
+	 " B) Get and install the patched fonts::
+	 "  	git clone https://github.com/powerline/fonts.git
+	 "  	cd ./fonts
+	 " 	bash ./install.sh
+	 " C) Set terminal and MacVim to use 'Liberation Mono for Powerline'
+	 " D) Add the following lines to your .vimrc (taken from https://powerline.readthedocs.org/en/latest/usage/other.html#vim-statusline):
 	 python from powerline.vim import setup as powerline_setup
 	 python powerline_setup()
 	 python del powerline_setup
@@ -344,9 +353,6 @@ set nocompatible               " be iMproved
 	 "
 	 " *** Install Vim and MacVim on OS/X
 	 "
-	 " (TODO: at one point I did something like download solarized color scheme files and
-	 "  set a different default font for the terminal. What were the steps?)
-	 "
 	 " A) Check whether python (not python3) is included in list of items installed via brew:
 	 " 	brew list
 	 "
@@ -370,7 +376,9 @@ set nocompatible               " be iMproved
 	 " C) Open ~/.vimrc in Vim and run :PluginInstall (may take a long time)
 	 " D) Finish installing tern (instructions in Vundle section above)
 	 " E) Compile YouCompleteMe (instructions in Vundle section above)
-	 " F) If python was installed via brew (A2 above), revert the python symlinks:
+	 " F) Install powerline (instructions in Vundle section above)
+	 " G) Install solarized color scheme for terminal (instructions in Vundle section above)
+	 " H) If python was installed via brew (point A.2. above), revert the python symlinks:
 	 "	cd /System/Library/Frameworks/Python.framework/Versions
 	 " 	sudo rm Current
 	 " 	sudo mv Current-sys Current
