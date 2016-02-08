@@ -155,8 +155,7 @@ set nocompatible               " be iMproved
 	 " non github repos
 	 " ***********************
 	 
-	 " This script makes :q close both current file and NERDtree
-	 " TODO look at line 130. It appears to be a dup with this.
+	 " Just an example:
 	 "Plugin 'https://gist.github.com/8290763.git'
 
 	 " ***********************
@@ -194,6 +193,17 @@ set nocompatible               " be iMproved
 	 python powerline_setup()
 	 python del powerline_setup
 
+	 " Show hidden files in NERDTree
+	 let NERDTreeShowHidden=1
+	 " autopen NERDTree
+	 autocmd VimEnter * NERDTree
+	 " focus cursor in new document
+	 autocmd VimEnter * wincmd p
+	 " Open NERDTree with CTRL-n
+	 map <C-n> :NERDTreeToggle<CR>
+	 " close NERDTree if it's the only buffer left open (from https://github.com/scrooloose/nerdtree/issues/21)
+	 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
 	 " F5 inserts current date as markdown header
 	 nnoremap <silent> <F5> a<C-R>=strftime('%Y-%m-%d %a')<CR><CR>===============<CR><CR><Esc>
 	 
@@ -226,18 +236,6 @@ set nocompatible               " be iMproved
 	 " from http://superuser.com/questions/815416/hitting-enter-in-the-quickfix-window-doesnt-work
 	 autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
 	 
-	 "Show hidden files in NerdTree
-	 let NERDTreeShowHidden=1
-
-	 "autopen NERDTree
-	 autocmd VimEnter * NERDTree
-	 "focus cursor in new document
-	 autocmd VimEnter * wincmd p
-	 " Open NERDTree with CTRL-n
-	 map <C-n> :NERDTreeToggle<CR>
-	 "close NERDTree if it's the only buffer left open
-	 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
-
 	 " I think this just enables using colors to show language syntax.
 	 syntax enable
 
@@ -376,7 +374,7 @@ set nocompatible               " be iMproved
 	 " C) Open ~/.vimrc in Vim and run :PluginInstall (may take a long time)
 	 " D) Finish installing tern (instructions in Vundle section above)
 	 " E) Compile YouCompleteMe (instructions in Vundle section above)
-	 " F) Install powerline (instructions in Vundle section above)
+	 " F) Install powerline (instructions in custom section above)
 	 " G) Install solarized color scheme for terminal (instructions in Vundle section above)
 	 " H) If python was installed via brew (point A.2. above), revert the python symlinks:
 	 "	cd /System/Library/Frameworks/Python.framework/Versions
