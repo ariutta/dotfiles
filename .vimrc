@@ -22,19 +22,31 @@ set nocompatible               " be iMproved
 	 " original (not a fork) repos on github
 	 " ***********************
 
+	 " make vim syntax-aware
+	 Plugin 'scrooloose/syntastic'
+
+	 " markdown (github-flavored) syntax
+	 Plugin 'gabrielelana/vim-markdown'
+
+	 " HTML5 & inline SVG omnicomplete and syntax
 	 Plugin 'othree/html5.vim'
 
-	 Plugin 'scrooloose/syntastic'
+	 " css syntax
+	 Plugin 'hail2u/vim-css3-syntax'
+	 Plugin 'ariutta/Css-Pretty'
 
 	 " js syntax
 	 Plugin 'jelera/vim-javascript-syntax'
+	 Plugin 'pangloss/vim-javascript'
+	 Plugin 'elzr/vim-json'
+	 " jsdoc syntax
 	 Plugin 'heavenshell/vim-jsdoc'
-
-	 " js and ts indenting
-	 Plugin 'jason0x43/vim-js-indent'
 
 	 " typescript syntax
 	 Plugin 'leafgarland/typescript-vim'
+
+	 " js and ts indenting
+	 Plugin 'jason0x43/vim-js-indent'
 
 	 " Tern provides JavaScript-based editing support.
 	 " This plugin will download the tern package, but you still
@@ -43,28 +55,28 @@ set nocompatible               " be iMproved
 	 "     npm install
 	 Plugin 'marijnh/tern_for_vim'
 
-	 "visually display indent levels
+	 " visually display indent levels
 	 Plugin 'nathanaelkane/vim-indent-guides'
 
+	 " automatic closing of quotes, parenthesis, brackets, etc.
 	 Plugin 'Raimondi/delimitMate'
-	 Plugin 'altercation/vim-colors-solarized'
-	 Plugin 'scrooloose/nerdtree'
 
-	 " Git wrapper
-	 " For screencasts on how to use:
-	 " https://github.com/tpope/vim-fugitive#screencasts
+	 " pretty colors
+	 Plugin 'altercation/vim-colors-solarized'
+
+	 " git wrapper
+	 "   For screencasts on how to use:
+	 "     https://github.com/tpope/vim-fugitive#screencasts
+	 "   To compare a file across branches:
+	 "     Gedit master:myfile.txt
+    	 "     Gdiff dev:myfile.txt
 	 Plugin 'tpope/vim-fugitive'
 
 	 Plugin 'tpope/vim-abolish'
 	 Plugin 'Lokaltog/vim-easymotion'
 	 Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
-	 Plugin 'pangloss/vim-javascript'
-	 Plugin 'elzr/vim-json'
-	 Plugin 'hail2u/vim-css3-syntax'
 
 	 Plugin 'tpope/vim-surround'
-
-	 Plugin 'ariutta/Css-Pretty'
 
 	 " Needed to make ycm and ultisnips work together:
 	 " http://stackoverflow.com/questions/14896327/ultisnips-and-youcompleteme
@@ -90,6 +102,7 @@ set nocompatible               " be iMproved
 	 " Track the engine.
 	 "::
 	 "Plugin 'SirVer/ultisnips'
+
 
 	 " make YCM compatible with UltiSnips (using supertab)
 	 let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
@@ -131,30 +144,34 @@ set nocompatible               " be iMproved
 	 " :LivedownToggle
 	 Plugin 'shime/vim-livedown'
 
-	 " Syntax support for  github-flavored markdown
-	 Plugin 'gabrielelana/vim-markdown'
-
 	 " ***********************
 	 " vim-scripts repos
 	 " ***********************
 	 Plugin 'L9'
 	 Plugin 'keepcase.vim'
+	 " Handle delimited files (.csv, .tsv, etc.)
+	 "   See http://vimawesome.com/plugin/csv-vim
+	 "   If a file is .txt, tell vim it's delimited with:
+	 "   :set filetype=csv
+	 Plugin 'csv.vim'
+
 	 
 	 " ***********************
 	 " non github repos
+	 " gist, bitbucket, etc.
 	 " ***********************
-	 
-	 " This script makes :q close both current file and NERDtree
-	 " TODO look at line 130. It appears to be a dup with this.
+
+	 " Currently none in use, but here's a placeholder example:
 	 "Plugin 'https://gist.github.com/8290763.git'
 
 	 " ***********************
-	 " git repos on your local machine (ie. when working on your own plugin)
+	 " git repos on your local machine
+	 " (ie. when working on your own plugin)
 	 " ***********************
-	 " Plugin 'file:///Users/ariutta/.vim/bundle/Css-Pretty2/plugin/csspretty.vim'
-	 " Plugin 'file:///Users/ariutta/.vim/bundle/FixCSS.vim'
-	 " Plugin 'file:///Users/gmarik/path/to/plugin'
-	 " ...
+	 "
+	 " Currently none in use, but here are two placeholder examples:
+	 "Plugin 'file:///Users/ariutta/.vim/bundle/Css-Pretty2/plugin/csspretty.vim'
+	 "Plugin 'file:///Users/ariutta/.vim/bundle/FixCSS.vim'
 
 	 call vundle#end()
  
@@ -162,7 +179,7 @@ set nocompatible               " be iMproved
 	 filetype plugin indent on     " required!
 
  " ***********************
- " My custom additions to .vimrc
+ " My customizations to .vimrc
  " ***********************
  
  	 " powerline enhances the status bar in vim.
@@ -214,39 +231,30 @@ set nocompatible               " be iMproved
 	 " from http://superuser.com/questions/815416/hitting-enter-in-the-quickfix-window-doesnt-work
 	 autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
 	 
-	 "Show hidden files in NerdTree
-	 let NERDTreeShowHidden=1
-
-	 "autopen NERDTree
-	 autocmd VimEnter * NERDTree
-	 "focus cursor in new document
-	 autocmd VimEnter * wincmd p
-	 " Open NERDTree with CTRL-n
-	 map <C-n> :NERDTreeToggle<CR>
-	 "close NERDTree if it's the only buffer left open
-	 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
-
-	 " I think this just enables using colors to show language syntax.
+	 " Enables using colors to show language syntax (I think?)
 	 syntax enable
 
 	 " colorscheme
 	 set background=dark
 	 colorscheme solarized
 
+	 " make csv.vim recognize the pound sign as indicating a comment
+	 let g:csv_comment = '#'
+
 	 " settings for Syntastic, the syntax helper
 	 let g:syntastic_mode_map = { 'mode': 'active',
 		\ 'active_filetypes': [],
 		\ 'passive_filetypes': [] }
-	 " display errors from multiple checkers, e.g., jshint and jscs
-	 let g:syntastic_aggregate_errors = 1
+	 " Enable this option to tell syntastic to always stick any detected
+	 " errors into the loclist:
+	 let g:syntastic_always_populate_loc_list=1
 
-	 " use jshint and jscs for javascript
-	 " install jscs with "npm install -g jscs"
-	 " and jshint with "npm install -g jshint"
+	 " use eslint for javascript
+	 " install eslint with "npm install -g eslint"
 	 "let g:loaded_syntastic_typescript_tsc_checker = ['tsc']
 	 let g:syntastic_typescript_checkers = ['tslint', 'tsc']
-	 let g:syntastic_javascript_checkers = ['jshint', 'jscs']
-	 let g:syntastic_html_checkers = ['jshint', 'jscs']
+	 let g:syntastic_javascript_checkers = ['eslint']
+	 let g:syntastic_html_checkers = ['eslint']
 
 	 " make Syntastic work with ng-whatever from angular
 	 " first, install the HTML5 version of HTML Tidy
@@ -343,21 +351,32 @@ set nocompatible               " be iMproved
 	 "
 	 " (TODO: at one point I did something like download solarized color scheme files and set a different default font for the terminal. What were the steps?)
 	 "
-	 " 1) Get the current homebrew version of python from terminal:
-	 " 	python --version
-	 " 2) Run the following commands (use your version in place of the specified version, and check that the directories you’re changing from actually exist, because you may get a value like “Python 2.7.10” from —version but actually need to use a value like “2.7.10_2”):
+	 " Unless stated otherwise, commands are to be run from the terminal
+	 "
+	 " 1) brew unpin python macvim
+	 " 	# not really needed, because `brew upgrade python`
+	 " 	# will ignore pinning, but I'm showing it here to demonstrate
+	 " 	# usage of brew pin/unpin.
+	 " 	# Note: haven't actually tested this command yet
+	 " 2) brew upgrade python
+	 " 3) python --version # Determine the current homebrew version of python
+	 " 4) Run the following commands. (Use your version in place of the specified version, and
+	 "    check that the directories you’re changing from actually exist, because you may get a
+	 "    value like “Python 2.7.10” from `python —version` but actually need to use a value
+	 "    like “2.7.10_2”):
 	 " 	cd /System/Library/Frameworks/Python.framework/Versions
 	 " 	sudo mv Current Current-sys
 	 " 	sudo mv 2.7 2.7-sys
-	 " 	sudo ln -s /usr/local/Cellar/python/2.7.11/Frameworks/Python.framework/Versions/2.7 Current
-	 " 	sudo ln -s /usr/local/Cellar/python/2.7.11/Frameworks/Python.framework/Versions/2.7 2.7
+	 " 	sudo ln -s /usr/local/Cellar/python/2.7.12/Frameworks/Python.framework/Versions/2.7 Current
+	 " 	sudo ln -s /usr/local/Cellar/python/2.7.12/Frameworks/Python.framework/Versions/2.7 2.7
 	 " 	brew rm macvim # optional, only if you had it installed previously  
 	 " 	brew install macvim --with-override-system-vim
 	 " 	sudo mv Current-sys Current
 	 " 	sudo mv 2.7-sys 2.7
-	 " 3) Open Vim and run :PluginInstall (may take a long time)
-	 " 4) Finish installing tern (instructions in Vundle section above)
-	 " 5) Compile YouCompleteMe (instructions in Vundle section above)
+	 " 5) Open Vim and run :PluginInstall (may take a long time)
+	 " 6) Finish installing tern (instructions in Vundle section above)
+	 " 7) Compile YouCompleteMe (instructions in Vundle section above)
+	 " 8) brew pin python macvim
 	 "
 	 " The steps above were modified from the instructions here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
