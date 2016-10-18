@@ -9,7 +9,7 @@ set nocompatible               " be iMproved
 	" This is a workaround for a bug that affects Vundle.
 	" filetype is turned back on at the end of this
 	" Vundle section.
-	 filetype off                   " required!
+	 filetype off " required!
 
 	 set rtp+=~/.vim/bundle/Vundle.vim/
 	 call vundle#begin()
@@ -153,6 +153,10 @@ set nocompatible               " be iMproved
 	 " :LivedownToggle
 	 Plugin 'shime/vim-livedown'
 
+	 " vim-only installation of powerline 
+	 " (Disabled, because I am using the system-wide installation, as detailed in the customization section)
+	 "Plugin 'powerline/powerline', {'rtp': 'powerline/bindings/vim/'}
+
 	 " ***********************
 	 " vim-scripts repos
 	 " ***********************
@@ -196,7 +200,8 @@ set nocompatible               " be iMproved
 	 "
  	 " Powerline Installation Instructions: https://powerline.readthedocs.org/en/latest/installation.html
 	 "
-	 " The following are the steps that worked for me on OS/X:
+	 " The following are the steps that worked for me for a system-wide
+	 " installation on OS/X:
 	 " A) Run:
 	 " 	pip install powerline-status
 	 " B) Get and install the patched fonts::
@@ -204,10 +209,19 @@ set nocompatible               " be iMproved
 	 "  	cd ./fonts
 	 " 	bash ./install.sh
 	 " C) Set terminal and MacVim to use 'Liberation Mono for Powerline'
-	 " D) Add the following lines to your .vimrc (taken from https://powerline.readthedocs.org/en/latest/usage/other.html#vim-statusline):
+	 " D) Add terminal bindings to .bashrc/.bash_profile
+	 "    # Enable Powerline
+	 "    powerline-daemon -q
+	 "    POWERLINE_BASH_CONTINUATION=1
+	 "    POWERLINE_BASH_SELECT=1
+	 "    # This worked on Mac OS/X. Might need to get pip/powerline repository directory another way for other OS's.
+	 "    source "$(pip show powerline-status | grep Location | sed 's/Location:\ )/powerline/bindings/bash/powerline.sh") 
+	 " E) Add the following lines to your .vimrc (taken from https://powerline.readthedocs.org/en/latest/usage/other.html#vim-statusline):
 	 python from powerline.vim import setup as powerline_setup
 	 python powerline_setup()
 	 python del powerline_setup
+	 " always show statusline
+	 set laststatus=2
 
 	 " F5 inserts current date as markdown header
 	 nnoremap <silent> <F5> a<C-R>=strftime('%Y-%m-%d %a')<CR><CR>===============<CR><CR><Esc>
