@@ -61,15 +61,21 @@ set nocompatible               " be iMproved
 	 " automatic closing of quotes, parenthesis, brackets, etc.
 	 Plugin 'Raimondi/delimitMate'
 
-	 " pretty colors
+	 " Pretty colors
+	 " Installation:
+	 " 	A) Download and unzip http://ethanschoonover.com/solarized/files/solarized.zip
+	 " 	B) If using iTerm2, import the colors:
+	 " 		Preferences > Profiles > Colors > Load Presets > Import >
+	 " 			solarized/iterm2-colors-solarized/Solarized Dark.itermcolors
+	 " 	C) Repeat for Solarized Light.itermcolors
 	 Plugin 'altercation/vim-colors-solarized'
 
 	 " git wrapper
 	 "   For screencasts on how to use:
-	 "     https://github.com/tpope/vim-fugitive#screencasts
+	 "   https://github.com/tpope/vim-fugitive#screencasts
 	 "   To compare a file across branches:
-	 "     Gedit master:myfile.txt
-    	 "     Gdiff dev:myfile.txt
+	 "   Gedit master:myfile.txt
+     "   Gdiff dev:myfile.txt
 	 Plugin 'tpope/vim-fugitive'
 
 	 Plugin 'tpope/vim-abolish'
@@ -83,17 +89,20 @@ set nocompatible               " be iMproved
 	 Plugin 'ervandew/supertab'
 
 	 " YouCompleteMe provides autocomplete functionality.
-	 " Before running :PluginInstall, make sure Vim was compiled
-	 " with Python support. To do this, run:
+	 " Before running :PluginInstall, make sure Vim was compiled with Python support:
 	 " 	:python import sys; print(sys.version)
-	 " If it doesn't print a Python version, recompile with Python
-	 " support as described in the Help section at the bottom of this file.
+	 " 
+	 "	If it doesn't print a Python version, recompile with Python
+	 " 	support as described in the Help section at the bottom of this file.
 	 "
-	 " After ensuring Python support,
-	 " run :PluginInstall (may take a long time),
-	 " finish installing tern,
-	 " then compile YouCompleteMe:
-	 " 	~/.vim/bundle/YouCompleteMe/install.py --clang-completer
+	 " After ensuring Python support:
+	 " 	A) Open .vimrc and run :PluginInstall (may take a long time),
+	 " 	B) Finish installing tern (as described near Plugin 'marijnh/tern_for_vim' above)
+	 "	C) Check whether cmake is installed, and if not, install it:
+	 "		which cmake
+	 "		brew install cmake # only if above command returned nothing
+	 " 	D) Compile YouCompleteMe:
+	 " 		~/.vim/bundle/YouCompleteMe/install.py --clang-completer
 	 Plugin 'Valloric/YouCompleteMe'
 
 	 Plugin 'Valloric/MatchTagAlways'
@@ -184,17 +193,18 @@ set nocompatible               " be iMproved
  
  	 " powerline enhances the status bar in vim.
 	 " It can also work for bash, etc.
- 	 " To install powerline:
-	 " https://powerline.readthedocs.org/en/latest/installation.html
-	 " On OSX, the steps were:
-	 " $ pip install powerline-status
-	 " Get the patched fonts: https://github.com/powerline/fonts
-	 " $ git clone git@github.com:powerline/fonts.git
-	 " $ cd ./fonts
-	 " $ bash ./install.sh
-	 " Set terminal and MacVim to use 'Liberation Mono for Powerline'
-	 " Then add the following here to .vimrc, as taken from:
-	 " https://powerline.readthedocs.org/en/latest/usage/other.html#vim-statusline
+	 "
+ 	 " Powerline Installation Instructions: https://powerline.readthedocs.org/en/latest/installation.html
+	 "
+	 " The following are the steps that worked for me on OS/X:
+	 " A) Run:
+	 " 	pip install powerline-status
+	 " B) Get and install the patched fonts::
+	 "  	git clone https://github.com/powerline/fonts.git
+	 "  	cd ./fonts
+	 " 	bash ./install.sh
+	 " C) Set terminal and MacVim to use 'Liberation Mono for Powerline'
+	 " D) Add the following lines to your .vimrc (taken from https://powerline.readthedocs.org/en/latest/usage/other.html#vim-statusline):
 	 python from powerline.vim import setup as powerline_setup
 	 python powerline_setup()
 	 python del powerline_setup
@@ -218,7 +228,7 @@ set nocompatible               " be iMproved
 	 let g:ctrlp_map = '<c-p>'
 	 let g:ctrlp_cmd = 'CtrlP'
 	 " ignore files for CtrlP
-	 set wildignore+=*/.git/*,*.git,*/node_modules/*,*/frontend\/lib/*     " All
+	 set wildignore+=*/.git/*,*.git,*/node_modules/*,*/js-compiled/*,*/frontend\/lib/*     " All
 	 set wildignore+=*/tmp/*,*.so,*.swp,*.zip     " MacOSX/Linux
 	 "set wildignore+=*\\tmp\\*,*.swp,*.zip,*.exe  " Windows
 	 let g:ctrlp_custom_ignore = '\v[\/]\.(git|hg|svn)$'
@@ -349,34 +359,38 @@ set nocompatible               " be iMproved
 	 "
 	 " *** Install Vim and MacVim on OS/X
 	 "
-	 " (TODO: at one point I did something like download solarized color scheme files and set a different default font for the terminal. What were the steps?)
+	 " A) Check whether python (not python3) is included in list of items installed via brew:
+	 " 	brew list
 	 "
-	 " Unless stated otherwise, commands are to be run from the terminal
-	 "
-	 " 1) brew unpin python macvim
-	 " 	# not really needed, because `brew upgrade python`
-	 " 	# will ignore pinning, but I'm showing it here to demonstrate
-	 " 	# usage of brew pin/unpin.
-	 " 	# Note: haven't actually tested this command yet
-	 " 2) brew upgrade python
-	 " 3) python --version # Determine the current homebrew version of python
-	 " 4) Run the following commands. (Use your version in place of the specified version, and
-	 "    check that the directories you’re changing from actually exist, because you may get a
-	 "    value like “Python 2.7.10” from `python —version` but actually need to use a value
-	 "    like “2.7.10_2”):
-	 " 	cd /System/Library/Frameworks/Python.framework/Versions
-	 " 	sudo mv Current Current-sys
-	 " 	sudo mv 2.7 2.7-sys
-	 " 	sudo ln -s /usr/local/Cellar/python/2.7.12/Frameworks/Python.framework/Versions/2.7 Current
-	 " 	sudo ln -s /usr/local/Cellar/python/2.7.12/Frameworks/Python.framework/Versions/2.7 2.7
-	 " 	brew rm macvim # optional, only if you had it installed previously  
-	 " 	brew install macvim --with-override-system-vim
+	 " 	1) If no, install macvim: 
+	 " 		brew rm macvim # optional, only if you had it installed previously  
+	 " 		brew install macvim --with-override-system-vim
+	 " 	2) If yes
+	 "		a) get the current homebrew version of python from terminal:
+	 " 			python --version
+	 "		b) symlink to homebrew python (use your version in place of the specified version, and
+	 "                 check that the directories you’re changing from actually exist, because you may get a
+	 "                 value like “Python 2.7.10” from —version but actually need to use a value like “2.7.10_2”):
+	 " 			cd /System/Library/Frameworks/Python.framework/Versions
+	 " 			sudo mv Current Current-sys
+	 " 			sudo mv 2.7 2.7-sys
+	 " 			sudo ln -s /usr/local/Cellar/python/2.7.11/Frameworks/Python.framework/Versions/2.7 Current
+	 " 			sudo ln -s /usr/local/Cellar/python/2.7.11/Frameworks/Python.framework/Versions/2.7 2.7
+	 "		c) install macvim as per step 1) above
+	 " B) Install vundle:
+	 "	git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+	 " C) Open ~/.vimrc in Vim and run :PluginInstall (may take a long time)
+	 " D) Finish installing tern (instructions in Vundle section above)
+	 " E) Compile YouCompleteMe (instructions in Vundle section above)
+	 " F) Install powerline (instructions in custom section above)
+	 " G) Install solarized color scheme for terminal (instructions in Vundle section above)
+	 " H) If python was installed via brew (point A.2. above), revert the python symlinks:
+	 "	cd /System/Library/Frameworks/Python.framework/Versions
+	 " 	sudo rm Current
 	 " 	sudo mv Current-sys Current
+	 " 	sudo rm 2.7
 	 " 	sudo mv 2.7-sys 2.7
-	 " 5) Open Vim and run :PluginInstall (may take a long time)
-	 " 6) Finish installing tern (instructions in Vundle section above)
-	 " 7) Compile YouCompleteMe (instructions in Vundle section above)
-	 " 8) brew pin python macvim
+	 " I) brew pin python macvim # python and macvim not incl/ in generic "brew upgrade"
 	 "
 	 " The steps above were modified from the instructions here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
