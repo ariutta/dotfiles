@@ -273,10 +273,14 @@ set nocompatible               " be iMproved
 	 " errors into the loclist:
 	 let g:syntastic_always_populate_loc_list=1
 
+	 " TypeScript checkers
+	 let g:loaded_syntastic_typescript_tsc_checker = ['tsc']
+	 let g:syntastic_typescript_tsc_args = ['--jsx react']
+	 " I'm not using tslint at present
+	 "let g:syntastic_typescript_checkers = ['tslint']
+
 	 " use eslint for javascript
 	 " install eslint with "npm install -g eslint"
-	 "let g:loaded_syntastic_typescript_tsc_checker = ['tsc']
-	 let g:syntastic_typescript_checkers = ['tslint', 'tsc']
 	 let g:syntastic_javascript_checkers = ['eslint']
 	 let g:syntastic_html_checkers = ['eslint']
 
