@@ -22,6 +22,9 @@ set nocompatible               " be iMproved
 	 " original (not a fork) repos on github
 	 " ***********************
 
+	 " format code
+	 Plugin 'sbdchd/neoformat'
+
 	 " make vim syntax-aware
 	 Plugin 'scrooloose/syntastic'
 
@@ -44,6 +47,10 @@ set nocompatible               " be iMproved
 
 	 " typescript syntax
 	 Plugin 'leafgarland/typescript-vim'
+	 " tsuquyomi provides typescript autoomplete, error checking and more.
+	 " it depends on vimproc.vim.
+	 Plugin 'Shougo/vimproc.vim'
+	 Plugin 'Quramy/tsuquyomi'
 
 	 " js and ts indenting
 	 Plugin 'jason0x43/vim-js-indent'
@@ -133,11 +140,10 @@ set nocompatible               " be iMproved
 
 	 " ctrlp makes it easier to open files, buffers, etc.
 	 " Call it with :CtrlPMixed or Ctrl+p
-	 Plugin 'kien/ctrlp.vim'
+	 Plugin 'ctrlpvim/ctrlp.vim'
 	 " This C extension speeds up ctrlp's finder.
 	 " After running PluginInstall, you need to finish installation,
-	 "   cd ~/.vim/bundle/ctrlp-cmatcher
-	 "   ./install.sh
+	 "   cd ~/.vim/bundle/ctrlp-cmatcher && ./install.sh
 	 " Further info:
 	 " https://github.com/JazzCore/ctrlp-cmatcher/
 	 Plugin 'JazzCore/ctrlp-cmatcher'
@@ -241,14 +247,17 @@ set nocompatible               " be iMproved
 	 " add commands for initiating CtrlP
 	 let g:ctrlp_map = '<c-p>'
 	 let g:ctrlp_cmd = 'CtrlP'
-	 " ignore files for CtrlP
-	 set wildignore+=*/.git/*,*.git,*/node_modules/*,*/js-compiled/*,*/frontend\/lib/*     " All
+	 " ignore files for CtrlP (Mac/Linux)
+	 " (For Windows, see https://github.com/ctrlpvim/ctrlp.vim)
 	 set wildignore+=*/tmp/*,*.so,*.swp,*.zip     " MacOSX/Linux
-	 "set wildignore+=*\\tmp\\*,*.swp,*.zip,*.exe  " Windows
+
 	 let g:ctrlp_custom_ignore = '\v[\/]\.(git|hg|svn)$'
-	 " Use a custom file listing command
-	 "let g:ctrlp_user_command = 'find %s -type f'        " MacOSX/Linux
-	 " let g:ctrlp_user_command = 'dir %s /-n /b /s /a-d'  " Windows
+	 let g:ctrlp_custom_ignore = {
+				 \ 'dir':  '\v[\/]\.(git|hg|svn)$',
+				 \ 'file': '\v\.(exe|so|dll)$',
+				 \ 'link': 'some_bad_symbolic_links',
+				 \ }
+	 let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
 
 	 " In the quickfix window, <CR> is used to jump to the error under the
 	 " cursor, so undefine the mapping there.
@@ -265,6 +274,16 @@ set nocompatible               " be iMproved
 	 " make csv.vim recognize the pound sign as indicating a comment
 	 let g:csv_comment = '#'
 
+	 " auto-format on save (e.g., apply prettier to *.ts and *.js)
+	 augroup fmt
+		 autocmd!
+		 " it would be better to specify a whitelist of file formats
+		 " handled by Neoformat, but I don't know how to do that,
+		 " so I'm specifying a list of formats NOT handled.
+		 let ignorelist = ['vim', 'gitignore', 'npmignore']
+		 autocmd BufWritePre * if index(ignorelist, &ft) < 0 | Neoformat
+	 augroup END
+
 	 " settings for Syntastic, the syntax helper
 	 let g:syntastic_mode_map = { 'mode': 'active',
 		\ 'active_filetypes': [],
@@ -274,14 +293,18 @@ set nocompatible               " be iMproved
 	 let g:syntastic_always_populate_loc_list=1
 
 	 " TypeScript checkers
-	 let g:loaded_syntastic_typescript_tsc_checker = ['tsc']
-	 let g:syntastic_typescript_tsc_args = ['--jsx react']
+	 " Make tsuquyomi output display in syntastic gutter (disabled now bc it freezes vim for minutes)
+	 "let g:tsuquyomi_disable_quickfix = 1
+	 let g:syntastic_typescript_checkers = ['tsuquyomi']
 	 " I'm not using tslint at present
 	 "let g:syntastic_typescript_checkers = ['tslint']
 
 	 " use eslint for javascript
 	 " install eslint with "npm install -g eslint"
 	 let g:syntastic_javascript_checkers = ['eslint']
+	 " strangely, when g:tsuquyomi_disable_quickfix is set to 1, I needed
+	 " to add tsuquyomi as below to make the errors to show in the gutter
+	 "let g:syntastic_javascript_checkers = ['eslint', 'tsuquyomi']
 	 let g:syntastic_html_checkers = ['eslint']
 
 	 " make Syntastic work with ng-whatever from angular
@@ -327,39 +350,8 @@ set nocompatible               " be iMproved
 
 	 " Use Google's JS indent style for typescript
 	 autocmd FileType typescript setlocal shiftwidth=2 tabstop=2
-
-	 " Run TypeScript formatter on current file with `\tsf`
-	 " Before running, need to install npm dependencies:
-	 " npm install -g typescript typescript-formatter
-	 funct! Tsfmt()
-		 let current_line = line(".")
-		 redir => output
-		 silent exec "!tsfmt " . expand('%:p')
-		 redir END
-		 let output = substitute(output, "
-", "", "g")
-		 let @o = output
-		 silent execute "1,$d"
-		 silent execute "put o"
-		 " TODO we are currently clipping the first two lines
-		 " from the formatted result because they are not the
-		 " desired code but instead are just print logs saying
-		 " we ran the ts formatter.
-		 " Check why are we getting log-style lines included
-		 " in stdout?
-		 silent execute "1,3d"
-		 " TODO removing the last line, because it's blank.
-		 " This seems like the wrong spot to do this.
-		 " Why is this still being added, even though I've
-		 " set .editorconfig and tslint.json to indicate
-		 " NOT adding a final newline?
-		 :execute "normal! Gdd"
-		 :execute "normal! " current_line . "G"
-		 " Note we need to return something in order for
-		 " us to get the cursor back to its original line.
-		 return ""
-	 endfunct!
-	 nmap <leader>tsf :silent execute Tsfmt()<CR>
+	 " and for JSON
+	 autocmd FileType json setlocal shiftwidth=2 tabstop=2
 
 	 " disable arrow keys
 	 map <up> <nop>
@@ -398,17 +390,25 @@ set nocompatible               " be iMproved
 	 " B) Install vundle:
 	 "	git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 	 " C) Open ~/.vimrc in Vim and run :PluginInstall (may take a long time)
-	 " D) Finish installing tern (instructions in Vundle section above)
-	 " E) Compile YouCompleteMe (instructions in Vundle section above)
-	 " F) Install powerline (instructions in custom section above)
-	 " G) Install solarized color scheme for terminal (instructions in Vundle section above)
-	 " H) If python was installed via brew (point A.2. above), revert the python symlinks:
+	 " D) Install Tsuquyomi (typescript autocomplete, error checking and more)
+	 " 	1) Install and compile procvim.vim
+	 "    		git clone https://github.com/Shougo/vimproc.vim.git ~/.vim/bundle/vimproc.vim
+ 	 "    		pushd ~/.vim/bundle/vimproc.vim
+ 	 "    		make
+ 	 "    		popd
+	 "    	2) Install Tsuquyomi
+	 "    		git clone https://github.com/Quramy/tsuquyomi.git ~/.vim/bundle/tsuquyomi
+	 " E) Finish installing tern (instructions in Vundle section above)
+	 " F) Compile YouCompleteMe (instructions in Vundle section above)
+	 " G) Install powerline (instructions in custom section above)
+	 " H) Install solarized color scheme for terminal (instructions in Vundle section above)
+	 " I) If python was installed via brew (point A.2. above), revert the python symlinks:
 	 "	cd /System/Library/Frameworks/Python.framework/Versions
 	 " 	sudo rm Current
 	 " 	sudo mv Current-sys Current
 	 " 	sudo rm 2.7
 	 " 	sudo mv 2.7-sys 2.7
-	 " I) brew pin python macvim # python and macvim not incl/ in generic "brew upgrade"
+	 " J) brew pin python macvim # python and macvim not incl/ in generic "brew upgrade"
 	 "
 	 " The steps above were modified from the instructions here:
 	 " http://stackoverflow.com/questions/11148403/homebrew-macvim-with-python2-7-3-support-not-working/12697440#12697440
