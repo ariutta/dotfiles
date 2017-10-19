@@ -1,4 +1,6 @@
 *
+!.public.profile
+!.public.bashrc
 !.vimrc
 !.jshintrc
 !.jscsrc
