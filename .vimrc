@@ -281,7 +281,7 @@ set nocompatible               " be iMproved
 		 " handled by Neoformat, but I don't know how to do that,
 		 " so I'm specifying a list of formats NOT handled.
 		 let ignorelist = ['vim', 'gitignore', 'npmignore']
-		 autocmd BufWritePre * if index(ignorelist, &ft) < 0 | Neoformat
+		 autocmd BufWritePre '*' if index(ignorelist, &ft) < 0 | Neoformat
 	 augroup END
 
 	 " settings for Syntastic, the syntax helper
@@ -346,7 +346,7 @@ set nocompatible               " be iMproved
 	 inoremap jk <Esc>
 
 	 " enable indent guides by default
-	 autocmd BufReadPre,FileReadPre * :IndentGuidesEnable
+	 autocmd BufReadPre,FileReadPre '*' :IndentGuidesEnable
 
 	 " Use Google's JS indent style for typescript
 	 autocmd FileType typescript setlocal shiftwidth=2 tabstop=2
