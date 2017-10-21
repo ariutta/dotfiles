@@ -4,7 +4,7 @@ Set configuration for my dev environment.
 
 ## First-Time Setup
 
-Install powerline
+Install powerline (or at least just the [fonts](https://github.com/powerline/fonts))
 
 [Install bash-it](https://github.com/Bash-it/bash-it#install)
 
