@@ -274,15 +274,8 @@ set nocompatible               " be iMproved
 	 " make csv.vim recognize the pound sign as indicating a comment
 	 let g:csv_comment = '#'
 
-	 " auto-format on save (e.g., apply prettier to *.ts and *.js)
-	 augroup fmt
-		 autocmd!
-		 " it would be better to specify a whitelist of file formats
-		 " handled by Neoformat, but I don't know how to do that,
-		 " so I'm specifying a list of formats NOT handled.
-		 let ignorelist = ['vim', 'gitignore', 'npmignore']
-		 autocmd BufWritePre '*' if index(ignorelist, &ft) < 0 | Neoformat
-	 augroup END
+	 " auto-format on save (e.g., apply prettier to *.ts files)
+	 autocmd BufWritePre *.ts,*.tsx,*.js,*.jsx,*.json,*.py Neoformat
 
 	 " settings for Syntastic, the syntax helper
 	 let g:syntastic_mode_map = { 'mode': 'active',
