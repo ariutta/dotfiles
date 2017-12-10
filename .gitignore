@@ -1,7 +1,7 @@
 *
 !README.md
-!.public.profile
-!.public.bashrc
+!.profile.public
+!.bashrc.public
 !.vimrc
 !.jshintrc
 !.jscsrc
