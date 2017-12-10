@@ -24,11 +24,13 @@ if [ "$(uname)" == "Darwin" ]; then
 	# But you can import your SSH keys into Keychain using this command:
 	/usr/bin/ssh-add -K
 
-	## TODO the code below doesn't seem to be needed anymore -- cls works w/out it on macOS now. Why?
-	##      Is this defined somewhere else too? 
-	##      Does bash_it define this?
-	##      Did Apple add it to Terminal.app?
-	##      something else?
+	## TODO the code below doesn't seem to be needed anymore -- cls works w/out it on macOS now
+	##      (at least in Terminal.app). I remember it not working before. Why?
+	##      * Is this defined somewhere else? 
+	##      * Does bash_it define this?
+	##      * Did Apple add it to Terminal.app?
+	##      * Was I using iTerm2 before, not Terminal.app?
+	##      * Something else?
 	##
 	## cls: clear terminal buffer.
 	## Uses Apple Script, so only works on macOS.

@@ -20,8 +20,8 @@ bash-it enable plugin jenv virtualenv
 
 Add this to .profile:
 ```sh
-if [ -f ~/.public.profile ]; then
-   source ~/.public.profile
+if [ -f ~/.profile.public ]; then
+   source ~/.profile.public
 fi
 ```
 
@@ -34,8 +34,8 @@ fi
 
 Add this to .bashrc: 
 ```sh
-if [ -f ~/.public.bashrc ]; then
-   source ~/.public.bashrc
+if [ -f ~/.bashrc.public ]; then
+   source ~/.bashrc.public
 fi
 ```
 
@@ -56,7 +56,7 @@ fi
 * .bash_profile
     * bash login shells
     * Terminal.app treats every new terminal window as a login shell, so it runs this every time a new terminal window is opened
-* .public.profile, .public.bashrc: include these in my dotfiles
+* .profile.public, .bashrc.public: include these in my dotfiles
 
 [More information](https://serverfault.com/questions/261802/what-are-the-functional-differences-between-profile-bash-profile-and-bashrc)
 
