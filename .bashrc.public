@@ -7,4 +7,4 @@
 #                                                                                     
 # Warning: this file will be made public online. Only include publicly shareable data.
 
-# see ~/README.md re: differences between .profile, .bashrc, .bash_profile, etc.
+# see ~/README.md for details on purposes of .profile .profile.public .bashrc .bashrc.public .bash_profile
