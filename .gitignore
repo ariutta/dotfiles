@@ -9,4 +9,5 @@
 !.gitignore_global
 !.gitconfig_sample
 !dev_helper_scripts/
-.Rproj.user
+!vim.nix
+!ariutta.nix
