@@ -49,6 +49,9 @@ if [[ "$PATH" != *"$DEV_HELPER_SCRIPTS_PATH"* ]]; then
 	export PATH="$DEV_HELPER_SCRIPTS_PATH:$PATH"
 fi
 
+# This seems to be needed in order to make ariutta.nix be able to use terms like unstablepkgs and stablepkgs
+NIX_PATH=/nix/var/nix/profiles/per-user/root/channels:unstablepkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixpkgs-unstable.tar.gz:stablepkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixos-17.09.tar.gz
+
 # Don't check mail when opening terminal.
 unset MAILCHECK
 

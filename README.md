@@ -4,6 +4,38 @@ Set configuration for my dev environment.
 
 ## First-Time Setup
 
+```sh
+git clone git@github.com:ariutta/dotfiles.git
+```
+
+### Nix:
+Install Nix.
+
+Set the channels:
+```sh
+nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstablepkgs
+nix-channel --add https://nixos.org/channels/nixos-17.09 stablepkgs
+stablepkgs=https://nixos.org/channels/nixos-17.09
+NIX_PATH=/nix/var/nix/profiles/per-user/root/channels:unstablepkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixpkgs-unstable.tar.gz:stablepkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixos-17.09.tar.gz
+```
+
+TODO: what is the relationship between `nix-channel --add ...` and `NIX_PATH`? It seems that `ariutta.nix` reads `NIX_PATH`, not the channels I set. Should I just rely on `NIX_PATH`, or is there a better way of handling this?
+
+If needed, you can test the channels with this command:
+```sh
+nix-env -iA stablepkgs.jq 
+```
+
+Install packages managed by Nix with this command:
+```sh
+nix-env -f ariutta.nix -ri
+```
+
+Note there is a file "/etc/nix/nix.conf" on macOS. This might be relevant to declarative package management for macOS.
+
+### Non-Nix:
+TODO: use Nix to install these as well.
+
 Install powerline (or at least just the [fonts](https://github.com/powerline/fonts))
 
 [Install bash-it](https://github.com/Bash-it/bash-it#install)
@@ -88,3 +120,11 @@ fi
 `.profile.public`
 
 [More information](https://serverfault.com/questions/261802/what-are-the-functional-differences-between-profile-bash-profile-and-bashrc)
+
+## Updating Nix
+
+```sh
+nix-channel --update
+nix-env -f ariutta.nix -ri
+# nix-env -u '*' # why doesn't this work?
+```
