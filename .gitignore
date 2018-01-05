@@ -11,3 +11,8 @@
 !dev_helper_scripts/
 !vim.nix
 !ariutta.nix
+!tosheets/
+tosheets/*
+!tosheets/requirements.nix
+!tosheets/requirements_frozen.txt
+!tosheets/requirements_override.nix
