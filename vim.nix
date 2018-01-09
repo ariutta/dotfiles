@@ -111,6 +111,8 @@ pkgs.vim_configurable.customize {
 				 \ ]
 	 let g:syntastic_html_tidy_inline_tags=[]
 	 let g:syntastic_html_tidy_empty_tags=["i"]
+   " make syntastic call shellcheck with param to follow files
+   let g:syntastic_sh_shellcheck_args = "-x"
 
 	 " Make ctrlp use the C extension for matching
 	 let g:ctrlp_match_func = {'match' : 'matcher#cmatch' }

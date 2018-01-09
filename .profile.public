@@ -1,3 +1,5 @@
+#!/bin/sh
+# shellcheck disable=SC1090
 # ██████╗ ██╗   ██╗██████╗ ██╗     ██╗ ██████╗     ██████╗ ███╗   ██╗██╗  ██╗   ██╗██╗
 # ██╔══██╗██║   ██║██╔══██╗██║     ██║██╔════╝    ██╔═══██╗████╗  ██║██║  ╚██╗ ██╔╝██║
 # ██████╔╝██║   ██║██████╔╝██║     ██║██║         ██║   ██║██╔██╗ ██║██║   ╚████╔╝ ██║
@@ -18,7 +20,7 @@ export PIP_RESPECT_VIRTUALENV=true
 
 # Make NPM CLI programs available from command line
 NPM_SCRIPTS_PATH="/usr/local/share/npm/bin"
-if [[ "$PATH" != *"$NPM_SCRIPTS_PATH"* ]]; then
+if [ "$PATH" != *"$NPM_SCRIPTS_PATH"* ]; then
 	export PATH="$NPM_SCRIPTS_PATH:$PATH"
 fi
 
@@ -45,12 +47,13 @@ export RSTUDIO_WHICH_R=/usr/local/bin/R
 
 # Make my dev helper scripts available from command line
 DEV_HELPER_SCRIPTS_PATH="$HOME/dev_helper_scripts"
-if [[ "$PATH" != *"$DEV_HELPER_SCRIPTS_PATH"* ]]; then
+if [ "$PATH" != *"$DEV_HELPER_SCRIPTS_PATH"* ]; then
 	export PATH="$DEV_HELPER_SCRIPTS_PATH:$PATH"
 fi
 
-# This seems to be needed in order to make ariutta.nix be able to use terms like unstablepkgs and stablepkgs
-NIX_PATH=/nix/var/nix/profiles/per-user/root/channels:unstablepkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixpkgs-unstable.tar.gz:stablepkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixos-17.09.tar.gz
+# This seems to be needed in order to make ariutta.nix be able to use "import <stablepkgs>"
+#export NIX_PATH=/nix/var/nix/profiles/per-user/root/channels:stablepkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixos-17.09.tar.gz
+export NIX_PATH=/nix/var/nix/profiles/per-user/root/channels
 
 # Don't check mail when opening terminal.
 unset MAILCHECK
@@ -83,7 +86,7 @@ export SCM_CHECK=true
 #export VCPROMPT_EXECUTABLE=~/.vcprompt/bin/vcprompt
 
 # Do on macOS:
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
 	# From GH help docs:
 	# On macOS, ssh-agent will "forget" your key, once it gets restarted during reboots.
 	# But you can import your SSH keys into Keychain using this command:
@@ -124,5 +127,5 @@ if [ -n "$BASH_VERSION" ] && [ -z "$BASH_IT" ]; then
 	# export BASH_IT_AUTOMATIC_RELOAD_AFTER_CONFIG_CHANGE=1
 
 	# Load Bash It
-	source "$BASH_IT/bash_it.sh"
+	. "$BASH_IT/bash_it.sh"
 fi

@@ -13,13 +13,36 @@ Install Nix.
 
 Set the channels:
 ```sh
-nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstablepkgs
+nix-channel --add https://nixos.org/channels/nixpkgs-unstable
 nix-channel --add https://nixos.org/channels/nixos-17.09 stablepkgs
-stablepkgs=https://nixos.org/channels/nixos-17.09
-NIX_PATH=/nix/var/nix/profiles/per-user/root/channels:unstablepkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixpkgs-unstable.tar.gz:stablepkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixos-17.09.tar.gz
 ```
 
-TODO: what is the relationship between `nix-channel --add ...` and `NIX_PATH`? It seems that `ariutta.nix` reads `NIX_PATH`, not the channels I set. Should I just rely on `NIX_PATH`, or is there a better way of handling this?
+Set up localpkgs (TODO: haven't fully tested the steps below):
+cd ~/Documents
+git clone git@github.com:ariutta/nixpkgs.git
+cd nixpkgs
+git remote add nixpkgs https://github.com/NixOS/nixpkgs
+cd
+nix-env -f ariutta.nix -ri
+
+To Update:
+```sh
+nix-channel --update
+nix-env -f ariutta.nix -ri
+```
+
+`tosheets` needs to get permission the first time it runs.
+Here's a dummy command to trigger this:
+```sh
+seq 1 10 | tosheets -c B4 --new-sheet=sample-spread-sheet-id-23sdf32543fs
+if browser is on a different machine, may need to use --noauth_local_webserver
+```
+
+TODO: move these over to Nix:
+brew list
+brew cask list
+pip2 list
+
 
 If needed, you can test the channels with this command:
 ```sh
