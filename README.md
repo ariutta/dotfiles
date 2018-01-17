@@ -18,12 +18,14 @@ nix-channel --add https://nixos.org/channels/nixos-17.09 stablepkgs
 ```
 
 Set up localpkgs (TODO: haven't fully tested the steps below):
+```sh
 cd ~/Documents
 git clone git@github.com:ariutta/nixpkgs.git
 cd nixpkgs
 git remote add nixpkgs https://github.com/NixOS/nixpkgs
 cd
 nix-env -f ariutta.nix -ri
+```
 
 To Update:
 ```sh
