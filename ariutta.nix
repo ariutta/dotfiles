@@ -2,6 +2,10 @@
 # https://nixos.org/nixpkgs/manual/#sec-declarative-package-management
 # https://nixos.org/nix/manual/#ssec-relnotes-1.6.0
 
+# Possibly related:
+# https://unix.stackexchange.com/questions/369234/how-to-configure-a-nix-environment-outside-of-nixos
+# https://github.com/ashgillman/dotfiles2/blob/master/install-ubuntu.sh
+
 # See README.md for instructions on installing/updating.
 
 with import <nixpkgs> {config.vim.ftNix = false;};
@@ -17,6 +21,7 @@ in [
   stablepkgs.irssi
   stablepkgs.ripgrep
   pkgs.keepassxc
+  pkgs.imagemagick
   pkgs.nix-repl
   pkgs.nox
   pkgs.pypi2nix

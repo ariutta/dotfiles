@@ -53,7 +53,10 @@ fi
 
 # This seems to be needed in order to make ariutta.nix be able to use "import <stablepkgs>"
 #export NIX_PATH=/nix/var/nix/profiles/per-user/root/channels:stablepkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixos-17.09.tar.gz
-export NIX_PATH=/nix/var/nix/profiles/per-user/root/channels
+#export NIX_PATH=/nix/var/nix/profiles/per-user/root/channels
+#export NIX_PATH=nixpkgs=~/.nix-defexpr/channels
+#export NIX_PATH=/nix/var/nix/profiles/per-user/andersriutta/channels
+export NIX_PATH=~/.nix-defexpr/channels_root:~/.nix-defexpr/channels
 
 # Don't check mail when opening terminal.
 unset MAILCHECK
