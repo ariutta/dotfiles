@@ -109,15 +109,37 @@ if [ "$(uname)" = "Darwin" ]; then
 fi
 
 ####################
+# Bash-it
+# NOTE: it would make quite a bit of sense for this to be
+# located in .bashrc.public, but it needs to happen before
+# nix is sourced, because otherwise, the PS1 env var that
+# makes the prompt for nix-shell green will not display.
+####################
+export BASH_IT="$HOME/.bash_it"
+if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
+	# assume Bash
+	# Path to the bash it configuration
+	export BASH_IT="$HOME/.bash_it"
+	export PATH=$PATH:$BASH_IT
+
+	# Lock and Load a custom theme file
+	# location $HOME/.bash_it/themes/
+	export BASH_IT_THEME="powerline-naked"
+
+	# (Advanced): Uncomment this to make Bash-it reload itself automatically
+	# after enabling or disabling aliases, plugins, and completions.
+	export BASH_IT_AUTOMATIC_RELOAD_AFTER_CONFIG_CHANGE=1
+
+	# Load Bash It
+	if [ -e "$BASH_IT/bash_it.sh" ]; then . "$BASH_IT/bash_it.sh"; fi
+fi
+
+####################
 # Nix settings
 ####################
 
-# This seems to be needed in order to make ariutta.nix be able to use "import <nixos>"
-#export NIX_PATH=/nix/var/nix/profiles/per-user/root/channels:nixos=https://github.com/NixOS/nixpkgs-channels/archive/nixos-17.09.tar.gz
-#export NIX_PATH=/nix/var/nix/profiles/per-user/root/channels
-#export NIX_PATH=nixpkgs=~/.nix-defexpr/channels
-#export NIX_PATH=/nix/var/nix/profiles/per-user/andersriutta/channels
-#export NIX_PATH=~/.nix-defexpr/channels_root:~/.nix-defexpr/channels
+export NIX_REMOTE=daemon
+
 if [ -e "/usr/local/etc/profile.d/nix.sh" ]; then . "/usr/local/etc/profile.d/nix.sh"; fi
 if [ -e "$HOME/.nix-channels" ]; then export NIX_PATH=`cat $HOME/.nix-channels | sed -e "s~\(.*\)\ \(.*\)~\2=$HOME/.nix-defexpr/channels/\2~g" | paste -sd ":" -`; fi
 if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . "$HOME/.nix-profile/etc/profile.d/nix.sh"; fi

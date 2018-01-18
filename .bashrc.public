@@ -11,23 +11,3 @@
 
 # see README.md for details on purposes of .profile .profile.public .bashrc .bashrc.public .bash_profile
 
-####################
-# Bash-it
-####################
-if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
-	# assume Bash
-	# Path to the bash it configuration
-	export BASH_IT="$HOME/.bash_it"
-	export PATH=$PATH:$BASH_IT
-
-	# Lock and Load a custom theme file
-	# location /.bash_it/themes/
-	export BASH_IT_THEME="powerline-multiline"
-
-	# (Advanced): Uncomment this to make Bash-it reload itself automatically
-	# after enabling or disabling aliases, plugins, and completions.
-	# export BASH_IT_AUTOMATIC_RELOAD_AFTER_CONFIG_CHANGE=1
-
-	# Load Bash It
-	if [ -e "$BASH_IT/bash_it.sh" ]; then . "$BASH_IT/bash_it.sh"; fi
-fi
