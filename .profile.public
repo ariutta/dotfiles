@@ -51,13 +51,6 @@ if [ "$PATH" != *"$DEV_HELPER_SCRIPTS_PATH"* ]; then
 	export PATH="$DEV_HELPER_SCRIPTS_PATH:$PATH"
 fi
 
-# This seems to be needed in order to make ariutta.nix be able to use "import <stablepkgs>"
-#export NIX_PATH=/nix/var/nix/profiles/per-user/root/channels:stablepkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixos-17.09.tar.gz
-#export NIX_PATH=/nix/var/nix/profiles/per-user/root/channels
-#export NIX_PATH=nixpkgs=~/.nix-defexpr/channels
-#export NIX_PATH=/nix/var/nix/profiles/per-user/andersriutta/channels
-export NIX_PATH=~/.nix-defexpr/channels_root:~/.nix-defexpr/channels
-
 # Don't check mail when opening terminal.
 unset MAILCHECK
 
@@ -88,11 +81,13 @@ export SCM_CHECK=true
 # https://github.com/djl/vcprompt
 #export VCPROMPT_EXECUTABLE=~/.vcprompt/bin/vcprompt
 
-# Do on macOS:
+# Fixing bug with macOS ssh-agent forgetting keys.
+#    From GH help docs:
+#       On macOS, ssh-agent will "forget" your key, once it gets restarted during reboots.
+#       But you can import your SSH keys into Keychain using this command:
+#       /usr/bin/ssh-add -K
+#    This only runs for macOS:
 if [ "$(uname)" = "Darwin" ]; then
-	# From GH help docs:
-	# On macOS, ssh-agent will "forget" your key, once it gets restarted during reboots.
-	# But you can import your SSH keys into Keychain using this command:
 	/usr/bin/ssh-add -K
 
 	## TODO the code below doesn't seem to be needed anymore -- cls works w/out it on macOS now
@@ -111,24 +106,21 @@ if [ "$(uname)" = "Darwin" ]; then
 	#                osascript -e 'tell application "System Events" to keystroke "k" using command down'
 	#        }
 	#fi
-else
-# Do on non-macOS:
-	if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . "$HOME/.nix-profile/etc/profile.d/nix.sh"; fi # added by Nix installer
 fi
 
-if [ -n "$BASH_VERSION" ] && [ -z "$BASH_IT" ]; then
-	# assume Bash
-	# Path to the bash it configuration
-	export BASH_IT="$HOME/.bash_it"
+####################
+# Nix settings
+####################
 
-	# Lock and Load a custom theme file
-	# location /.bash_it/themes/
-	export BASH_IT_THEME="powerline-multiline"
+# This seems to be needed in order to make ariutta.nix be able to use "import <nixos>"
+#export NIX_PATH=/nix/var/nix/profiles/per-user/root/channels:nixos=https://github.com/NixOS/nixpkgs-channels/archive/nixos-17.09.tar.gz
+#export NIX_PATH=/nix/var/nix/profiles/per-user/root/channels
+#export NIX_PATH=nixpkgs=~/.nix-defexpr/channels
+#export NIX_PATH=/nix/var/nix/profiles/per-user/andersriutta/channels
+#export NIX_PATH=~/.nix-defexpr/channels_root:~/.nix-defexpr/channels
+if [ -e "/usr/local/etc/profile.d/nix.sh" ]; then . "/usr/local/etc/profile.d/nix.sh"; fi
+if [ -e "$HOME/.nix-channels" ]; then export NIX_PATH=`cat $HOME/.nix-channels | sed -e "s~\(.*\)\ \(.*\)~\2=$HOME/.nix-defexpr/channels/\2~g" | paste -sd ":" -`; fi
+if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . "$HOME/.nix-profile/etc/profile.d/nix.sh"; fi
 
-	# (Advanced): Uncomment this to make Bash-it reload itself automatically
-	# after enabling or disabling aliases, plugins, and completions.
-	# export BASH_IT_AUTOMATIC_RELOAD_AFTER_CONFIG_CHANGE=1
-
-	# Load Bash It
-	. "$BASH_IT/bash_it.sh"
-fi
+# Make the Nix packages that were installed as root available to all users
+if [ -d "/nix/var/nix/profiles/default/bin" ]; then PATH="$PATH:/nix/var/nix/profiles/default/bin"; fi

@@ -11,15 +11,16 @@
 with import <nixpkgs> {config.vim.ftNix = false;};
 let
   python = import ./tosheets/requirements.nix { inherit pkgs; };
-  stablepkgs = import <stablepkgs> {};
+  nixos = import <nixos> {};
   # pkgs (from nixpkgs) is from https://nixos.org/channels/nixpkgs-unstable
-  localpkgs = import ./Documents/nixpkgs {};
+  #localpkgs = import ./Documents/nixpkgs {};
   vim = import ./vim.nix;
 in [
-  stablepkgs.jq
-  stablepkgs.wget
-  stablepkgs.irssi
-  stablepkgs.ripgrep
+  nixos.jq
+  nixos.wget
+  nixos.irssi
+  nixos.ripgrep
+  nixos.python36Packages.powerline
   pkgs.keepassxc
   pkgs.imagemagick
   pkgs.nix-repl

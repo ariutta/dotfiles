@@ -5,98 +5,77 @@ Set configuration for my dev environment.
 ## First-Time Setup
 
 ```sh
+cd
 git clone git@github.com:ariutta/dotfiles.git
 ```
 
-### Nix:
-Install Nix.
+### Source the startup scripts in dotfiles
 
-Set the channels:
+If your system uses `.bash_profile`, add this to it to make login shells, macOS terminal emulators (like Terminal.app or iTerm2) and interactive shells all load the same:
 ```sh
-nix-channel --add https://nixos.org/channels/nixpkgs-unstable
-nix-channel --add https://nixos.org/channels/nixos-17.09 stablepkgs
-```
-
-Set up localpkgs (TODO: haven't fully tested the steps below):
-```sh
-cd ~/Documents
-git clone git@github.com:ariutta/nixpkgs.git
-cd nixpkgs
-git remote add nixpkgs https://github.com/NixOS/nixpkgs
-cd
-nix-env -f ariutta.nix -ri
-```
-
-To Update:
-```sh
-nix-channel --update
-nix-env -f ariutta.nix -ri
-```
-
-`tosheets` needs to get permission the first time it runs.
-Here's a dummy command to trigger this:
-```sh
-seq 1 10 | tosheets -c B4 --new-sheet=sample-spread-sheet-id-23sdf32543fs
-if browser is on a different machine, may need to use --noauth_local_webserver
-```
-
-TODO: move these over to Nix:
-brew list
-brew cask list
-pip2 list
-
-
-If needed, you can test the channels with this command:
-```sh
-nix-env -iA stablepkgs.jq 
-```
-
-Install packages managed by Nix with this command:
-```sh
-nix-env -f ariutta.nix -ri
-```
-
-Note there is a file "/etc/nix/nix.conf" on macOS. This might be relevant to declarative package management for macOS.
-
-### Non-Nix:
-TODO: use Nix to install these as well.
-
-Install powerline (or at least just the [fonts](https://github.com/powerline/fonts))
-
-[Install bash-it](https://github.com/Bash-it/bash-it#install)
-
-Enable completions:
-```sh
-bash-it enable completion tmux npm git pip pip3 ssh
-```
-
-Enable plugins:
-```sh
-bash-it enable plugin jenv virtualenv
+if [ -f "$HOME/.profile" ]; then
+	. "$HOME/.profile"
+fi
+if [ -f "$HOME/.bashrc" ]; then
+	. "$HOME/.bashrc"
+fi
 ```
 
 Add this to .profile:
 ```sh
-if [ -f ~/.profile.public ]; then
-   source ~/.profile.public
-fi
-```
-
-If your system uses `.bash_profile`, add this to it to make login shells, macOS terminal emulators (like Terminal.app or iTerm2) and interactive shells all load the same:
-```sh
-if [ -f ~/.profile ]; then
-	. ~/.profile
-fi
-if [ -f ~/.bashrc ]; then
-	. ~/.bashrc
+if [ -f "$HOME/dotfiles/.profile.public" ]; then
+   . "$HOME/dotfiles/.profile.public"
 fi
 ```
 
 Add this to .bashrc: 
 ```sh
-if [ -f ~/.bashrc.public ]; then
-   source ~/.bashrc.public
+if [ -f "$HOME/dotfiles/.bashrc.public" ]; then
+   . "$HOME/dotfiles/.bashrc.public"
 fi
+```
+
+### Nix:
+Install Nix.
+
+If not already set (see `nix-channel --list`), set the channels:
+```sh
+nix-channel --add https://nixos.org/channels/nixpkgs-unstable
+nix-channel --add https://nixos.org/channels/nixos-17.09 nixos
+```
+
+Install packages managed by Nix (same command to update):
+```sh
+nix-channel --update
+nix-env -f dotfiles/ariutta.nix -ri
+```
+
+`tosheets` needs to get permission the first time it runs.
+If browser is on the same machine, you can run a dummy command to trigger this:
+```sh
+seq 1 10 | tosheets -c B4 --new-sheet=sample-spread-sheet-id-23sdf32543fs
+```
+If browser is on a different machine, you should be able to use `--noauth_local_webserver`, but that doesn't currently work with `tosheets`. 
+
+Note there is a file "/etc/nix/nix.conf" on macOS. This might be relevant to declarative package management for macOS.
+
+### Non-Nix:
+TODO: use Nix to install these as well.
+TODO: move these over to Nix:
+brew list
+brew cask list
+pip2 list
+
+[Install bash-it](https://github.com/Bash-it/bash-it#install)
+```sh
+git clone --depth=1 https://github.com/Bash-it/bash-it.git ~/.bash_it
+~/.bash_it/install.sh --no-modify-config
+```
+
+Enable completions and plugins:
+```sh
+bash-it enable completion tmux npm git ssh
+bash-it enable plugin jenv
 ```
 
 ## Purposes of Shell Startup/Config Files
@@ -121,10 +100,13 @@ fi
 
 ## Shell Startup/Config File Execution:
 ### Bash
+```
 * Login shells (initial, one-time) and Terminal.app (always):
           `.bash_profile`
                  |
         -------------------
+        |                 |
+       ???                |
         |                 |
         v                 v
    `.profile`         `.bashrc`
@@ -137,12 +119,15 @@ fi
        |
        v
 `.bashrc.public`              
+```
 
 ### Non-bash login (initial, one-time) shells
+```
    `.profile`
         |
         v
 `.profile.public`
+```
 
 [More information](https://serverfault.com/questions/261802/what-are-the-functional-differences-between-profile-bash-profile-and-bashrc)
 
@@ -150,6 +135,6 @@ fi
 
 ```sh
 nix-channel --update
-nix-env -f ariutta.nix -ri
+nix-env -f dotfiles/ariutta.nix -ri
 # nix-env -u '*' # why doesn't this work?
 ```
