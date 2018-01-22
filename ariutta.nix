@@ -21,7 +21,8 @@ in [
   nixos.irssi
   nixos.ripgrep
   nixos.python36Packages.powerline
-  pkgs.keepassxc
+  # Not currently installing successfully on macOS
+  #pkgs.keepassxc
   pkgs.imagemagick
   pkgs.nix-repl
   pkgs.nox

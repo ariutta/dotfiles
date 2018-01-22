@@ -7,6 +7,7 @@ Set configuration for my dev environment.
 ```sh
 cd
 git clone git@github.com:ariutta/dotfiles.git
+ln -s dotfiles/.gitignore_global ./.gitignore_global
 ```
 
 ### Source the startup scripts in dotfiles
