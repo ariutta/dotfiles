@@ -2,7 +2,7 @@
 
 Set configuration for my dev environment.
 
-## First-Time Setup
+## How to Install
 
 ```sh
 cd $HOME
@@ -73,6 +73,14 @@ bash-it enable completion tmux npm git ssh
 bash-it enable plugin jenv
 ```
 
+## How to Update
+
+```sh
+nix-channel --update
+nix-env -f dotfiles/ariutta.nix -ri
+# nix-env -u '*' # why doesn't this work?
+```
+
 ## Purposes of Shell Startup/Config Files
 * `.bash_profile`
     * bash login shells
@@ -125,11 +133,3 @@ bash-it enable plugin jenv
 ```
 
 [More information](https://serverfault.com/questions/261802/what-are-the-functional-differences-between-profile-bash-profile-and-bashrc)
-
-## Updating Nix
-
-```sh
-nix-channel --update
-nix-env -f dotfiles/ariutta.nix -ri
-# nix-env -u '*' # why doesn't this work?
-```
