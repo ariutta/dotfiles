@@ -5,13 +5,28 @@ Set configuration for my dev environment.
 ## First-Time Setup
 
 ```sh
-cd
+cd $HOME
 git clone git@github.com:ariutta/dotfiles.git
 ln -s dotfiles/.gitignore_global ./.gitignore_global
 ```
 
-### Source the startup scripts in dotfiles
+### Source `dotfiles` Startup Scripts
+This repo is only for public information, so it never manages the startup scripts in your home directory (`~/.profile`, `~/.bashrc`, etc). To source the startup scripts in `dotfiles`, make the following manual edits:
+#### `.profile`
+```sh
+if [ -f "$HOME/dotfiles/.profile.public" ]; then
+   . "$HOME/dotfiles/.profile.public"
+fi
+```
 
+#### `.bashrc`
+```sh
+if [ -f "$HOME/dotfiles/.bashrc.public" ]; then
+   . "$HOME/dotfiles/.bashrc.public"
+fi
+```
+
+#### `.bash_profile` (optional)
 If your system uses `.bash_profile`, add this to it to make login shells, macOS terminal emulators (like Terminal.app or iTerm2) and interactive shells all load the same:
 ```sh
 if [ -f "$HOME/.profile" ]; then
@@ -22,22 +37,7 @@ if [ -f "$HOME/.bashrc" ]; then
 fi
 ```
 
-Add this to .profile:
-```sh
-if [ -f "$HOME/dotfiles/.profile.public" ]; then
-   . "$HOME/dotfiles/.profile.public"
-fi
-```
-
-Add this to .bashrc: 
-```sh
-if [ -f "$HOME/dotfiles/.bashrc.public" ]; then
-   . "$HOME/dotfiles/.bashrc.public"
-fi
-```
-
-### Nix:
-Install Nix.
+### Install Nix
 
 If not already set (see `nix-channel --list`), set the channels:
 ```sh
@@ -60,13 +60,7 @@ If browser is on a different machine, you should be able to use `--noauth_local_
 
 Note there is a file "/etc/nix/nix.conf" on macOS. This might be relevant to declarative package management for macOS.
 
-### Non-Nix:
-TODO: use Nix to install these as well.
-TODO: move these over to Nix:
-brew list
-brew cask list
-pip2 list
-
+### Install bash-it
 [Install bash-it](https://github.com/Bash-it/bash-it#install)
 ```sh
 git clone --depth=1 https://github.com/Bash-it/bash-it.git ~/.bash_it
