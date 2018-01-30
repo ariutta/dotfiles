@@ -40,9 +40,6 @@ pkgs.vim_configurable.customize {
 	 imap <left> <nop>
 	 imap <right> <nop>
 
-	 " enable indent guides by default
-	 autocmd BufReadPre,FileReadPre '*' :IndentGuidesEnable
-
 	 " auto-format on save (e.g., apply prettier to *.ts files)
 	 " TODO: install prettier
 	 autocmd BufWritePre *.ts,*.tsx,*.js,*.jsx,*.json,*.py Neoformat
@@ -138,12 +135,20 @@ pkgs.vim_configurable.customize {
       { names = [
         # Here you can place all your vim plugins
         # They are installed managed by `vam` (a vim plugin manager)
+        # Lookup names at http://vam.mawercer.de/
         #
         # provides nix syntax highlighting, filetype detection and indentation.
         "vim-nix"
         #
         # make vim syntax-aware
         "Syntastic"
+        # syntax providers:
+        "vim-javascript"
+        "vim-jsdoc"
+        "typescript-vim"
+        #
+        # automatic closing of quotes, parenthesis, brackets, etc.
+        #"delimitMate"
         #
         # ctrlp makes it easier to open files, buffers, etc.
         # Call it with :CtrlPMixed or Ctrl+p
@@ -159,6 +164,23 @@ pkgs.vim_configurable.customize {
         #
         # provides typescript autocomplete, error checking and more.
         "tsuquyomi"
+        #
+        # git wrapper
+        #   For screencasts on how to use:
+        #     https://github.com/tpope/vim-fugitive#screencasts
+        #   To compare a file across branches:
+        #     Gedit master:myfile.txt
+        #     Gdiff dev:myfile.txt
+        "fugitive"
+        #
+        # autocomplete
+        "YouCompleteMe"
+        #
+        # Handle delimited files (.csv, .tsv, etc.)
+        #   http://vimawesome.com/plugin/csv-vim
+        #   If a file is .txt, tell vim it's delimited with:
+        #     :set filetype=csv
+        "csv"
       ]; }
     ];
 }
