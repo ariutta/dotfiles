@@ -148,7 +148,8 @@ pkgs.vim_configurable.customize {
         "typescript-vim"
         #
         # automatic closing of quotes, parenthesis, brackets, etc.
-        #"delimitMate"
+        # https://github.com/jiangmiao/auto-pairs
+        "auto-pairs"
         #
         # ctrlp makes it easier to open files, buffers, etc.
         # Call it with :CtrlPMixed or Ctrl+p
