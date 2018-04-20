@@ -106,6 +106,8 @@ if [ "$(uname)" = "Darwin" ]; then
 	#                osascript -e 'tell application "System Events" to keystroke "k" using command down'
 	#        }
 	#fi
+else
+	export FONTCONFIG_PATH=/etc/fonts
 fi
 
 ####################

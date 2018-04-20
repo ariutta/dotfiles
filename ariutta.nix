@@ -30,4 +30,5 @@ in [
   pkgs.shellcheck
   python.packages."tosheets"
   vim
-] ++ (if stdenv.isDarwin then [] else [nixos.i3])
+] ++ (if stdenv.isDarwin then [] else [])
+# ++ (if stdenv.isDarwin then [] else [nixos.xterm nixos.i3])
