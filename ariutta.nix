@@ -30,6 +30,8 @@ in [
   pkgs.nox
   pkgs.pypi2nix
   pkgs.shellcheck
+  pkgs.python36Packages.autopep8
+  pkgs.python36Packages.sqlparse
   python.packages."tosheets"
   vim
 ] ++ (if stdenv.isDarwin then [] else [])

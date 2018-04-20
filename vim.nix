@@ -10,6 +10,7 @@ pkgs.vim_configurable.customize {
 	" backwards compatibility with Vi.
 	" Usually this line does nothing.
 	set nocompatible               " be iMproved
+  set encoding=utf-8
 
 	 " Detect filetype and use indent plugin
 	 filetype plugin indent on
@@ -54,6 +55,10 @@ pkgs.vim_configurable.customize {
 	 autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
 
 	 " settings for Syntastic, the syntax helper
+   " TODO: get sqlint installed
+   " https://github.com/purcell/sqlint
+   " also consider pgsanity, although it's not currently one of the Syntastic-supported options
+   " https://github.com/markdrago/pgsanity
 	 let g:syntastic_mode_map = { 'mode': 'active',
 		\ 'active_filetypes': ['nix'],
 		\ 'passive_filetypes': [] }
@@ -159,6 +164,12 @@ pkgs.vim_configurable.customize {
         #
         # format code
         "neoformat"
+        # dependencies:
+        # prettier
+        # pkgs.python36Packages.autopep8
+        # nixos.python36Packages.sqlparse
+        # an alternate formatter to look at:
+        # https://github.com/darold/pgFormatter
         #
         # type "ysiw]" to surround w/ brackets
         "surround"
