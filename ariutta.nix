@@ -11,11 +11,11 @@
 
 with import <nixpkgs> {config.vim.ftNix = false;};
 let
-  python = import ./tosheets/requirements.nix { inherit pkgs; };
+  toSheetsPythonPkgs = import ./custom/tosheets/requirements.nix { inherit pkgs; };
   nixos = import <nixos> {};
   # pkgs (from nixpkgs) is from https://nixos.org/channels/nixpkgs-unstable
-  #localpkgs = import ./Documents/nixpkgs {};
-  vim = import ./vim.nix;
+  vim = import ./custom/vim.nix;
+  perlPackagesCustom = import ./custom/perl-packages.nix { inherit pkgs; }; 
 in [
   nixos.irssi
   nixos.jq
@@ -32,7 +32,8 @@ in [
   pkgs.shellcheck
   pkgs.python36Packages.autopep8
   pkgs.python36Packages.sqlparse
-  python.packages."tosheets"
+  toSheetsPythonPkgs.packages."tosheets"
+  perlPackagesCustom.pgFormatter
   vim
 ] ++ (if stdenv.isDarwin then [] else [])
 # ++ (if stdenv.isDarwin then [] else [nixos.xterm nixos.i3])

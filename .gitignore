@@ -9,10 +9,11 @@
 !.gitignore_global
 !.gitconfig_sample
 !dev_helper_scripts/
-!vim.nix
 !ariutta.nix
-!tosheets/
-tosheets/*
-!tosheets/requirements.nix
-!tosheets/requirements_frozen.txt
-!tosheets/requirements_override.nix
+custom/*
+!custom/vim.nix
+!custom/perl-packages.nix
+custom/tosheets/*
+!custom/tosheets/requirements.nix
+!custom/tosheets/requirements_frozen.txt
+!custom/tosheets/requirements_override.nix
