@@ -1,4 +1,16 @@
 with import <nixpkgs> {};
+# Syntastic dependencies:
+# * sqlint (TODO: install)
+#     https://github.com/purcell/sqlint
+#     Another option: pgsanity (although it's not currently one of the Syntastic-supported options)
+#       https://github.com/markdrago/pgsanity
+# neoformat dependencies:
+# * nixos.python36Packages.jsbeautifier
+# * nixos.shfmt
+# * prettier (TODO: install)
+# * pkgs.python36Packages.autopep8
+# * nixos.python36Packages.sqlparse
+# * https://github.com/darold/pgFormatter
 pkgs.vim_configurable.customize {
     # Specifies the vim binary name.
     # E.g. set this to "my-vim" and you need to type "my-vim" to open this vim
@@ -41,9 +53,13 @@ pkgs.vim_configurable.customize {
 	 imap <left> <nop>
 	 imap <right> <nop>
 
-	 " auto-format on save (e.g., apply prettier to *.ts files)
+   " Neoformat: auto-format on save (e.g., apply prettier to *.ts files)
 	 " TODO: install prettier
-	 autocmd BufWritePre *.ts,*.tsx,*.js,*.jsx,*.json,*.py Neoformat
+   let g:neoformat_enabled_html = ['js-beautify --html']
+   let g:neoformat_enabled_python = ['autopep8']
+   let g:neoformat_enabled_sh = ['shfmt']
+   let g:neoformat_enabled_sql = ['pg_format']
+	 autocmd BufWritePre *.html,*.js,*.jsx,*.json,*.py,*.sh,*.sql,*.ts,*.tsx Neoformat
 
 	 " make csv.vim recognize the pound sign as indicating a comment
 	 " TODO: install csv.vim and re-enable this
@@ -55,10 +71,6 @@ pkgs.vim_configurable.customize {
 	 autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
 
 	 " settings for Syntastic, the syntax helper
-   " TODO: get sqlint installed
-   " https://github.com/purcell/sqlint
-   " also consider pgsanity, although it's not currently one of the Syntastic-supported options
-   " https://github.com/markdrago/pgsanity
 	 let g:syntastic_mode_map = { 'mode': 'active',
 		\ 'active_filetypes': ['nix'],
 		\ 'passive_filetypes': [] }
@@ -164,12 +176,7 @@ pkgs.vim_configurable.customize {
         #
         # format code
         "neoformat"
-        # dependencies:
-        # prettier
-        # pkgs.python36Packages.autopep8
-        # nixos.python36Packages.sqlparse
-        # an alternate formatter to look at:
-        # https://github.com/darold/pgFormatter
+        # See dependencies at top of this file.
         #
         # type "ysiw]" to surround w/ brackets
         "surround"

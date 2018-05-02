@@ -29,11 +29,14 @@ in [
   pkgs.nix-repl
   pkgs.nox
   pkgs.pypi2nix
-  pkgs.shellcheck
-  pkgs.python36Packages.autopep8
-  pkgs.python36Packages.sqlparse
   toSheetsPythonPkgs.packages."tosheets"
-  perlPackagesCustom.pgFormatter
   vim
+  # vim dependencies:
+  pkgs.python36Packages.autopep8
+  nixos.python36Packages.jsbeautifier
+  pkgs.python36Packages.sqlparse
+  pkgs.shellcheck
+  nixos.shfmt
+  perlPackagesCustom.pgFormatter
 ] ++ (if stdenv.isDarwin then [] else [])
 # ++ (if stdenv.isDarwin then [] else [nixos.xterm nixos.i3])
