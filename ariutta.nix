@@ -28,7 +28,6 @@ in [
   pkgs.imagemagick
   pkgs.nix-repl
   pkgs.nox
-  pkgs.pypi2nix
   toSheetsPythonPkgs.packages."tosheets"
   vim
   # vim dependencies:
@@ -38,5 +37,7 @@ in [
   pkgs.shellcheck
   nixos.shfmt
   perlPackagesCustom.pgFormatter
+  # moved the following to headless.nix
+  #pkgs.pypi2nix
 ] ++ (if stdenv.isDarwin then [] else [])
 # ++ (if stdenv.isDarwin then [] else [nixos.xterm nixos.i3])
