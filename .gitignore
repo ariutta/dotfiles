@@ -10,6 +10,8 @@
 !.gitconfig_sample
 !dev_helper_scripts/
 !ariutta.nix
+!local.nix
+!remote.nix
 custom/*
 !custom/vim.nix
 !custom/perl-packages.nix
