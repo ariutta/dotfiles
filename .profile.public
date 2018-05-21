@@ -10,6 +10,9 @@
 # Warning: this file will be made public online. Only include publicly shareable data.
 # see ~/README.md for details on purposes of .profile .profile.public .bashrc .bashrc.public .bash_profile
 
+# Lynx Settings
+export LYNX_LSS=$HOME/dotfiles/lynx.lss
+
 # Python
 export WORKON_HOME=$HOME/.virtualenvs
 export VIRTUALENVWRAPPER_VIRTUALENV_ARGS='--no-site-packages'

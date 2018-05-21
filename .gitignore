@@ -12,6 +12,7 @@
 !ariutta.nix
 !local.nix
 !remote.nix
+!lynx.lss
 custom/*
 !custom/vim.nix
 !custom/perl-packages.nix
