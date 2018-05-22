@@ -73,25 +73,21 @@ in
 
 vim_configured.overrideAttrs (oldAttrs: {
   buildInputs = vim_configured.buildInputs ++ [
-    # Dependencies for my vim plugins
-    # TODO test the dependencies below. Do I have them all?
-    # Syntastic dependencies:
+    # Custom Dependencies
+
+    # Syntastic:
     # * sqlint (TODO: install)
     #     https://github.com/purcell/sqlint
     #     Another option: pgsanity (although it's not currently one of the Syntastic-supported options)
     #       https://github.com/markdrago/pgsanity
-    # neoformat dependencies:
-    # * nixos.python36Packages.jsbeautifier
-    # * nixos.shfmt
-    # * prettier (TODO: install)
-    # * pkgs.python36Packages.autopep8
-    # * nixos.python36Packages.sqlparse
-    # * https://github.com/darold/pgFormatter
-    pkgs.python36Packages.autopep8
-    pkgs.python36Packages.jsbeautifier
-    pkgs.python36Packages.sqlparse
     pkgs.shellcheck
+
+    # neoformat:
+    pkgs.python36Packages.jsbeautifier
     pkgs.shfmt
+    pkgs.python36Packages.autopep8
+    pkgs.python36Packages.sqlparse
     perlPackagesCustom.pgFormatter
+    # * prettier (TODO: install)
   ];
 })

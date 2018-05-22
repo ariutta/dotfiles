@@ -9,14 +9,14 @@
 
 # See README.md for instructions on installing/updating.
 
-# TODO Wher3e should config.vim.ftNix be specified? Here? In all-custom.nix?
+# TODO Where should config.vim.ftNix be specified? Here? In custom/all-custom.nix?
 with import <nixpkgs> { config.vim.ftNix = false; config.allowUnfree = true; };
 let
   nixos = import <nixos> {};
   custom = callPackage ./custom/all-custom.nix {};
 in [
   custom.tosheets
-  #custom.vim
+  custom.vim
   nixos.irssi
   nixos.jq
   nixos.lynx
