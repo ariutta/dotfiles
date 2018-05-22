@@ -18,14 +18,10 @@ in [
   nixos.lynx
   nixos.toot
   nixos.pgmanage
+  pkgs.keepassxc
 
   # TODO Make pull request to nixpkgs repo with an update
-  #     to privoxy so it works on both linux and darwin.
+  #      to privoxy Nix expression so that it works on
+  #      both linux and darwin.
   privoxyCustom
-
-  # KeepassXC is not currently installing successfully on macOS
-  #pkgs.keepassxc
-
-  # TODO Do I really need imagemagick?
-  #pkgs.imagemagick
 ] ++ (if stdenv.isDarwin then [] else [])
