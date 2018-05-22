@@ -18,7 +18,4 @@ custom/*
 !custom/vim/default.nix
 !custom/vim/configured.nix
 !custom/perl-packages.nix
-custom/tosheets/*
-!custom/tosheets/requirements.nix
-!custom/tosheets/requirements_frozen.txt
-!custom/tosheets/requirements_override.nix
+!custom/tosheets/default.nix
