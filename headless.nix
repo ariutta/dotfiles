@@ -9,12 +9,13 @@
 
 # See README.md for instructions on installing/updating.
 
-# TODO should config.vim.ftNix go here or in all-custom.nix?
-#with import <nixpkgs> { config.vim.ftNix = false; config.allowUnfree = true; };
-with import <nixpkgs> { config.vim.ftNix = false; };
+# TODO should config.vim.ftNix be specified here, in the let or just in all-custom.nix?
+# Do I need to do both the with and the let for nixpkgs?
+with import <nixpkgs> { config.vim.ftNix = false; config.allowUnfree = true; };
 let
+  nixpkgs = import <nixpkgs> { config.vim.ftNix = false; config.allowUnfree = true; };
   nixos = import <nixos> {};
-  custom = import ./custom/all-custom.nix { inherit pkgs callPackage; };
+  custom = import ./custom/all-custom.nix { inherit nixpkgs; };
 in [
   custom.tosheets
   #custom.vim
@@ -25,6 +26,7 @@ in [
   nixos.ripgrep
   nixos.toot
   nixos.wget
+  # NOTE: pkgs means nixpkgs.pkgs
   pkgs.pypi2nix
   # Not currently installing successfully on macOS
   #pkgs.keepassxc

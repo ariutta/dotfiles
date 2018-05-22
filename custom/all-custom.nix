@@ -1,4 +1,4 @@
-{ pkgs, callPackage }:
+{ nixpkgs ? import <nixpkgs> { config.vim.ftNix = false; config.allowUnfree = true; } }:
 
 #let
 #  # pkgs (from nixpkgs) is from https://nixos.org/channels/nixpkgs-unstable
@@ -28,12 +28,12 @@
 
   #vim = callPackage ./vim/default.nix {  };
   #vim = callPackage ./vim/default.nix {  };
-  vim = import ./vim/default.nix;
+  vim = import ./vim/default.nix { inherit nixpkgs; };
   #vim = import ./vim1/override.nix;
   #vim = import ./vim/override.nix;
   #vim = callPackage ./tosheets/default.nix {  };
   #vim = ./vim/default.nix {  };
-  tosheets = callPackage ./tosheets/default.nix {  };
+  tosheets = nixpkgs.callPackage ./tosheets/default.nix {};
 
   # Generate python  using pypi2nix:
   #   For python packages used as applications:
