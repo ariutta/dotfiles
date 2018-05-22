@@ -2,7 +2,6 @@
 !README.md
 !.profile.public
 !.bashrc.public
-!.vimrc
 !.jshintrc
 !.jscsrc
 !.gitignore
@@ -16,6 +15,6 @@
 custom/*
 !custom/all-custom.nix
 !custom/vim/default.nix
-!custom/vim/configured.nix
+!custom/vim/.vimrc
 !custom/perl-packages.nix
 !custom/tosheets/default.nix
