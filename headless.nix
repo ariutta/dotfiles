@@ -9,10 +9,26 @@
 
 # See README.md for instructions on installing/updating.
 
-with import <nixpkgs> {config.vim.ftNix = false;};
+# TODO should config.vim.ftNix go here or in all-custom.nix?
+#with import <nixpkgs> { config.vim.ftNix = false; config.allowUnfree = true; };
+with import <nixpkgs> { config.vim.ftNix = false; };
 let
   nixos = import <nixos> {};
+  custom = import ./custom/all-custom.nix { inherit pkgs callPackage; };
 in [
+  custom.tosheets
+  #custom.vim
+  nixos.irssi
+  nixos.jq
   nixos.lynx
+  nixos.python36Packages.powerline
+  nixos.ripgrep
+  nixos.toot
+  nixos.wget
   pkgs.pypi2nix
+  # Not currently installing successfully on macOS
+  #pkgs.keepassxc
+  pkgs.imagemagick
+  pkgs.nix-repl
+  pkgs.nox
 ] ++ (if stdenv.isDarwin then [] else [])

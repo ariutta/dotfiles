@@ -14,7 +14,9 @@
 !remote.nix
 !lynx.lss
 custom/*
-!custom/vim.nix
+!custom/all-custom.nix
+!custom/vim/default.nix
+!custom/vim/configured.nix
 !custom/perl-packages.nix
 custom/tosheets/*
 !custom/tosheets/requirements.nix
