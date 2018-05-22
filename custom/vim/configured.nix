@@ -1,16 +1,5 @@
-with import <nixpkgs> {};
-# Syntastic dependencies:
-# * sqlint (TODO: install)
-#     https://github.com/purcell/sqlint
-#     Another option: pgsanity (although it's not currently one of the Syntastic-supported options)
-#       https://github.com/markdrago/pgsanity
-# neoformat dependencies:
-# * nixos.python36Packages.jsbeautifier
-# * nixos.shfmt
-# * prettier (TODO: install)
-# * pkgs.python36Packages.autopep8
-# * nixos.python36Packages.sqlparse
-# * https://github.com/darold/pgFormatter
+{ pkgs }:
+
 pkgs.vim_configurable.customize {
     # Specifies the vim binary name.
     # E.g. set this to "my-vim" and you need to type "my-vim" to open this vim

@@ -9,13 +9,11 @@
 
 # See README.md for instructions on installing/updating.
 
-# TODO should config.vim.ftNix be specified here, in the let or just in all-custom.nix?
-# Do I need to do both the with and the let for nixpkgs?
+# TODO Wher3e should config.vim.ftNix be specified? Here? In all-custom.nix?
 with import <nixpkgs> { config.vim.ftNix = false; config.allowUnfree = true; };
 let
-  nixpkgs = import <nixpkgs> { config.vim.ftNix = false; config.allowUnfree = true; };
   nixos = import <nixos> {};
-  custom = import ./custom/all-custom.nix { inherit nixpkgs; };
+  custom = callPackage ./custom/all-custom.nix {};
 in [
   custom.tosheets
   #custom.vim
