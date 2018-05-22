@@ -17,18 +17,12 @@ let
 in [
   custom.tosheets
   custom.vim
-  nixos.irssi
   nixos.jq
-  nixos.lynx
   nixos.python36Packages.powerline
   nixos.ripgrep
-  nixos.toot
   nixos.wget
   # NOTE: pkgs means nixpkgs.pkgs
   pkgs.pypi2nix
-  # Not currently installing successfully on macOS
-  #pkgs.keepassxc
-  pkgs.imagemagick
   pkgs.nix-repl
   pkgs.nox
 ] ++ (if stdenv.isDarwin then [] else [])

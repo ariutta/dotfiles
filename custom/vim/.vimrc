@@ -21,7 +21,7 @@ set number
 " Key Mappings
 "******************
 
-" Typing 'jk' quickly leaves insert mode
+" Quickly type 'jk' to leave insert mode
 inoremap jk <Esc>
 
 " disable arrow keys

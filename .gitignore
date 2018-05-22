@@ -8,13 +8,12 @@
 !.gitignore_global
 !.gitconfig_sample
 !dev_helper_scripts/
-!ariutta.nix
+!common.nix
 !local.nix
-!remote.nix
 !lynx.lss
 custom/*
 !custom/all-custom.nix
-!custom/vim/default.nix
 !custom/vim/.vimrc
+!custom/vim/default.nix
 !custom/perl-packages.nix
 !custom/tosheets/default.nix

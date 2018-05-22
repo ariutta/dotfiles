@@ -48,7 +48,8 @@ nix-channel --add https://nixos.org/channels/nixos-17.09 nixos
 Install packages managed by Nix (same command to update):
 ```sh
 nix-channel --update
-nix-env -f dotfiles/ariutta.nix -ri
+nix-env -f dotfiles/common.nix -ri
+nix-env -f dotfiles/local.nix -ri
 ```
 
 `tosheets` needs to get permission the first time it runs.
@@ -77,7 +78,8 @@ bash-it enable plugin jenv
 
 ```sh
 nix-channel --update
-nix-env -f dotfiles/ariutta.nix -ri
+nix-env -f dotfiles/common.nix -ri
+nix-env -f dotfiles/local.nix -ri
 # nix-env -u '*' # why doesn't this work?
 ```
 

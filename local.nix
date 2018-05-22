@@ -9,18 +9,23 @@
 
 # See README.md for instructions on installing/updating.
 
-
-#{ stdenv, fetchurl, autoreconfHook, zlib, pcre, w3m, man }:
-
 with import <nixpkgs> {config.vim.ftNix = false;};
 let
   nixos = import <nixos> {};
-  privoxyCustom = import ./custom/privoxy/privoxy-darwin.nix { inherit stdenv fetchurl autoreconfHook zlib pcre w3m man; }; 
+  privoxyCustom = callPackage ./custom/privoxy/privoxy-darwin.nix {}; 
 in [
+  nixos.irssi
+  nixos.lynx
+  nixos.toot
   nixos.pgmanage
-  # TODO get standard privoxy to work on both linux and darwin
-  #pkgs.privoxy
+
+  # TODO Make pull request to nixpkgs repo with an update
+  #     to privoxy so it works on both linux and darwin.
   privoxyCustom
-  # Not currently installing successfully on macOS
+
+  # KeepassXC is not currently installing successfully on macOS
   #pkgs.keepassxc
+
+  # TODO Do I really need imagemagick?
+  #pkgs.imagemagick
 ] ++ (if stdenv.isDarwin then [] else [])
