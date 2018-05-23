@@ -30,9 +30,22 @@ in [
   # Manually install from https://apps.ankiweb.net/
   #pkgs.anki
 
-  # the following used to be installed via brew cask:
+  # brew cask used to list java, virtualbox and rstudio.
+  # These are semi-moved over here now.
+
+  # TODO Do I still want to use this?
   #pkgs.virtualbox
-  #nixos.rstudio # "nix-env -iA nixos.rstudio" doesn't work on darwin (linux only)
+
+  #nixos.rstudio
+  # The rstudio Nix expression doesn't work on darwin.
+  # It currently only supports linux.
+  # For now, these are the steps required to make it work on darwin:
+  # 1. Install R with Nix:
+  nixos.R
+  # 2. Follow steps in .profile.public regarding R path
+  # 3. Install RStudio manually from here:
+  #    https://www.rstudio.com/products/rstudio/download/#download
+
   #pkgs.jdk9 # this one is openjdk, but brew cask is probably Oracle's.
 
 
