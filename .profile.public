@@ -49,6 +49,8 @@ export RSTUDIO_WHICH_R=$HOME/.nix-profile/bin/R
 #   mkdir -p /usr/local/bin
 #   cd /usr/local/bin/
 #   ln -s $HOME/.nix-profile/bin/R R
+# For more info, see
+# https://support.rstudio.com/hc/en-us/articles/200486138-Using-Different-Versions-of-R
 
 # Make my dev helper scripts available from command line
 DEV_HELPER_SCRIPTS_PATH="$HOME/dev_helper_scripts"
