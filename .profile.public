@@ -45,14 +45,10 @@ export PYTHONPATH=$HOME/.nix-profile/bin/python
 # but only when opening from Terminal, like this:
 #   /Applications/RStudio.app/Contents/MacOS/RStudio
 export RSTUDIO_WHICH_R=$HOME/.nix-profile/bin/R
-# To make clicking the RStudio icon work,
-# This used to work:
-#   cd /Library/Frameworks/R.framework/Versions/
-#   mv Current Current-sys
-#   ln -s $RSTUDIO_WHICH_R Current
-# But more recently, it didn't. This did work:
+# To make clicking the RStudio icon work, do this:
+#   mkdir -p /usr/local/bin
 #   cd /usr/local/bin/
-#   ln -s /Users/andersriutta/.nix-profile/bin/R R
+#   ln -s $HOME/.nix-profile/bin/R R
 
 # Make my dev helper scripts available from command line
 DEV_HELPER_SCRIPTS_PATH="$HOME/dev_helper_scripts"
