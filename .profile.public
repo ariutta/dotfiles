@@ -13,19 +13,20 @@
 # Lynx Settings
 export LYNX_LSS=$HOME/dotfiles/lynx.lss
 
-# Python
-export WORKON_HOME=$HOME/.virtualenvs
-export VIRTUALENVWRAPPER_VIRTUALENV_ARGS='--no-site-packages'
-export PIP_VIRTUALENV_BASE=$WORKON_HOME
-export PIP_RESPECT_VIRTUALENV=true
-#export PATH="/System/Library/Frameworks/Python.framework/Versions/2.7/Python:$PATH"
-#export VIRTUALENVWRAPPER_PYTHON=/usr/local/Cellar/python/2.7.14/bin/python2.7
+## Python
+#export WORKON_HOME=$HOME/.virtualenvs
+#export VIRTUALENVWRAPPER_VIRTUALENV_ARGS='--no-site-packages'
+#export PIP_VIRTUALENV_BASE=$WORKON_HOME
+#export PIP_RESPECT_VIRTUALENV=true
+##export PATH="/System/Library/Frameworks/Python.framework/Versions/2.7/Python:$PATH"
+##export VIRTUALENVWRAPPER_PYTHON=/usr/local/Cellar/python/2.7.14/bin/python2.7
+export PYTHONPATH=~/.nix-profile/bin/python
 
-# Make NPM CLI programs available from command line
-NPM_SCRIPTS_PATH="/usr/local/share/npm/bin"
-if [ "$PATH" != *"$NPM_SCRIPTS_PATH"* ]; then
-	export PATH="$NPM_SCRIPTS_PATH:$PATH"
-fi
+## Make NPM CLI programs available from command line
+#NPM_SCRIPTS_PATH="/usr/local/share/npm/bin"
+#if [ "$PATH" != *"$NPM_SCRIPTS_PATH"* ]; then
+#	export PATH="$NPM_SCRIPTS_PATH:$PATH"
+#fi
 
 ## For first time, need to add a Java environment, e.g.:
 ##   jenv add /Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/
@@ -39,14 +40,14 @@ fi
 ## PostgreSQL
 #export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"
 
-# RStudio
-# Make RStudio use homebrew version of R instead of system default
-# Note that this did not work for me (at least without a restart).
-# I ended up doing this:
-# cd /Library/Frameworks/R.framework/Versions/
-# mv Current Current-sys
-# ln -s /usr/local/bin/R Current
-export RSTUDIO_WHICH_R=/usr/local/bin/R
+## RStudio
+## Make RStudio use homebrew version of R instead of system default
+## Note that this did not work for me (at least without a restart).
+## I ended up doing this:
+## cd /Library/Frameworks/R.framework/Versions/
+## mv Current Current-sys
+## ln -s /usr/local/bin/R Current
+#export RSTUDIO_WHICH_R=/usr/local/bin/R
 
 # Make my dev helper scripts available from command line
 DEV_HELPER_SCRIPTS_PATH="$HOME/dev_helper_scripts"
