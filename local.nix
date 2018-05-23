@@ -18,10 +18,28 @@ in [
   nixos.lynx
   nixos.toot
   nixos.pgmanage
+
+  # openssh includes ssh-copy-id
+  nixos.openssh
+
   pkgs.keepassxc
+  pkgs.nodejs-8_x
+
+  # Not working on macOS at present.
+  # See https://github.com/NixOS/nixpkgs/issues/40956
+  # Manually install from https://apps.ankiweb.net/
+  #pkgs.anki
+
+  # the following used to be installed via brew cask:
+  #pkgs.virtualbox
+  #nixos.rstudio # "nix-env -iA nixos.rstudio" doesn't work on darwin (linux only)
+  #pkgs.jdk9 # this one is openjdk, but brew cask is probably Oracle's.
+
 
   # TODO Make pull request to nixpkgs repo with an update
   #      to privoxy Nix expression so that it works on
   #      both linux and darwin.
+  # NOTE See ./custom/privoxy/privoxy-darwin.nix for a note
+  #      on how to start privoxy as a service.
   privoxyCustom
 ] ++ (if stdenv.isDarwin then [] else [])
