@@ -15,7 +15,7 @@ let
   nixos = import <nixos> {};
   custom = callPackage ./custom/all-custom.nix {};
 in [
-  # TODO see TODO in ./custom/vim/default.nix regarding black
+  # TODO see comment in ./custom/vim/default.nix regarding black
   custom.black
   custom.tosheets
   custom.vim
