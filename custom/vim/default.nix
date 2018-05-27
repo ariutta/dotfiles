@@ -7,9 +7,9 @@ let
   # TODO specifying black here doesn't put it on the path. Neither does
   # adding it to propagatedBuildInputs or most of the other options
   # (I think I tried all of them).
-  # But black needs to be on the path to work with Neovim.
+  # But black needs to be on the path to work with Neoformat.
   # (Although the docs for black seem to say it's faster to run it without
-  # calling the CLI? Should I be using it without Neovim?)
+  # calling the CLI? Should I be using it without Neoformat?)
   # For now, I'm using a hack by specifying
   # black in dotfiles/common.nix, but I shouldn't have to do that.
   # More info: https://nixos.org/nixpkgs/manual/#ssec-stdenv-dependencies
