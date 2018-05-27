@@ -2,6 +2,7 @@
 
 {
 
+  black = callPackage ./black/default.nix {}; 
   vim = callPackage ./vim/default.nix {};
   tosheets = callPackage ./tosheets/default.nix {};
 

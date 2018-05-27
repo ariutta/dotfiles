@@ -37,7 +37,8 @@ imap <right> <nop>
 " Neoformat: auto-format on save (e.g., apply prettier to *.ts files)
 " TODO: install prettier
 let g:neoformat_enabled_html = ['js-beautify --html']
-let g:neoformat_enabled_python = ['autopep8']
+"let g:neoformat_enabled_python = ['autopep8']
+let g:neoformat_enabled_python = ['black']
 let g:neoformat_enabled_sh = ['shfmt']
 let g:neoformat_enabled_sql = ['pg_format']
 autocmd BufWritePre *.html,*.js,*.jsx,*.json,*.py,*.sh,*.sql,*.ts,*.tsx Neoformat

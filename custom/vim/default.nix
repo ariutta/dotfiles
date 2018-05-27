@@ -4,6 +4,7 @@
 { pkgs, callPackage }:
 
 let
+  black = callPackage ../black/default.nix {}; 
   perlPackagesCustom = callPackage ../perl-packages.nix {}; 
   vim_configured = pkgs.vim_configurable.customize {
       # Specifies the vim binary name.
@@ -85,7 +86,16 @@ vim_configured.overrideAttrs (oldAttrs: {
     # neoformat:
     pkgs.python36Packages.jsbeautifier
     pkgs.shfmt
-    pkgs.python36Packages.autopep8
+    # TODO specifying black here doesn't put it on the path. Neither does
+    # adding it to propagatedBuildInputs or most of the other options
+    # (I think I tried all of them).
+    # But black needs to be on the path to work with Neovim.
+    # (Although the docs for black seem to say it's faster to run it without
+    # calling the CLI? Should I be using it without Neovim?)
+    # For now, I'm using a hack by specifying
+    # black in dotfiles/common.nix, but I shouldn't have to do that.
+    # More info: https://nixos.org/nixpkgs/manual/#ssec-stdenv-dependencies
+    black
     pkgs.python36Packages.sqlparse
     perlPackagesCustom.pgFormatter
     # * prettier (TODO: install)

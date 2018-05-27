@@ -17,6 +17,11 @@ in [
   nixos.irssi
   nixos.lynx
   nixos.toot
+
+  # To use pgmanage, first ensure the target DB is available.
+  # Is the DB is remote, create a tunnel like this (tunneling local port 3333 to remote port 5432):
+  #   ssh -L 3333:wikipathways-workspace.gladstone.internal:5432 ariutta@wikipathways-workspace.gladstone.internal
+  # Then you can run "pgmanage" from the command line and open a browser windowa to the URL that is spit out.
   nixos.pgmanage
 
   # openssh includes ssh-copy-id
