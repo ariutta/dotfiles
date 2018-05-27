@@ -1,19 +1,22 @@
-# TODO which of the following lines is best?
-#with import <nixpkgs> { config.vim.ftNix = false; };
-#{ nixpkgs ? import <nixpkgs> { config.vim.ftNix = false; } }:
 { pkgs, callPackage }:
 
 let
-  # TODO specifying black here doesn't put it on the path. Neither does
-  # adding it to propagatedBuildInputs or most of the other options
-  # (I think I tried all of them).
-  # But black needs to be on the path to work with Neoformat.
-  # (Although the docs for black seem to say it's faster to run it without
-  # calling the CLI? Should I be using it without Neoformat?)
-  # For now, I'm using a hack by specifying
-  # black in dotfiles/common.nix, but I shouldn't have to do that.
+  # TODO specifying Black in buildInputs, propagatedBuildInputs, etc.
+  # doesn't put it on the PATH. (I think I tried all of the options.)
   # More info: https://nixos.org/nixpkgs/manual/#ssec-stdenv-dependencies
   # See also: https://github.com/NixOS/nixpkgs/issues/26146
+  #
+  # But Black needs to be on the PATH to work with Neoformat.
+  # Options:
+  # 1. Have Black run "inside the Vim process directly", not via Neoformat/CLI.
+  #    (See https://github.com/ambv/black#vim)
+  #    The docs say it runs faster this way. But would that work with Nix? The
+  #    docs also say, "On first run, the plugin creates its own virtualenv using
+  #    the right Python version and automatically installs Black."
+  # 2. Specify Black as a dependency in ../../common.nix
+  #    For now, I'm using a hack by specifying custom.black in common.nix,
+  #    but I should be able to specify all my Vim deps in here.
+  # 3. Something else?
   black = callPackage ../black/default.nix {}; 
   perlPackagesCustom = callPackage ../perl-packages.nix {}; 
 
@@ -30,7 +33,7 @@ let
           # Lookup names at http://vam.mawercer.de/
 
           # provides nix syntax highlighting, filetype detection and indentation.
-          # TODO where should I specify this: { config.vim.ftNix = false; }
+          # NOTE: using vim-nix instead of this: { config.vim.ftNix = true; }
           "vim-nix"
 
           # make vim syntax aware
@@ -81,6 +84,10 @@ let
 in
 
 vim_configured.overrideAttrs (oldAttrs: {
+  # NOTE: we don't need to specify the following:
+  #   with import <nixpkgs> { config.vim.ftNix = false; };
+  # because we specify the same thing here:
+  ftNixSupport = false;
   buildInputs = vim_configured.buildInputs ++ [
     # Custom Dependencies
 
@@ -94,6 +101,7 @@ vim_configured.overrideAttrs (oldAttrs: {
     # Deps for Neoformat
     pkgs.python36Packages.jsbeautifier
     pkgs.shfmt
+    # TODO see comment above about this dep.
     black
     pkgs.python36Packages.sqlparse
     perlPackagesCustom.pgFormatter

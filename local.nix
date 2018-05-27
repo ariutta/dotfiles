@@ -9,7 +9,7 @@
 
 # See README.md for instructions on installing/updating.
 
-with import <nixpkgs> {config.vim.ftNix = false;};
+with import <nixpkgs> { config.allowUnfree = true; };
 let
   nixos = import <nixos> {};
   privoxyCustom = callPackage ./custom/privoxy/privoxy-darwin.nix {}; 

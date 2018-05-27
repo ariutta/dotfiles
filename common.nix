@@ -9,8 +9,7 @@
 
 # See README.md for instructions on installing/updating.
 
-# TODO Where should config.vim.ftNix be specified? Here? In custom/all-custom.nix?
-with import <nixpkgs> { config.vim.ftNix = false; config.allowUnfree = true; };
+with import <nixpkgs> { config.allowUnfree = true; };
 let
   nixos = import <nixos> {};
   custom = callPackage ./custom/all-custom.nix {};
