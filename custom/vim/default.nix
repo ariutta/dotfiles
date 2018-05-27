@@ -95,6 +95,7 @@ vim_configured.overrideAttrs (oldAttrs: {
     # For now, I'm using a hack by specifying
     # black in dotfiles/common.nix, but I shouldn't have to do that.
     # More info: https://nixos.org/nixpkgs/manual/#ssec-stdenv-dependencies
+    # See also: https://github.com/NixOS/nixpkgs/issues/26146
     black
     pkgs.python36Packages.sqlparse
     perlPackagesCustom.pgFormatter
