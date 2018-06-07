@@ -3,6 +3,7 @@
 {
 
   black = callPackage ./black/default.nix {}; 
+  privoxy = callPackage ./privoxy/darwin-service.nix {}; 
   vim = callPackage ./vim/default.nix {};
   tosheets = callPackage ./tosheets/default.nix {};
 

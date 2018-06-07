@@ -16,4 +16,6 @@ custom/*
 !custom/vim/.vimrc
 !custom/vim/default.nix
 !custom/perl-packages.nix
+!custom/privoxy/darwin-service.nix
+!custom/privoxy/org.nixos.privoxy.plist
 !custom/tosheets/default.nix
