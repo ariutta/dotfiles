@@ -12,10 +12,11 @@
 with import <nixpkgs> { config.allowUnfree = true; };
 let
   nixos = import <nixos> { config.allowUnfree = true; };
+  vimCustomBuildInputs = import ./custom/vim/customBuildInputs.nix;
   custom = callPackage ./custom/all-custom.nix {};
 in [
   # TODO see comment in ./custom/vim/default.nix regarding black
-  custom.black
+  #custom.black
   # TODO same issue as described for custom.black
   #pkgs.nodePackages.prettier
 
@@ -32,4 +33,4 @@ in [
   pkgs.nox
   pkgs.nodePackages.node2nix
   pkgs.wget
-] ++ (if stdenv.isDarwin then [] else [])
+] ++ vimCustomBuildInputs ++ (if stdenv.isDarwin then [] else [])

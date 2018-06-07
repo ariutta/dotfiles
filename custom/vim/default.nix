@@ -17,8 +17,7 @@ let
   #    For now, I'm using a hack by specifying custom.black in common.nix,
   #    but I should be able to specify all my Vim deps in here.
   # 3. Something else?
-  black = callPackage ../black/default.nix {}; 
-  perlPackagesCustom = callPackage ../perl-packages.nix {}; 
+  customBuildInputs = import ./customBuildInputs.nix; 
 
   vim_configured = pkgs.vim_configurable.customize {
       name = "vim";
@@ -88,24 +87,5 @@ vim_configured.overrideAttrs (oldAttrs: {
   #   with import <nixpkgs> { config.vim.ftNix = false; };
   # because we specify the same thing here:
   ftNixSupport = false;
-  buildInputs = vim_configured.buildInputs ++ [
-    # Custom Dependencies
-
-    # Deps for Syntastic (Syntax Checker)
-    # * sqlint (TODO: install)
-    #     https://github.com/purcell/sqlint
-    #     Another option: pgsanity (although it's not currently one of the Syntastic-supported options)
-    #       https://github.com/markdrago/pgsanity
-    pkgs.shellcheck
-
-    # Deps for Neoformat
-    pkgs.python36Packages.jsbeautifier
-    pkgs.shfmt
-    # TODO see comment above about this dep.
-    black
-    pkgs.python36Packages.sqlparse
-    perlPackagesCustom.pgFormatter
-    # TODO Create Nix pkg for prettier and install
-    # prettier
-  ];
+  buildInputs = vim_configured.buildInputs ++ customBuildInputs;
 })
