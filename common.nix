@@ -11,19 +11,25 @@
 
 with import <nixpkgs> { config.allowUnfree = true; };
 let
-  nixos = import <nixos> {};
+  nixos = import <nixos> { config.allowUnfree = true; };
   custom = callPackage ./custom/all-custom.nix {};
 in [
   # TODO see comment in ./custom/vim/default.nix regarding black
   custom.black
+  # TODO same issue as described for custom.black
+  #pkgs.nodePackages.prettier
+
   custom.tosheets
   custom.vim
   nixos.jq
-  nixos.python36Packages.powerline
+  nixos.gettext
   nixos.ripgrep
-  nixos.wget
+
   # NOTE: pkgs means nixpkgs.pkgs
   pkgs.pypi2nix
+  pkgs.python36Packages.powerline
   pkgs.nix-repl
   pkgs.nox
+  pkgs.nodePackages.node2nix
+  pkgs.wget
 ] ++ (if stdenv.isDarwin then [] else [])

@@ -11,12 +11,11 @@
 
 with import <nixpkgs> { config.allowUnfree = true; };
 let
-  nixos = import <nixos> {};
-  privoxyCustom = callPackage ./custom/privoxy/privoxy-darwin.nix {}; 
-in [
+  nixos = import <nixos> { config.allowUnfree = true; };
+  common = import ./common.nix;
+in common ++ [
   nixos.irssi
   nixos.lynx
-  nixos.toot
 
   # To use pgmanage, first ensure the target DB is available.
   # Is the DB is remote, create a tunnel like this (tunneling local port 3333 to remote port 5432):
@@ -44,20 +43,12 @@ in [
   #nixos.rstudio
   # The rstudio Nix expression doesn't work on darwin.
   # It currently only supports linux.
-  # For now, these are the steps required to make it work on darwin:
+  # Earlier, these are the steps worked on darwin (but they stopped?):
   # 1. Install R with Nix:
-  nixos.R
+  #nixos.R
   # 2. Follow steps in .profile.public regarding R path
   # 3. Install RStudio manually from here:
   #    https://www.rstudio.com/products/rstudio/download/#download
 
   #pkgs.jdk9 # this one is openjdk, but brew cask is probably Oracle's.
-
-
-  # TODO Make pull request to nixpkgs repo with an update
-  #      to privoxy Nix expression so that it works on
-  #      both linux and darwin.
-  # NOTE See ./custom/privoxy/privoxy-darwin.nix for a note
-  #      on how to start privoxy as a service.
-  privoxyCustom
 ] ++ (if stdenv.isDarwin then [] else [])
