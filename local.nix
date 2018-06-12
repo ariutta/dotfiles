@@ -13,6 +13,7 @@ with import <nixpkgs> { config.allowUnfree = true; };
 let
   nixos = import <nixos> { config.allowUnfree = true; };
   common = import ./common.nix;
+  custom = callPackage ./custom/all-custom.nix {};
 in common ++ [
   # pre-req for composer2nix
   pkgs.nix-prefetch-scripts
