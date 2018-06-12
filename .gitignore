@@ -12,7 +12,7 @@
 !common.nix
 !local.nix
 !lynx.lss
-custom/*
+!custom/README.md
 !custom/all-custom.nix
 !custom/black/default.nix
 !custom/mediawiki-codesniffer/README.md
