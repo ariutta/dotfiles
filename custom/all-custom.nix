@@ -3,9 +3,16 @@
 {
 
   black = callPackage ./black/default.nix {}; 
+  composer2nix = callPackage ./composer2nix/default.nix {}; 
+  dracula-theme-terminal-app = callPackage ./dracula-theme-terminal-app/default.nix {};
+  mediawiki-codesniffer = callPackage ./mediawiki-codesniffer/default.nix {};
+  perlPackages = callPackage ./perl-packages.nix {}; 
+  pgsanity = callPackage ./pgsanity/default.nix {};
   privoxy = callPackage ./privoxy/darwin-service.nix {}; 
-  vim = callPackage ./vim/default.nix {};
+  sqlint = callPackage ./sqlint/default.nix {};
+  solarized = callPackage ./solarized/default.nix {};
   tosheets = callPackage ./tosheets/default.nix {};
+  vim = callPackage ./vim/default.nix {};
 
   # Generate Nix expressions for python packages using pypi2nix:
   #   For python packages used as applications:

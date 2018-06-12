@@ -11,3 +11,8 @@
 
 # see README.md for details on purposes of .profile .profile.public .bashrc .bashrc.public .bash_profile
 
+# http://powerline.readthedocs.io/en/master/usage/shell-prompts.html#bash-prompt
+powerline-daemon -q
+export POWERLINE_BASH_CONTINUATION=1
+export POWERLINE_BASH_SELECT=1
+. "$(nix-env -q --out-path --no-name 'python3.6-powerline-2.6')/lib/python3.6/site-packages/powerline/bindings/bash/powerline.sh"

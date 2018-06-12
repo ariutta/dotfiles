@@ -14,6 +14,10 @@ let
   nixos = import <nixos> { config.allowUnfree = true; };
   common = import ./common.nix;
 in common ++ [
+  # pre-req for composer2nix
+  pkgs.nix-prefetch-scripts
+  custom.composer2nix
+
   nixos.irssi
   nixos.lynx
 

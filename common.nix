@@ -11,26 +11,30 @@
 
 with import <nixpkgs> { config.allowUnfree = true; };
 let
-  nixos = import <nixos> { config.allowUnfree = true; };
-  vimCustomBuildInputs = import ./custom/vim/customBuildInputs.nix;
   custom = callPackage ./custom/all-custom.nix {};
+  nixos = import <nixos> { config.allowUnfree = true; };
 in [
-  # TODO see comment in ./custom/vim/default.nix regarding black
-  #custom.black
-  # TODO same issue as described for custom.black
-  #pkgs.nodePackages.prettier
+  ####################
+  # Deps for powerline
+  ####################
+  # TODO does the powerline package automatically install the powerline fonts?
+  #pkgs.powerline-fonts
+  # NOTE: the PyPi name is powerline-status, but the Nix name is just powerline.
+  pkgs.python36Packages.powerline
+  # NOTE: I added lines to ./.bashrc.public, as instructed here:
+  # http://powerline.readthedocs.io/en/master/usage/shell-prompts.html#bash-prompt
 
   custom.tosheets
   custom.vim
+
   nixos.jq
   nixos.gettext
   nixos.ripgrep
 
   # NOTE: pkgs means nixpkgs.pkgs
   pkgs.pypi2nix
-  pkgs.python36Packages.powerline
   pkgs.nix-repl
   pkgs.nox
   pkgs.nodePackages.node2nix
   pkgs.wget
-] ++ vimCustomBuildInputs ++ (if stdenv.isDarwin then [] else [])
+] ++ (if stdenv.isDarwin then [] else [])
