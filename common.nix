@@ -17,6 +17,8 @@ in [
   ####################
   # Deps for powerline
   ####################
+  # TODO what is the relationship with Bash-it's powerline theme?
+  # https://github.com/Bash-it/bash-it/tree/master/themes/powerline
   # TODO does the powerline package automatically install the powerline fonts?
   #pkgs.powerline-fonts
   # NOTE: the PyPi name is powerline-status, but the Nix name is just powerline.

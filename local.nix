@@ -15,12 +15,10 @@ let
   common = import ./common.nix;
   custom = callPackage ./custom/all-custom.nix {};
 in common ++ [
-  # pre-req for composer2nix
-  pkgs.nix-prefetch-scripts
   custom.composer2nix
-
   nixos.irssi
   nixos.lynx
+  pkgs.nix-prefetch-scripts
 
   # To use pgmanage, first ensure the target DB is available.
   # Is the DB is remote, create a tunnel like this (tunneling local port 3333 to remote port 5432):

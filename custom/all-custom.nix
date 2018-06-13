@@ -3,7 +3,7 @@
 {
 
   black = callPackage ./black/default.nix {}; 
-  composer2nix = callPackage ./composer2nix/default.nix {}; 
+  composer2nix = import (fetchTarball https://api.github.com/repos/svanderburg/composer2nix/tarball/8453940d79a45ab3e11f36720b878554fe31489f) {}; 
   mediawiki-codesniffer = callPackage ./mediawiki-codesniffer/default.nix {};
   perlPackages = callPackage ./perl-packages.nix {}; 
   pgsanity = callPackage ./pgsanity/default.nix {};

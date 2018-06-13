@@ -1,5 +1,12 @@
 # Cheatsheet for creating custom packages
 
+## Test a package expression
+
+```sh
+nix-build -E 'with import <nixpkgs> { }; callPackage ./default.nix {}'
+./result/bin/abc --help
+```
+
 ## Python
 
 Generate Nix expressions for python packages by using pypi2nix.
