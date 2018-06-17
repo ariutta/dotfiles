@@ -136,9 +136,10 @@ if [ -d "/nix/var/nix/profiles/default/bin" ]; then PATH="$PATH:/nix/var/nix/pro
 # located in .bashrc.public, but it needs to happen before
 # nix is sourced, because otherwise, the PS1 env var that
 # makes the prompt for nix-shell green will not display.
-# UPDATED: it's still in here, but now I don't care about the nix-shell prompt.
-# It's because it needs to happen after Nix is initialized above. Putting this
-# into .bashrc.public doesn't seem to work.
+# UPDATED: it's still in here, but strangely, the nix-shell prompt seems fine.
+# However, I have the opposite problem. The following seems as if it needs to
+# happen AFTER Nix is initialized above. Putting this into .bashrc.public
+# doesn't seem to work, maybe because it gets run too soon?
 ####################
 # Path to the bash it configuration
 export BASH_IT="$HOME/.bash_it"
