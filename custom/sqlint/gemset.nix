@@ -11,10 +11,10 @@
     dependencies = ["json"];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "1yap90gyzrvljwyiq4wlbar8yhr8c1yrqwrkmc0395m469sram2m";
+      sha256 = "0zgwnrf5mkpkxfh49r2pvh2djivrbqd19350g8hxapmkya9w3qpi";
       type = "gem";
     };
-    version = "0.13.5";
+    version = "1.0.0";
   };
   sqlint = {
     dependencies = ["pg_query"];
