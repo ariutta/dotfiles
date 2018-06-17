@@ -155,7 +155,7 @@ if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
 
 	# Lock and Load a custom theme file
 	# location $HOME/.bash_it/themes/
-	export BASH_IT_THEME="powerline-naked"
+	export BASH_IT_THEME="powerline"
 
 	# (Advanced): Uncomment this to make Bash-it reload itself automatically
 	# after enabling or disabling aliases, plugins, and completions.
