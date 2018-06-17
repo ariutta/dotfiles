@@ -1,8 +1,6 @@
 { lib, bundlerApp, fetchurl, ruby }:
 
 let
-  gemset = import ./gemset.nix;
-  pgQueryVersion = gemset.pg_query.version;
   LIB_PG_QUERY_TAG = "10-1.0.1";
   libpgQuerySrc = fetchurl {
     name = "libpg_query.tar.gz";
@@ -31,6 +29,6 @@ in bundlerApp {
     homepage    = https://github.com/purcell/sqlint;
     license     = licenses.mit;
     maintainers = with maintainers; [ ariutta ];
-    platforms   = platforms.all;
+    platforms   = with platforms; [ "x86_64-linux" "x86_64-darwin" ];
   };
 }
