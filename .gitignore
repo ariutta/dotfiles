@@ -22,6 +22,8 @@
 !custom/mediawiki-codesniffer/default.nix
 !custom/mediawiki-codesniffer/override.nix
 !custom/mediawiki-codesniffer/php-packages.nix
+!custom/pathvisio/default.nix
+!custom/pathvisio/Info.plist
 !custom/perl-packages.nix
 !custom/pgsanity/default.nix
 !custom/privoxy/darwin-service.nix
