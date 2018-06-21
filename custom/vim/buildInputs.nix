@@ -9,6 +9,7 @@ with import <nixpkgs> { config.allowUnfree = true; };
 let
   custom = callPackage ../all-custom.nix {};
 in [
+  pkgs.python3
   ####################
   # Deps for Neoformat
   ####################
