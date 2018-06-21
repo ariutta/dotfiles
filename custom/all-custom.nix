@@ -11,5 +11,6 @@
   sqlint = callPackage ./sqlint/default.nix {};
   tosheets = callPackage ./tosheets/default.nix {};
   vim = callPackage ./vim/default.nix {};
+  pathvisio = callPackage ./pathvisio/default.nix {};
 
 }
