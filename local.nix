@@ -11,6 +11,8 @@ in common ++ [
   # See https://github.com/NixOS/nixpkgs/issues/40956
   #pkgs.anki
   # Until it's fixed, just manually install from https://apps.ankiweb.net/
+  # At some point, I ran this from the command line:
+  # DYLD_FRAMEWORK_PATH=/System/Library/Frameworks `nix-build '<nixpkgs>' -A anki --no-out-link`/bin/anki
 
   custom.composer2nix
   nixos.irssi
