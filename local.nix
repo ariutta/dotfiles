@@ -12,15 +12,15 @@ in common ++ [
   #pkgs.anki
   # Until it's fixed, just manually install from https://apps.ankiweb.net/
 
-  custom.composer2nix
   nixos.irssi
-  nixos.lynx
   pkgs.keepassxc
-  pkgs.nix-prefetch-scripts
+  nixos.lynx
   pkgs.nodejs-8_x
 
   # openssh includes ssh-copy-id
   nixos.openssh
+
+  custom.pathvisio
 
   # To use pgmanage, first ensure the target DB is available.
   # Is the DB is remote, create a tunnel like this (tunneling local port 3333 to remote port 5432):

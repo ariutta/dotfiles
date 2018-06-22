@@ -4,6 +4,10 @@ let
   custom = callPackage ./custom/all-custom.nix {};
   nixos = import <nixos> { config.allowUnfree = true; };
 in [
+  # nix-prefetch-scripts is a dependency of composer2nix
+  pkgs.nix-prefetch-scripts
+  custom.composer2nix
+
   ####################
   # Deps for powerline
   ####################
