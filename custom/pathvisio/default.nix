@@ -1,13 +1,12 @@
-# some docs
+# some docs:
 # https://developer.apple.com/library/archive/documentation/Java/Conceptual/Java14Development/03-JavaDeployment/JavaDeployment.html
-
-# some of the CLI args allowed
+# some of the accepted PathVisio CLI args:
 # https://github.com/PathVisio/pathvisio/blob/master/modules/org.pathvisio.launcher/src/org/pathvisio/launcher/PathVisioMain.java
 { stdenv, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, options ? {
   desktop = true;
   interactions = false;
   metabolites = false;
-  # TODO look into downloading the dbs, if requested
+  # TODO look into giving the option to use a local download of the dbs
 } }:
 
 let
@@ -21,6 +20,14 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ unzip ant jdk ];
 
   javaPath = "${jdk.jre}/bin/java";
+
+  libPath0 = "../lib";
+  libPath1 = "$out/lib/pathvisio";
+
+  modulesPath0 = "../modules";
+  modulesPath1 = "${libPath1}/modules";
+
+  sharePath1 = "$out/share/pathvisio";
 
   src = fetchFromGitHub {
     owner = "pathvisio";
@@ -66,7 +73,7 @@ stdenv.mkDerivation rec {
 
     cat > ./bin/gpmlconvert <<EOF
     #! $shell
-    CLASSPATH=../modules/org.pathvisio.core.jar:../lib/*:${srcBiopax3GPML}
+    CLASSPATH=${modulesPath0}/org.pathvisio.core.jar:${libPath0}/*:${srcBiopax3GPML}
     exec ${javaPath} -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
     EOF
 
@@ -94,8 +101,11 @@ stdenv.mkDerivation rec {
   # TODO is this just for Linux?
   desktopItem = makeDesktopItem {
     name = name;
+    # TODO is the CLASSPATH below correct/needed?
     exec = ''
-      ${javaPath} -jar -Dfile.encoding=UTF-8 $out/lib/pathvisio.jar "\$@"
+      #! $shell
+      CLASSPATH=${modulesPath1}/*:${libPath1}/*:${srcBiopax3GPML}
+      ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar "\$@"
     '';
     icon = "${srcPngIcon}";
     desktopName = baseName;
@@ -107,36 +117,38 @@ stdenv.mkDerivation rec {
     mimeType = "application/gpml+xml";
   };
 
+  # TODO Should we somehow take advantage of the osgi and apache capabilities?
   installPhase = ''
-    mkdir -p $out/bin $out/lib $out/modules $out/share
+    mkdir -p "$out/bin" "${libPath1}" "${modulesPath1}"
 
     cp -r ./bin/* $out/bin/
     for f in $out/bin/*; do
       substituteInPlace $f \
-            --replace "../lib" "$out/lib" \
-            --replace "../modules" "$out/modules"
+            --replace "${libPath0}" "${libPath1}" \
+            --replace "${modulesPath0}" "${modulesPath1}"
     done
 
-    cp -r ./lib/* $out/lib/
-    cp -r ./modules/* $out/modules/
+    cp -r ./lib/* "${libPath1}/"
+    cp -r ./modules/* "${modulesPath1}/"
 
-#    echo 'Sample commands'
-#    echo 'wget https://cdn.rawgit.com/PathVisio/GPML/fa76a73d/test/2013a/WP1243_69897.gpml'
-#    echo 'GPML -> BioPAX/OWL'
-#    echo 'gpmlconvert WP1243_69897.gpml WP1243_69897.owl'
-#    echo 'GPML -> PDF'
-#    echo '/bin/gpmlconvert WP1243_69897.gpml WP1243_69897.pdf'
-#    echo 'GPML -> PNG'
-#    echo 'gpmlconvert WP1243_69897.gpml WP1243_69897.png'
+    echo 'Sample commands'
+    echo 'wget https://cdn.rawgit.com/PathVisio/GPML/fa76a73d/test/2013a/WP1243_69897.gpml'
+    echo 'GPML -> BioPAX/OWL'
+    echo 'gpmlconvert WP1243_69897.gpml WP1243_69897.owl'
+    echo 'GPML -> PDF'
+    echo '/bin/gpmlconvert WP1243_69897.gpml WP1243_69897.pdf'
+    echo 'GPML -> PNG'
+    echo 'gpmlconvert WP1243_69897.gpml WP1243_69897.png'
   '' + (
   if ! options.desktop then ''
     echo 'desktop functionality not enabled'
   '' else if stdenv.system == "x86_64-darwin" then ''
-    mkdir -p $out/share/Applications
-    unzip -o release/${baseName}.app.zip -d $out/share/Applications/
+    mkdir -p "$out/Applications"
+    unzip -o release/${baseName}.app.zip -d "$out/Applications/"
   '' else ''
-    mkdir -p $out/share/applications
-    ln -s ${desktopItem}/share/applications/* $out/share/applications/
+    mkdir -p "${sharePath1}" "$out/share/applications"
+    cp ./pathvisio.jar "${sharePath1}/pathvisio.jar"
+    ln -s ${desktopItem}/share/applications/* "$out/share/applications/"
   '');
 
   meta = with stdenv.lib;
