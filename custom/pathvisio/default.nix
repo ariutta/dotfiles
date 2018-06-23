@@ -38,7 +38,7 @@ stdenv.mkDerivation rec {
     #! $shell
     ${pathvisioExec}
     EOF
-    chmod a+x ./bin/pathvisio
+    chmod a+x $out/bin/pathvisio
 
     mkdir -p "${sharePath1}"
     cp ./pathvisio.jar "${sharePath1}/pathvisio.jar"
