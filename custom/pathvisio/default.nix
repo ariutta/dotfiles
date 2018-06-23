@@ -29,6 +29,15 @@ stdenv.mkDerivation rec {
 
   sharePath1 = "$out/share/pathvisio";
 
+  pathvisioJarCpCmd = ''
+    mkdir -p "${sharePath1}"
+    cp ./pathvisio.jar "${sharePath1}/pathvisio.jar"
+  '';
+
+  pathvisioExec = ''
+    ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar "\$@"
+  '';
+
   src = fetchFromGitHub {
     owner = "pathvisio";
     repo = "PathVisio";
@@ -74,12 +83,18 @@ stdenv.mkDerivation rec {
     cat > ./bin/gpmlconvert <<EOF
     #! $shell
     CLASSPATH=${modulesPath0}/org.pathvisio.core.jar:${libPath0}/*:${srcBiopax3GPML}
-    exec ${javaPath} -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
+    ${javaPath} -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
+    EOF
+
+    cat > ./bin/pathvisio <<EOF
+    #! $shell
+    ${pathvisioExec}
     EOF
 
     chmod a+x ./bin/gpmlconvert
     chmod a+x ./bin/gpmldiff
     chmod a+x ./bin/gpmlpatch
+    chmod a+x ./bin/pathvisio
   '';
 
   doCheck = true;
@@ -98,15 +113,11 @@ stdenv.mkDerivation rec {
     cd ../
   '';
 
-  # TODO is this just for Linux?
+  # NOTE: # NOTE This might be just for Linux (at least non-macOS)
   desktopItem = makeDesktopItem {
     name = name;
     # TODO is the CLASSPATH below correct/needed?
-    exec = ''
-      #! $shell
-      CLASSPATH=${modulesPath1}/*:${libPath1}/*:${srcBiopax3GPML}
-      ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar "\$@"
-    '';
+    exec = pathvisioExec;
     icon = "${srcPngIcon}";
     desktopName = baseName;
     # TODO what is genericName?
@@ -121,6 +132,9 @@ stdenv.mkDerivation rec {
   installPhase = ''
     mkdir -p "$out/bin" "${libPath1}" "${modulesPath1}"
 
+    cp -r ./bin/gpmlconvert $out/bin/
+    cp -r ./bin/gpmldiff $out/bin/
+    cp -r ./bin/gpmlpatch $out/bin/
     cp -r ./bin/* $out/bin/
     for f in $out/bin/*; do
       substituteInPlace $f \
@@ -131,23 +145,34 @@ stdenv.mkDerivation rec {
     cp -r ./lib/* "${libPath1}/"
     cp -r ./modules/* "${modulesPath1}/"
 
-    echo 'Sample commands'
-    echo 'wget https://cdn.rawgit.com/PathVisio/GPML/fa76a73d/test/2013a/WP1243_69897.gpml'
-    echo 'GPML -> BioPAX/OWL'
-    echo 'gpmlconvert WP1243_69897.gpml WP1243_69897.owl'
-    echo 'GPML -> PDF'
-    echo '/bin/gpmlconvert WP1243_69897.gpml WP1243_69897.pdf'
-    echo 'GPML -> PNG'
-    echo 'gpmlconvert WP1243_69897.gpml WP1243_69897.png'
+    echo 'Sample commands:'
+    echo '  # Get some data'
+    echo '  wget https://cdn.rawgit.com/PathVisio/GPML/fa76a73d/test/2013a/WP1243_69897.gpml'
+    echo '  cp WP1243_69897.gpml test.gpml'
+    echo '  # GPML -> BioPAX/OWL'
+    echo '  gpmlconvert WP1243_69897.gpml WP1243_69897.owl'
+    echo '  # GPML -> PDF'
+    echo '  gpmlconvert WP1243_69897.gpml WP1243_69897.pdf'
+    echo '  # GPML -> PNG'
+    echo '  gpmlconvert WP1243_69897.gpml WP1243_69897.png'
+    echo '  # Diff'
+    echo '  gpmldiff WP1243_69897.gpml test.gpml > test.diff'
+    echo '  # Patch'
+    echo '  gpmlpatch WP1243_69897.gpml < test.diff'
   '' + (
   if ! options.desktop then ''
     echo 'desktop functionality not enabled'
   '' else if stdenv.system == "x86_64-darwin" then ''
+    # NOTE: duplicated below
+    ${pathvisioJarCpCmd}
+
     mkdir -p "$out/Applications"
     unzip -o release/${baseName}.app.zip -d "$out/Applications/"
   '' else ''
-    mkdir -p "${sharePath1}" "$out/share/applications"
-    cp ./pathvisio.jar "${sharePath1}/pathvisio.jar"
+    # NOTE: duplicated above
+    ${pathvisioJarCpCmd}
+
+    mkdir -p "$out/share/applications"
     ln -s ${desktopItem}/share/applications/* "$out/share/applications/"
   '');
 
