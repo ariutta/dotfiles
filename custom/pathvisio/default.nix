@@ -29,13 +29,19 @@ stdenv.mkDerivation rec {
 
   sharePath1 = "$out/share/pathvisio";
 
-  pathvisioJarCpCmd = ''
-    mkdir -p "${sharePath1}"
-    cp ./pathvisio.jar "${sharePath1}/pathvisio.jar"
-  '';
-
   pathvisioExec = ''
     ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar "\$@"
+  '';
+
+  pathvisioJarCpCmd = ''
+    cat > $out/bin/pathvisio <<EOF
+    #! $shell
+    ${pathvisioExec}
+    EOF
+    chmod a+x ./bin/pathvisio
+
+    mkdir -p "${sharePath1}"
+    cp ./pathvisio.jar "${sharePath1}/pathvisio.jar"
   '';
 
   src = fetchFromGitHub {
@@ -86,15 +92,9 @@ stdenv.mkDerivation rec {
     ${javaPath} -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
     EOF
 
-    cat > ./bin/pathvisio <<EOF
-    #! $shell
-    ${pathvisioExec}
-    EOF
-
     chmod a+x ./bin/gpmlconvert
     chmod a+x ./bin/gpmldiff
     chmod a+x ./bin/gpmlpatch
-    chmod a+x ./bin/pathvisio
   '';
 
   doCheck = true;
@@ -132,9 +132,6 @@ stdenv.mkDerivation rec {
   installPhase = ''
     mkdir -p "$out/bin" "${libPath1}" "${modulesPath1}"
 
-    cp -r ./bin/gpmlconvert $out/bin/
-    cp -r ./bin/gpmldiff $out/bin/
-    cp -r ./bin/gpmlpatch $out/bin/
     cp -r ./bin/* $out/bin/
     for f in $out/bin/*; do
       substituteInPlace $f \
