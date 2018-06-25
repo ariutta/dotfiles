@@ -74,7 +74,9 @@ stdenv.mkDerivation rec {
   postPatch = ''
     for f in $out/bin/*; do
       substituteInPlace $out/scripts/* \
-            --replace "java -ea" "${javaPath} -ea"
+            --replace "java -ea" "${javaPath} -ea" \
+            --replace "#!/bin/sh" "#!$shell" \
+            --replace "#!/bin/bash" "#!$shell"
     done
   '';
 

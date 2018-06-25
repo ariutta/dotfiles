@@ -44,4 +44,9 @@ in common ++ [
   # When I stopped using brew, I added the pkg below but haven't confirmed it works.
   # This one is openjdk, but the version from brew cask was probably Oracle's.
   #pkgs.jdk9
+
+  # The NixOS pkgs for virtualbox and virtualboxHardened are linux-only,
+  # So I need to install it manually on macOS:
+  # https://www.virtualbox.org/wiki/Downloads
+  #nixos.virtualboxHardened
 ] ++ (if stdenv.isDarwin then [] else [])
