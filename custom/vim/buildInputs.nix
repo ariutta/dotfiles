@@ -5,7 +5,10 @@
 # https://github.com/NixOS/nixpkgs/issues/26146
 ###################################################
 
-with import <nixpkgs> { config.allowUnfree = true; };
+with import (builtins.fetchTarball
+"https://github.com/nixos/nixpkgs/archive/c5cb7e550ef0bf0438240f6998afffc64b3c3fa7.tar.gz") {
+  config.allowUnfree = true;
+};
 let
   custom = callPackage ../all-custom.nix {};
 in [
