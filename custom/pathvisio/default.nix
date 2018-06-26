@@ -36,8 +36,10 @@ stdenv.mkDerivation rec {
   pathvisioJarCpCmd = ''
     cat > $out/bin/pathvisio <<EOF
     #! $shell
+    cd \$(dirname \$0)
     ${pathvisioExec}
     EOF
+
     chmod a+x $out/bin/pathvisio
 
     mkdir -p "${sharePath1}"
@@ -72,8 +74,8 @@ stdenv.mkDerivation rec {
 #  };
 
   postPatch = ''
-    for f in $out/bin/*; do
-      substituteInPlace $out/scripts/* \
+    for f in ./scripts/*; do
+      substituteInPlace $f \
             --replace "java -ea" "${javaPath} -ea" \
             --replace "#!/bin/sh" "#!$shell" \
             --replace "#!/bin/bash" "#!$shell"
@@ -118,16 +120,15 @@ stdenv.mkDerivation rec {
   # NOTE: # NOTE This might be just for Linux (at least non-macOS)
   desktopItem = makeDesktopItem {
     name = name;
-    # TODO is the CLASSPATH below correct/needed?
-    exec = pathvisioExec;
+    exec = "pathvisio";
     icon = "${srcPngIcon}";
     desktopName = baseName;
-    # TODO what is genericName?
-    genericName = "IDE";
+    genericName = "Pathway Editor";
     comment = meta.description;
-    # TODO what is categories?
-    categories = "Development;";
+    # See https://specifications.freedesktop.org/menu-spec/latest/apa.html
+    categories = "Editor;Graphics;Science;Biology;DataVisualization;";
     mimeType = "application/gpml+xml";
+    terminal = "false";
   };
 
   # TODO Should we somehow take advantage of the osgi and apache capabilities?
