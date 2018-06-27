@@ -48,8 +48,8 @@ fi
 If not already set (see `nix-channel --list`), set the channels:
 
 ```sh
-nix-channel --add https://nixos.org/channels/nixpkgs-unstable
-nix-channel --add https://nixos.org/channels/nixos-17.09 nixos
+nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
+nix-channel --add https://nixos.org/channels/nixos-17.09 stable
 ```
 
 Install packages managed by Nix (same command to update):

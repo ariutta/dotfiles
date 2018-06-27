@@ -1,10 +1,9 @@
 # See README.md for instructions on installing/updating.
 
-with import <nixpkgs> { config.allowUnfree = true; };
+with import <stable> { config.allowUnfree = true; };
 let
-  nixos = import <nixos> { config.allowUnfree = true; };
   common = import ./common.nix;
-  custom = callPackage ./custom/all-custom.nix {};
+  custom = import ./custom/all-custom.nix;
 in common ++ [
 
   # Anki installation not currently working on macOS.
@@ -14,13 +13,13 @@ in common ++ [
   # At some point, I ran this from the command line:
   # DYLD_FRAMEWORK_PATH=/System/Library/Frameworks `nix-build '<nixpkgs>' -A anki --no-out-link`/bin/anki
 
-  nixos.irssi
+  pkgs.irssi
   pkgs.keepassxc
-  nixos.lynx
+  pkgs.lynx
   pkgs.nodejs-8_x
 
   # openssh includes ssh-copy-id
-  nixos.openssh
+  pkgs.openssh
 
   custom.pathvisio
 
@@ -28,14 +27,14 @@ in common ++ [
   # Is the DB is remote, create a tunnel like this (tunneling local port 3333 to remote port 5432):
   #   ssh -L 3333:wikipathways-workspace.gladstone.internal:5432 ariutta@wikipathways-workspace.gladstone.internal
   # Then you can run "pgmanage" from the command line and open a browser windowa to the URL that is spit out.
-  nixos.pgmanage
+  pkgs.pgmanage
 
-  #nixos.rstudio
+  #pkgs.rstudio
   # The rstudio Nix expression doesn't work on darwin.
   # It currently only supports linux.
   # Earlier, these the steps may have worked on darwin (but they stopped?):
   # 1. Install R with Nix:
-  #nixos.R
+  #pkgs.R
   # 2. Follow steps in .profile.public regarding R path
   # 3. Install RStudio manually from here:
   #    https://www.rstudio.com/products/rstudio/download/#download
@@ -48,5 +47,5 @@ in common ++ [
   # The NixOS pkgs for virtualbox and virtualboxHardened are linux-only,
   # So I need to install it manually on macOS:
   # https://www.virtualbox.org/wiki/Downloads
-  #nixos.virtualboxHardened
+  #pkgs.virtualboxHardened
 ] ++ (if stdenv.isDarwin then [] else [])

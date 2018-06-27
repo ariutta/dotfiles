@@ -1,4 +1,4 @@
-{ callPackage }:
+with import <unstable> { config.allowUnfree = true; };
 
 {
 
