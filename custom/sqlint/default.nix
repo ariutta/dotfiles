@@ -29,6 +29,6 @@ in bundlerApp {
     homepage    = https://github.com/purcell/sqlint;
     license     = licenses.mit;
     maintainers = with maintainers; [ ariutta ];
-    platforms   = with platforms; [ "x86_64-linux" "x86_64-darwin" ];
+    platforms   = with platforms; [ "i686-linux" "x86_64-linux" "x86_64-darwin" ];
   };
 }
