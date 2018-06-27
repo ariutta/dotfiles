@@ -126,7 +126,7 @@ stdenv.mkDerivation rec {
     genericName = "Pathway Editor";
     comment = meta.description;
     # See https://specifications.freedesktop.org/menu-spec/latest/apa.html
-    categories = "Editor;Graphics;Science;Biology;DataVisualization;";
+    categories = "Editor;Science;Biology;DataVisualization;";
     mimeType = "application/gpml+xml";
     terminal = "false";
   };
