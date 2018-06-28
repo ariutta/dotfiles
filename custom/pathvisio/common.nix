@@ -1,15 +1,26 @@
-{ stdenv, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, desktop, datasources, buildType }:
+{ stdenv, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, buildType, desktop ? true, organism ? "Homo sapiens", datasources ? {} }:
+
+with builtins;
 
 let
   baseName = "PathVisio";
   version = "3.3.0";
 in
-with builtins;
 stdenv.mkDerivation rec {
   name = concatStringsSep "-" (filter (x: isString x) [baseName version buildType]);
 
   # should this be nativeBuildInputs or just buildInputs?
   nativeBuildInputs = [ unzip ant jdk ];
+  #buildInputs = [datasources.gene datasources.interaction datasources.metabolite];
+  buildInputs = (attrValues datasources);
+
+  #pathvisioPlugins = readFile ./pathvisio.xml;
+  pathvisioPlugins = ./pathvisio.xml;
+
+  bridgedbSettings = fetchurl {
+    url = "http://repository.pathvisio.org/plugins/pvplugins-bridgedbSettings/1.0.0/pvplugins-bridgedbSettings-1.0.0.jar";
+    sha256 = "0gq5ybdv4ci5k01vr80ixlji463l9mdqmkjvhb753dbxhhcnxzjy";
+  };
 
   javaPath = "${jdk.jre}/bin/java";
 
@@ -26,17 +37,82 @@ stdenv.mkDerivation rec {
   # once the above is figured out, it might be possible to append
   # datasourcesFlags to pathvisioJarCpCmd
   #datasourcesFlags = builtins.concatStringsSep " " (builtins.map (d: "-p " + d) datasources);
-  datasourcesFlags = concatStringsSep " " (map (d: "-p " + d) datasources);
-
-  pathvisioExec = ''
-    ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar ${datasourcesFlags} "\$@"
-  '';
+  #datasourcesFlags = concatStringsSep " " (map (d: "-d ${d.outPath}/${d.name}.bridge") datasources);
+  #datasourcesFlags = concatStringsSep " " (map (d: "-d ${d.outPath}/datasource.bridge") datasources);
+  #${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar ${datasourcesFlags} "\$@"
 
   pathvisioJarCpCmd = ''
     cat > $out/bin/pathvisio <<EOF
     #! $shell
-    cd \$(dirname \$0)
-    ${pathvisioExec}
+    mkdir -p "\$HOME/.PathVisio/.bundles"
+    PREFS_FILE="\$HOME/.PathVisio/.PathVisio"
+    if [ ! -e "\$PREFS_FILE" ];
+    then
+      echo "#" > "\$PREFS_FILE";
+      echo "#Wed Jun 27 16:21:04 PDT 2018" >> "\$PREFS_FILE";
+    fi
+
+    if [ ! -e "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar" ];
+    then
+      #cd "\$HOME/.PathVisio/.bundles" || exit
+      #ln -s "${bridgedbSettings}" "./pvplugins-bridgedbSettings-1.0.0.jar"
+
+      #cp "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
+      #chmod u+rx "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
+
+      ln -s "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
+      cat ${pathvisioPlugins} > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
+      sed -i.bak "s#HOME_REPLACE_ME#\$HOME#g" "\$HOME/.PathVisio/.bundles/pathvisio.xml"
+    fi
+
+    # TODO when, if ever, do we want to use the "-x" flag?
+    if grep -Fq "BRIDGEDB_CONNECTION" "\$PREFS_FILE"
+    then
+      # code if found
+      echo 'Connected to BridgeDb webservice.'
+    else
+      # code if not found
+      echo 'BRIDGEDB_CONNECTION_1=idmapper-bridgerest\\:http\\://webservice.bridgedb.org\\:80/${organism}' >> "\$PREFS_FILE"
+    fi
+  '' + (if hasAttr "gene" datasources then ''
+    if grep -Fq "DB_CONNECTSTRING_GDB" "\$PREFS_FILE"
+    then
+      # code if found
+      sed -i.bak 's#DB_CONNECTSTRING_GDB=idmapper-pgdb\\\\:.*\$#DB_CONNECTSTRING_GDB=idmapper-pgdb\\\\:${datasources.gene.outPath}/${datasources.gene.name}.bridge#' "\$PREFS_FILE"
+    else
+      # code if not found
+      echo 'DB_CONNECTSTRING_GDB=idmapper-pgdb\\:${datasources.gene.outPath}/${datasources.gene.name}.bridge' >> "\$PREFS_FILE"
+    fi
+  '' else ''
+      # do nothing
+    ''
+  ) + (if hasAttr "interaction" datasources then ''
+    if grep -Fq "DB_CONNECTSTRING_IDB" "\$PREFS_FILE"
+    then
+      # code if found
+      sed -i.bak 's#DB_CONNECTSTRING_IDB=idmapper-pgdb\\\\:.*\$#DB_CONNECTSTRING_IDB=idmapper-pgdb\\\\:${datasources.interaction.outPath}/${datasources.interaction.name}.bridge#' "\$PREFS_FILE"
+    else
+      # code if not found
+      echo 'DB_CONNECTSTRING_IDB=idmapper-pgdb\\:${datasources.interaction.outPath}/${datasources.interaction.name}.bridge' >> "\$PREFS_FILE"
+    fi
+  '' else ''
+      # do nothing
+    ''
+  ) + (if hasAttr "metabolite" datasources then ''
+    if grep -Fq "DB_CONNECTSTRING_METADB" "\$PREFS_FILE"
+    then
+      # code if found
+      sed -i.bak 's#DB_CONNECTSTRING_METADB=idmapper-pgdb\\\\:.*\$#DB_CONNECTSTRING_METADB=idmapper-pgdb\\\\:${datasources.metabolite.outPath}/${datasources.metabolite.name}.bridge#' "\$PREFS_FILE"
+    else
+      # code if not found
+      echo 'DB_CONNECTSTRING_METADB=idmapper-pgdb\\:${datasources.metabolite.outPath}/${datasources.metabolite.name}.bridge' >> "\$PREFS_FILE"
+    fi
+  '' else ''
+      # do nothing
+    ''
+  ) + ''
+    cd \$(dirname \$0) || exit
+    ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar "\$@"
     EOF
 
     chmod a+x $out/bin/pathvisio
@@ -50,6 +126,7 @@ stdenv.mkDerivation rec {
     repo = "PathVisio";
     rev = "61f15de96b676ee581858f0485f9c6d8f61a3476";
     sha256 = "1n2897290g6kph1l04d2lj6n7137w0gnavzp9rjz43hi1ggyw6f9";
+    stripRoot = false;
   };
 
   biopax3GPMLSrc = fetchurl {
@@ -70,9 +147,13 @@ stdenv.mkDerivation rec {
     done
   '';
 
-  buildPhase = (if ! desktop then "ant"
-  else if stdenv.system == "x86_64-darwin" then "ant appbundler"
-  else "ant exe") + ''
+  buildPhase = (if ! desktop then ''
+    ant
+  '' else if stdenv.system == "x86_64-darwin" then ''
+    ant appbundler
+  '' else ''
+    ant exe
+  '') + ''
 
     mkdir -p ./bin
     cp ./scripts/gpmldiff.sh ./bin/gpmldiff
@@ -107,6 +188,7 @@ stdenv.mkDerivation rec {
 
   desktopItem = makeDesktopItem {
     name = name;
+    #name = replaceStrings [" "] ["_"] "${name}-${organism}";
     exec = "pathvisio";
     icon = "${pngIconSrc}";
     desktopName = baseName;
@@ -148,26 +230,24 @@ stdenv.mkDerivation rec {
     echo '  gpmlpatch WP1243_69897.gpml < test.diff'
   '' + (
   if ! desktop then ''
-    echo 'desktop functionality not enabled'
-  '' else if stdenv.system == "x86_64-darwin" then ''
-    # NOTE: duplicated below
-    ${pathvisioJarCpCmd}
-
-    mkdir -p "$out/Applications"
-    unzip -o release/${baseName}.app.zip -d "$out/Applications/"
+    echo 'Desktop functionality not enabled.'
   '' else ''
-    # NOTE: duplicated above
     ${pathvisioJarCpCmd}
-
-    mkdir -p "$out/share/applications"
-    ln -s ${desktopItem}/share/applications/* "$out/share/applications/"
-  '');
+  '' + (
+    if stdenv.system == "x86_64-darwin" then ''
+      mkdir -p "$out/Applications"
+      unzip -o release/${baseName}.app.zip -d "$out/Applications/"
+    '' else ''
+      mkdir -p "$out/share/applications"
+      ln -s ${desktopItem}/share/applications/* "$out/share/applications/"
+    ''
+  ));
 
   meta = with stdenv.lib;
     { description = "A tool to edit and analyze biological pathways";
       homepage = https://www.pathvisio.org/;
       license = licenses.asl20;
-      maintainers = with maintainers; [ ];
+      maintainers = with maintainers; [ ariutta ];
       platforms = platforms.all;
     };
 }
