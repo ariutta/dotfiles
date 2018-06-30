@@ -26,6 +26,9 @@
 !custom/pathvisio/default.nix
 !custom/pathvisio/headless.nix
 !custom/pathvisio/huge.nix
+!custom/pathvisio/datasourcesLocal.nix
+!custom/pathvisio/pathvisio.xml
+!custom/pathvisio/pathway.gpml
 !custom/perl-packages.nix
 !custom/pgsanity/default.nix
 !custom/privoxy/darwin-service.nix

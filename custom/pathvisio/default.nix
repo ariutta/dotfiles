@@ -1,6 +1,13 @@
-{ callPackage, datasources ? {}, desktop ? true, organism ? "Homo sapiens" }:
+{ callPackage,
+organism ? "Homo sapiens",
+desktop ? true,
+genes ? "webservice",
+interactions ? false,
+metabolites ? "webservice"
+}:
 
-callPackage ./common.nix {
-  inherit datasources desktop organism;
-  buildType = null;
-}
+with builtins;
+
+getAttr organism (callPackage ./all.nix {
+  inherit desktop genes interactions metabolites;
+})

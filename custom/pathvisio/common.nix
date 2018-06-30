@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, buildType, desktop ? true, organism ? "Homo sapiens", datasources ? {} }:
+{ stdenv, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, desktop ? true, organism ? "Homo sapiens", datasources ? [] }:
 
 with builtins;
 
@@ -7,14 +7,12 @@ let
   version = "3.3.0";
 in
 stdenv.mkDerivation rec {
-  name = concatStringsSep "-" (filter (x: isString x) [baseName version buildType]);
+  name = replaceStrings [" "] ["_"] (concatStringsSep "-" (filter (x: isString x) [baseName version organism]));
 
   # should this be nativeBuildInputs or just buildInputs?
   nativeBuildInputs = [ unzip ant jdk ];
-  #buildInputs = [datasources.gene datasources.interaction datasources.metabolite];
-  buildInputs = (attrValues datasources);
+  buildInputs = map (d: d.src) datasources;
 
-  #pathvisioPlugins = readFile ./pathvisio.xml;
   pathvisioPlugins = ./pathvisio.xml;
 
   bridgedbSettings = fetchurl {
@@ -32,15 +30,6 @@ stdenv.mkDerivation rec {
 
   sharePath1 = "$out/share/pathvisio";
 
-  # TODO look into giving the option to use a local download of the datasources
-  #datasourcesFlags = builtins.reduce datasources
-  # once the above is figured out, it might be possible to append
-  # datasourcesFlags to pathvisioJarCpCmd
-  #datasourcesFlags = builtins.concatStringsSep " " (builtins.map (d: "-p " + d) datasources);
-  #datasourcesFlags = concatStringsSep " " (map (d: "-d ${d.outPath}/${d.name}.bridge") datasources);
-  #datasourcesFlags = concatStringsSep " " (map (d: "-d ${d.outPath}/datasource.bridge") datasources);
-  #${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar ${datasourcesFlags} "\$@"
-
   pathvisioJarCpCmd = ''
     cat > $out/bin/pathvisio <<EOF
     #! $shell
@@ -54,12 +43,6 @@ stdenv.mkDerivation rec {
 
     if [ ! -e "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar" ];
     then
-      #cd "\$HOME/.PathVisio/.bundles" || exit
-      #ln -s "${bridgedbSettings}" "./pvplugins-bridgedbSettings-1.0.0.jar"
-
-      #cp "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
-      #chmod u+rx "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
-
       ln -s "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
       cat ${pathvisioPlugins} > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
       sed -i.bak "s#HOME_REPLACE_ME#\$HOME#g" "\$HOME/.PathVisio/.bundles/pathvisio.xml"
@@ -74,43 +57,7 @@ stdenv.mkDerivation rec {
       # code if not found
       echo 'BRIDGEDB_CONNECTION_1=idmapper-bridgerest\\:http\\://webservice.bridgedb.org\\:80/${organism}' >> "\$PREFS_FILE"
     fi
-  '' + (if hasAttr "gene" datasources then ''
-    if grep -Fq "DB_CONNECTSTRING_GDB" "\$PREFS_FILE"
-    then
-      # code if found
-      sed -i.bak 's#DB_CONNECTSTRING_GDB=idmapper-pgdb\\\\:.*\$#DB_CONNECTSTRING_GDB=idmapper-pgdb\\\\:${datasources.gene.outPath}/${datasources.gene.name}.bridge#' "\$PREFS_FILE"
-    else
-      # code if not found
-      echo 'DB_CONNECTSTRING_GDB=idmapper-pgdb\\:${datasources.gene.outPath}/${datasources.gene.name}.bridge' >> "\$PREFS_FILE"
-    fi
-  '' else ''
-      # do nothing
-    ''
-  ) + (if hasAttr "interaction" datasources then ''
-    if grep -Fq "DB_CONNECTSTRING_IDB" "\$PREFS_FILE"
-    then
-      # code if found
-      sed -i.bak 's#DB_CONNECTSTRING_IDB=idmapper-pgdb\\\\:.*\$#DB_CONNECTSTRING_IDB=idmapper-pgdb\\\\:${datasources.interaction.outPath}/${datasources.interaction.name}.bridge#' "\$PREFS_FILE"
-    else
-      # code if not found
-      echo 'DB_CONNECTSTRING_IDB=idmapper-pgdb\\:${datasources.interaction.outPath}/${datasources.interaction.name}.bridge' >> "\$PREFS_FILE"
-    fi
-  '' else ''
-      # do nothing
-    ''
-  ) + (if hasAttr "metabolite" datasources then ''
-    if grep -Fq "DB_CONNECTSTRING_METADB" "\$PREFS_FILE"
-    then
-      # code if found
-      sed -i.bak 's#DB_CONNECTSTRING_METADB=idmapper-pgdb\\\\:.*\$#DB_CONNECTSTRING_METADB=idmapper-pgdb\\\\:${datasources.metabolite.outPath}/${datasources.metabolite.name}.bridge#' "\$PREFS_FILE"
-    else
-      # code if not found
-      echo 'DB_CONNECTSTRING_METADB=idmapper-pgdb\\:${datasources.metabolite.outPath}/${datasources.metabolite.name}.bridge' >> "\$PREFS_FILE"
-    fi
-  '' else ''
-      # do nothing
-    ''
-  ) + ''
+  '' + concatStringsSep "" (map (d: d.linkCmd) datasources) + ''
     cd \$(dirname \$0) || exit
     ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar "\$@"
     EOF
@@ -145,6 +92,8 @@ stdenv.mkDerivation rec {
             --replace "#!/bin/sh" "#!$shell" \
             --replace "#!/bin/bash" "#!$shell"
     done
+    substituteInPlace ./JavaApplicationStub \
+          --replace "JAVACMD=\"JAVACMD_REPLACE_ME\"" "JAVACMD=\"${javaPath}\""
   '';
 
   buildPhase = (if ! desktop then ''
@@ -188,7 +137,6 @@ stdenv.mkDerivation rec {
 
   desktopItem = makeDesktopItem {
     name = name;
-    #name = replaceStrings [" "] ["_"] "${name}-${organism}";
     exec = "pathvisio";
     icon = "${pngIconSrc}";
     desktopName = baseName;
@@ -237,6 +185,7 @@ stdenv.mkDerivation rec {
     if stdenv.system == "x86_64-darwin" then ''
       mkdir -p "$out/Applications"
       unzip -o release/${baseName}.app.zip -d "$out/Applications/"
+      cp ./JavaApplicationStub $out/Applications/PathVisio.app/Contents/MacOS/JavaApplicationStub
     '' else ''
       mkdir -p "$out/share/applications"
       ln -s ${desktopItem}/share/applications/* "$out/share/applications/"
@@ -245,6 +194,16 @@ stdenv.mkDerivation rec {
 
   meta = with stdenv.lib;
     { description = "A tool to edit and analyze biological pathways";
+      longDescription = ''
+        You can specify a species:
+        nix-env -iA nixos.pathvisio --arg organism "Mus musculus"
+
+        The available species are listed here:
+        https://github.com/bridgedb/BridgeDb/blob/master/org.bridgedb.bio/resources/org/bridgedb/bio/organisms.txt
+
+        You can also specify whether to use a local datasource or the BridgeDb webservice:
+        nix-env -iA nixos.pathvisio --arg organism "Homo sapiens" --arg genes "webservice" --arg interactions local --arg metabolites "webservice"
+      '';
       homepage = https://www.pathvisio.org/;
       license = licenses.asl20;
       maintainers = with maintainers; [ ariutta ];
