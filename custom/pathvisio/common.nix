@@ -1,4 +1,5 @@
-{ stdenv, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, desktop ? true, organism ? "Homo sapiens", datasources ? [] }:
+{ stdenv, coreutils, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, desktop ? true, organism ? "Homo sapiens", datasources ? [] }:
+# TODO allow for specifying plugins to install
 
 with builtins;
 
@@ -13,6 +14,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ unzip ant jdk ];
   buildInputs = map (d: d.src) datasources;
 
+  pathwayStub = ./pathway.gpml;
   pathvisioPlugins = ./pathvisio.xml;
 
   bridgedbSettings = fetchurl {
@@ -30,37 +32,87 @@ stdenv.mkDerivation rec {
 
   sharePath1 = "$out/share/pathvisio";
 
-  pathvisioJarCpCmd = ''
+  installPathVisioExecutable = ''
     cat > $out/bin/pathvisio <<EOF
-    #! $shell
-    mkdir -p "\$HOME/.PathVisio/.bundles"
-    PREFS_FILE="\$HOME/.PathVisio/.PathVisio"
-    if [ ! -e "\$PREFS_FILE" ];
-    then
-      echo "#" > "\$PREFS_FILE";
-      echo "#Wed Jun 27 16:21:04 PDT 2018" >> "\$PREFS_FILE";
-    fi
+#! $shell
+mkdir -p "\$HOME/.PathVisio/.bundles"
+PREFS_FILE="\$HOME/.PathVisio/.PathVisio"
+if [ ! -e "\$PREFS_FILE" ];
+then
+  echo "#" > "\$PREFS_FILE";
+  echo "#Wed Jun 27 16:21:04 PDT 2018" >> "\$PREFS_FILE";
+fi
 
-    if [ ! -e "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar" ];
-    then
-      ln -s "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
-      cat ${pathvisioPlugins} > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
-      sed -i.bak "s#HOME_REPLACE_ME#\$HOME#g" "\$HOME/.PathVisio/.bundles/pathvisio.xml"
-    fi
+if [ ! -e "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar" ];
+then
+  ln -s "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
+  cat ${pathvisioPlugins} > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
+  sed -i.bak "s#HOME_REPLACE_ME#\$HOME#g" "\$HOME/.PathVisio/.bundles/pathvisio.xml"
+fi
 
-    # TODO when, if ever, do we want to use the "-x" flag?
-    if grep -Fq "BRIDGEDB_CONNECTION" "\$PREFS_FILE"
-    then
-      # code if found
-      echo 'Connected to BridgeDb webservice.'
-    else
-      # code if not found
-      echo 'BRIDGEDB_CONNECTION_1=idmapper-bridgerest\\:http\\://webservice.bridgedb.org\\:80/${organism}' >> "\$PREFS_FILE"
-    fi
-  '' + concatStringsSep "" (map (d: d.linkCmd) datasources) + ''
-    cd \$(dirname \$0) || exit
-    ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar "\$@"
-    EOF
+# TODO: watch this issue:
+# https://github.com/PathVisio/pathvisio/issues/97
+# and when --help and --version are supported,
+# update here (but note that the following regex
+# is probably not quite correct):
+#info_re='\\-h|\\-v|\\-\\-help|\\-\\-version'
+info_re='\\-h|\\-v'
+if [[ "\$1" =~ \$info_re ]];
+then
+  ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar \$1
+  exit 0
+fi
+'' + concatStringsSep "" (map (d: d.linkCmd) datasources) + ''
+
+target_file_raw=\$(echo "\$@" | sed "s#.*\\ \\([^\\ ]*\\.gpml\\(\\.xml\\)\\{0,1\\}\\)#\\1#")
+
+if [ ! "\$target_file_raw" ];
+then
+  # We don't want to overwrite an existing file.
+  suffix=\$(date -j -f "%a %b %d %T %Z %Y" "\$(date)" "+%s")
+  target_file_raw="./pathway-\$suffix.gpml"
+fi
+
+target_file=\$("${coreutils}/bin/readlink" -f "\$target_file_raw")
+
+patchedFlags=""
+
+# If no target file specified, or if it is specified but doesn't exist,
+# we create a starter file and open that.
+if [ ! -e "\$target_file" ];
+then
+        echo "Opening new file: \$target_file"
+        cat "${pathwayStub}" > "\$target_file"
+        chmod u+rw "\$target_file"
+        sed -i.bak "s#Homo sapiens#${organism}#" "\$target_file"
+        rm "\$target_file.bak"
+        patchedFlags="\$@ \$target_file"
+else
+        echo "Opening specified file: \$target_file"
+        patchedFlags=\$(echo "\$@" | sed "s#\$target_file_raw#\$target_file#")
+fi
+
+# TODO how should we handle the case of opening a GPML file having
+# a species not matching organism specified above?
+
+current_organism="${organism}"
+# TODO when, if ever, do we want to use the "-x" flag?
+if [ ! \$(grep -Fq "${organism}" \$target_file) ];
+then
+  current_organism=\$(grep -o 'Organism="\\(.*\\)"' \$target_file | sed 's#.*"\\(.*\\)".*#\\1#')
+fi
+
+if ! grep -q "^BRIDGEDB_CONNECTION.*\$current_organism" "\$PREFS_FILE";
+then
+  echo "Setting BRIDGEDB_CONNECTION_1 for \$current_organism"
+  sed -i.bak "/^BRIDGEDB_CONNECTION_.*$/d" "\$PREFS_FILE"
+  rm "\$PREFS_FILE.bak"
+  echo "BRIDGEDB_CONNECTION_1=idmapper-bridgerest\\:http\\://webservice.bridgedb.org\\:80/\$current_organism" >> "\$PREFS_FILE"
+fi
+
+# NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
+nohup ${javaPath} -jar -Dfile.encoding=UTF-8 "${sharePath1}/pathvisio.jar" \$patchedFlags &
+EOF
 
     chmod a+x $out/bin/pathvisio
 
@@ -180,7 +232,7 @@ stdenv.mkDerivation rec {
   if ! desktop then ''
     echo 'Desktop functionality not enabled.'
   '' else ''
-    ${pathvisioJarCpCmd}
+    ${installPathVisioExecutable}
   '' + (
     if stdenv.system == "x86_64-darwin" then ''
       mkdir -p "$out/Applications"
