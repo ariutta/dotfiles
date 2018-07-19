@@ -28,6 +28,7 @@ in common ++ [
   #   ssh -L 3333:wikipathways-workspace.gladstone.internal:5432 ariutta@wikipathways-workspace.gladstone.internal
   # Then you can run "pgmanage" from the command line and open a browser windowa to the URL that is spit out.
   pkgs.pgmanage
+  pkgs.postgresql
 
   #pkgs.rstudio
   # The rstudio Nix expression doesn't work on darwin.

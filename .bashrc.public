@@ -10,3 +10,10 @@
 # Warning: this file will be made public online. Only include publicly shareable data.
 
 # see README.md for details on purposes of .profile .profile.public .bashrc .bashrc.public .bash_profile
+
+# TODO verify "-n" is the same as "--cmd 'set noswapfile'"
+# TODO is there any benefit to using --cmd 'set dir=/tmp'?
+# TODO: how about "backupskip"?
+# NOTE: nobackup means delete backup file after a save.
+#       nowritebackup means buffer -> new file, del original file, rename new file -> original file name. 
+alias vimcognito="vim -i NONE -u NONE -U NONE --noplugin -n --cmd 'set nobackup' --cmd 'set nowritebackup' --"
