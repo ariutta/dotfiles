@@ -1,7 +1,13 @@
-{ callPackage, organism ? "Homo sapiens", datasources ? {} }:
+{ callPackage,
+  organism ? "Homo sapiens", 
+  genes ? "webservice",
+  interactions ? false,
+  metabolites ? "webservice"
+}:
 
-callPackage ./common.nix {
-  inherit datasources organism;
-  buildType = "headless";
+with builtins;
+
+callPackage ./default.nix {
+  inherit organism genes interactions metabolites;
   desktop = false;
 }
