@@ -159,13 +159,12 @@ in
     };
   };
 
-  # TODO: update sha256
   "Macaca mulatta" = {
     type = "genes";
     src = fetchzip rec {
       name = "Ml_Derby_Ensembl_${ensemblRelease}";
       url = "http://bridgedb.org/data/gene_database/${name}.bridge.zip";
-      sha256 = "1arqb3bmiincrpkdvrrw2mbp7ydqw5bys8rrgkj7i0zpd7lxbbf3";
+      sha256 = "0x4hr0i08y0kygr9g488i608qawkhaybhjkmgd74xmwxnv2xxrd3";
     };
   };
 

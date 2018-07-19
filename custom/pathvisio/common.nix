@@ -102,6 +102,8 @@ then
   current_organism=\$(grep -o 'Organism="\\(.*\\)"' \$target_file | sed 's#.*"\\(.*\\)".*#\\1#')
 fi
 
+# TODO verify that if a local gene or metabolite db is specified, it's used
+# even if we have the webservice running for the other.
 if ! grep -q "^BRIDGEDB_CONNECTION.*\$current_organism" "\$PREFS_FILE";
 then
   echo "Setting BRIDGEDB_CONNECTION_1 for \$current_organism"
@@ -124,7 +126,8 @@ EOF
     owner = "pathvisio";
     repo = "PathVisio";
     rev = "61f15de96b676ee581858f0485f9c6d8f61a3476";
-    sha256 = "1n2897290g6kph1l04d2lj6n7137w0gnavzp9rjz43hi1ggyw6f9";
+    #sha256 = "1n2897290g6kph1l04d2lj6n7137w0gnavzp9rjz43hi1ggyw6f9";
+    sha256 = "0qng251kz1mj8pff9mhrngz836ihmpdh7577xipg62dx0yklz5ql";
     stripRoot = false;
   };
 

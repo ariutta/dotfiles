@@ -1,16 +1,13 @@
-{ callPackage, fetchzip, desktop ? true, organism ? "Homo sapiens" }:
+{ callPackage,
+  organism ? "Homo sapiens",
+  desktop ? true
+}:
 
 with builtins;
 
-let
-  datasources = callPackage ./datasources.nix {};
-in
-callPackage ./common.nix {
-  inherit desktop;
-  buildType = "huge";
-  datasources = {
-    gene = getAttr organism datasources;
-    interaction = datasources.interaction;
-    metabolite = datasources.metabolite;
-  };
+callPackage ./default.nix {
+  inherit organism desktop;
+  genes = "local";
+  interactions = "local";
+  metabolites = "local";
 }

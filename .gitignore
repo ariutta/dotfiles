@@ -28,6 +28,7 @@
 !custom/pathvisio/default.nix
 !custom/pathvisio/headless.nix
 !custom/pathvisio/huge.nix
+!custom/pathvisio/JavaApplicationStub
 !custom/pathvisio/pathvisio.xml
 !custom/pathvisio/pathway.gpml
 !custom/perl-packages.nix
