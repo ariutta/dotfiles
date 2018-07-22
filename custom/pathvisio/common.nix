@@ -14,13 +14,31 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ unzip ant jdk ];
   buildInputs = map (d: d.src) datasources;
 
-  pathwayStub = ./pathway.gpml;
-  pathvisioPlugins = ./pathvisio.xml;
-
   bridgedbSettings = fetchurl {
     url = "http://repository.pathvisio.org/plugins/pvplugins-bridgedbSettings/1.0.0/pvplugins-bridgedbSettings-1.0.0.jar";
     sha256 = "0gq5ybdv4ci5k01vr80ixlji463l9mdqmkjvhb753dbxhhcnxzjy";
   };
+
+  pathvisioPlugins = ./pathvisio.xml;
+  pathwayStub = ./pathway.gpml;
+
+  WP4321_97997_BASE64 = fetchurl {
+    name = "WP4321_97997.gpml.base64";
+    url = "http://webservice.wikipathways.org/getPathwayAs?fileType=gpml&pwId=WP4321&revision=97997";
+    sha256 = "01msjx9jwr4rbvaca302yr8yji3bi2kv034kgycdzk7rdjdc2rmq";
+  };
+  WP4321_98055_BASE64 = fetchurl {
+    name = "WP4321_98055.gpml.base64";
+    url = "http://webservice.wikipathways.org/getPathwayAs?fileType=gpml&pwId=WP4321&revision=98055";
+    sha256 = "0d4r54hkl4fcvl85s7c1q844rbjwlg99x66l7hhr00ppb5xr17v0";
+  };
+  WP1243_69897 = fetchurl {
+    url = "https://raw.githubusercontent.com/PathVisio/GPML/fa76a73db631bdffcf0f63151b752e0e0357fd26/test/2013a/WP1243_69897.gpml";
+    sha256 = "0nxrf0rkhqlljdjfallmkb9vn0siwdmxh6gys8r5lldf1az1wq9q";
+  };
+  WP1243_69897_BPSS_SHASUM = ./WP1243_69897.bpss.shasum;
+  WP1243_69897_OWL_SHASUM = ./WP1243_69897.owl.shasum;
+  WP1243_69897_PNG_SHASUM = ./WP1243_69897.png.shasum;
 
   javaPath = "${jdk.jre}/bin/java";
 
@@ -123,12 +141,12 @@ EOF
   '';
 
   src = fetchFromGitHub {
-    owner = "pathvisio";
-    repo = "PathVisio";
+    owner = "PathVisio";
+    repo = "pathvisio";
     rev = "61f15de96b676ee581858f0485f9c6d8f61a3476";
-    #sha256 = "1n2897290g6kph1l04d2lj6n7137w0gnavzp9rjz43hi1ggyw6f9";
-    sha256 = "0qng251kz1mj8pff9mhrngz836ihmpdh7577xipg62dx0yklz5ql";
-    stripRoot = false;
+    sha256 = "1n2897290g6kph1l04d2lj6n7137w0gnavzp9rjz43hi1ggyw6f9";
+    #sha256 = "0qng251kz1mj8pff9mhrngz836ihmpdh7577xipg62dx0yklz5ql";
+    #stripRoot = false;
   };
 
   biopax3GPMLSrc = fetchurl {
@@ -147,11 +165,10 @@ EOF
             --replace "#!/bin/sh" "#!$shell" \
             --replace "#!/bin/bash" "#!$shell"
     done
-    substituteInPlace ./JavaApplicationStub \
-          --replace "JAVACMD=\"JAVACMD_REPLACE_ME\"" "JAVACMD=\"${javaPath}\""
   '';
 
   buildPhase = (if ! desktop then ''
+    echo "coreutils: ${coreutils}"
     ant
   '' else if stdenv.system == "x86_64-darwin" then ''
     ant appbundler
@@ -165,7 +182,33 @@ EOF
 
     cat > ./bin/gpmlconvert <<EOF
     #! $shell
-    CLASSPATH=${modulesPath0}/org.pathvisio.core.jar:${libPath0}/*:${biopax3GPMLSrc}
+    #CLASSPATH=${modulesPath0}/org.pathvisio.core.jar:${libPath0}/*:${biopax3GPMLSrc}
+
+    CLASSPATH=\\
+    ${modulesPath0}/org.pathvisio.core.jar:\\
+    ${libPath0}/com.springsource.org.jdom-1.1.0.jar:\\
+    ${libPath0}/org.bridgedb.jar:\\
+    ${libPath0}/org.bridgedb.bio.jar:\\
+    ${libPath0}/org.bridgedb.bio.jar:\\
+    ${libPath0}/org.apache.batik.bridge_1.7.0.v201011041433.jar:\\
+    ${libPath0}/org.apache.batik.css_1.7.0.v201011041433.jar:\\
+    ${libPath0}/org.apache.batik.dom_1.7.0.v201011041433.jar:\\
+    ${libPath0}/org.apache.batik.dom.svg_1.7.0.v201011041433.jar:\\
+    ${libPath0}/org.apache.batik.ext.awt_1.7.0.v201011041433.jar:\\
+    ${libPath0}/org.apache.batik.extension_1.7.0.v201011041433.jar:\\
+    ${libPath0}/org.apache.batik.parser_1.7.0.v201011041433.jar:\\
+    ${libPath0}/org.apache.batik.svggen_1.7.0.v201011041433.jar:\\
+    ${libPath0}/org.apache.batik.transcoder_1.7.0.v201011041433.jar:\\
+    ${libPath0}/org.apache.batik.util_1.7.0.v201011041433.jar:\\
+    ${libPath0}/org.apache.batik.util.gui_1.7.0.v200903091627.jar:\\
+    ${libPath0}/org.apache.batik.xml_1.7.0.v201011041433.jar:\\
+    ${libPath0}/org.pathvisio.pdftranscoder.jar:\\
+    ${libPath0}/org.w3c.css.sac_1.3.1.v200903091627.jar:\\
+    ${libPath0}/org.w3c.dom.events_3.0.0.draft20060413_v201105210656.jar:\\
+    ${libPath0}/org.w3c.dom.smil_1.0.1.v200903091627.jar:\\
+    ${libPath0}/org.w3c.dom.svg_1.1.0.v201011041433.jar:\\
+    ${biopax3GPMLSrc}
+
     ${javaPath} -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
     EOF
 
@@ -179,14 +222,33 @@ EOF
   checkPhase = ''
     # TODO are we running the existing tests?
     cd ./bin
-    ./gpmlconvert ../example-data/Hs_Apoptosis.gpml Hs_Apoptosis.pdf
-    rm Hs_Apoptosis.pdf
-    ./gpmlconvert ../example-data/Hs_Apoptosis.gpml Hs_Apoptosis.png
-    rm Hs_Apoptosis.png
-    ./gpmlconvert ../example-data/Hs_Apoptosis.gpml Hs_Apoptosis.owl
-    rm Hs_Apoptosis.owl
-    ./gpmldiff ../example-data/Hs_Apoptosis.gpml ../example-data/Hs_Cell_cycle_KEGG.gpml
-    rm Hs_Apoptosis.bpss
+
+    # TODO convert this old GPML file to use an updated schema:
+    #./gpmlconvert ../example-data/Hs_Apoptosis.gpml Hs_Apoptosis-2013a.gpml
+
+    ./gpmlconvert ${WP1243_69897} ./WP1243_69897.owl
+    cp ${WP1243_69897_BPSS_SHASUM} ./WP1243_69897.bpss.shasum
+    cp ${WP1243_69897_OWL_SHASUM} ./WP1243_69897.owl.shasum
+    ${coreutils}/bin/sha256sum -c WP1243_69897.bpss.shasum
+    ${coreutils}/bin/sha256sum -c WP1243_69897.owl.shasum
+    rm WP1243_69897.owl WP1243_69897.owl.shasum WP1243_69897.bpss WP1243_69897.bpss.shasum
+
+    ./gpmlconvert ${WP1243_69897} ./WP1243_69897.png
+    cp ${WP1243_69897_PNG_SHASUM} ./WP1243_69897.png.shasum
+    ${coreutils}/bin/sha256sum -c WP1243_69897.png.shasum
+    rm WP1243_69897.png WP1243_69897.png.shasum
+
+    ./gpmlconvert ${WP1243_69897} WP1243_69897.pdf
+    # NOTE: PDF conversion produces a different output every time,
+    # so we can't use shasum to verify.
+    rm WP1243_69897.pdf
+
+    cat ${WP4321_97997_BASE64} | sed -n 2p | sed -E "s#.*<ns1:data>(.+)</ns1:data>.*#\1#g" | base64 -d - > WP4321_97997.gpml
+    cat ${WP4321_98055_BASE64} | sed -n 2p | sed -E "s#.*<ns1:data>(.+)</ns1:data>.*#\1#g" | base64 -d - > WP4321_98055.gpml
+    ./gpmldiff WP4321_97997.gpml WP4321_98055.gpml > WP4321_97997_98055.patch
+    ./gpmlpatch WP4321_97997.gpml < WP4321_97997_98055.patch
+    rm WP4321_97997_98055.patch WP4321_97997.gpml WP4321_98055.gpml
+
     cd ../
   '';
 
@@ -228,9 +290,9 @@ EOF
     echo '  # GPML -> PNG'
     echo '  gpmlconvert WP1243_69897.gpml WP1243_69897.png'
     echo '  # Diff'
-    echo '  gpmldiff WP1243_69897.gpml test.gpml > test.diff'
+    echo '  gpmldiff WP1243_69897.gpml test.gpml > test.patch'
     echo '  # Patch'
-    echo '  gpmlpatch WP1243_69897.gpml < test.diff'
+    echo '  gpmlpatch WP1243_69897.gpml < test.patch'
   '' + (
   if ! desktop then ''
     echo 'Desktop functionality not enabled.'
@@ -240,6 +302,8 @@ EOF
     if stdenv.system == "x86_64-darwin" then ''
       mkdir -p "$out/Applications"
       unzip -o release/${baseName}.app.zip -d "$out/Applications/"
+      substituteInPlace ./JavaApplicationStub \
+            --replace "JAVACMD=\"JAVACMD_REPLACE_ME\"" "JAVACMD=\"${javaPath}\""
       cp ./JavaApplicationStub $out/Applications/PathVisio.app/Contents/MacOS/JavaApplicationStub
     '' else ''
       mkdir -p "$out/share/applications"
