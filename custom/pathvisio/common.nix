@@ -23,10 +23,10 @@ stdenv.mkDerivation rec {
   pathwayStub = ./pathway.gpml;
 
   XSLT_NORMALIZE = ./normalize.xslt;
-  WP4321_97997_BASE64 = fetchurl {
-    name = "WP4321_97997.gpml.base64";
-    url = "http://webservice.wikipathways.org/getPathwayAs?fileType=gpml&pwId=WP4321&revision=97997";
-    sha256 = "01msjx9jwr4rbvaca302yr8yji3bi2kv034kgycdzk7rdjdc2rmq";
+  WP4321_98000_BASE64 = fetchurl {
+    name = "WP4321_98000.gpml.base64";
+    url = "http://webservice.wikipathways.org/getPathwayAs?fileType=gpml&pwId=WP4321&revision=98000";
+    sha256 = "0hxd03ni5ws6n219bz5wrs0lv0clk0qnrigz3qwrqbna54vi3n6m";
   };
   WP4321_98055_BASE64 = fetchurl {
     name = "WP4321_98055.gpml.base64";
@@ -225,6 +225,20 @@ EOF
     # TODO are we running the existing tests?
     cd ./bin
 
+    cat ${WP4321_98000_BASE64} | sed -n 2p | sed -E "s#.*<ns1:data>(.+)</ns1:data>.*#\1#g" | base64 -d - > WP4321_98000.gpml
+    cat ${WP4321_98055_BASE64} | sed -n 2p | sed -E "s#.*<ns1:data>(.+)</ns1:data>.*#\1#g" | base64 -d - > WP4321_98055.gpml
+    ./gpmldiff WP4321_98000.gpml WP4321_98055.gpml > WP4321_98000_98055.patch
+    cp WP4321_98000.gpml WP4321_98055.roundtrip.gpml
+    ./gpmlpatch WP4321_98055.roundtrip.gpml < WP4321_98000_98055.patch
+
+#    # TODO gpmlpatch doesn't fully patch the diff between these two:
+#    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.gpml > WP4321_98055.norm.gpml
+#    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.roundtrip.gpml > WP4321_98055.roundtrip.norm.gpml
+#    diff -dy --suppress-common-lines WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml
+#    rm WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml
+
+    rm WP4321_98000_98055.patch WP4321_98000.gpml WP4321_98055.gpml
+
     # TODO convert this old GPML file to use an updated schema:
     #./gpmlconvert ../example-data/Hs_Apoptosis.gpml Hs_Apoptosis-2013a.gpml
 
@@ -234,7 +248,8 @@ EOF
     cp ${WP1243_69897_BPSS_SHASUM} ./WP1243_69897.bpss.shasum
     cp ${WP1243_69897_OWL_SHASUM} ./WP1243_69897.owl.shasum
     ${coreutils}/bin/sha256sum -c WP1243_69897.bpss.shasum
-    #diff ${WP1243_69897_OWL} WP1243_69897.owl
+    # NOTE: if they don't match, try this to see the diff:
+    #diff -dy --suppress-common-lines ${WP1243_69897_OWL} WP1243_69897.owl
     ${coreutils}/bin/sha256sum -c WP1243_69897.owl.shasum
     rm WP1243_69897.owl WP1243_69897.owl.shasum WP1243_69897.bpss WP1243_69897.bpss.shasum
 
@@ -247,12 +262,6 @@ EOF
     # NOTE: PDF conversion produces a different output every time,
     # so we can't use shasum to verify.
     rm WP1243_69897.pdf
-
-    cat ${WP4321_97997_BASE64} | sed -n 2p | sed -E "s#.*<ns1:data>(.+)</ns1:data>.*#\1#g" | base64 -d - > WP4321_97997.gpml
-    cat ${WP4321_98055_BASE64} | sed -n 2p | sed -E "s#.*<ns1:data>(.+)</ns1:data>.*#\1#g" | base64 -d - > WP4321_98055.gpml
-    ./gpmldiff WP4321_97997.gpml WP4321_98055.gpml > WP4321_97997_98055.patch
-    ./gpmlpatch WP4321_97997.gpml < WP4321_97997_98055.patch
-    rm WP4321_97997_98055.patch WP4321_97997.gpml WP4321_98055.gpml
 
     cd ../
   '';
