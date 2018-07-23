@@ -1,4 +1,4 @@
-{ stdenv, coreutils, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, desktop ? true, organism ? "Homo sapiens", datasources ? [] }:
+{ stdenv, coreutils, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, xmlstarlet, desktop ? true, organism ? "Homo sapiens", datasources ? [] }:
 # TODO allow for specifying plugins to install
 
 with builtins;
@@ -11,7 +11,7 @@ stdenv.mkDerivation rec {
   name = replaceStrings [" "] ["_"] (concatStringsSep "-" (filter (x: isString x) [baseName version organism]));
 
   # should this be nativeBuildInputs or just buildInputs?
-  nativeBuildInputs = [ unzip ant jdk ];
+  nativeBuildInputs = [ unzip ant jdk xmlstarlet ];
   buildInputs = map (d: d.src) datasources;
 
   bridgedbSettings = fetchurl {
@@ -22,6 +22,7 @@ stdenv.mkDerivation rec {
   pathvisioPlugins = ./pathvisio.xml;
   pathwayStub = ./pathway.gpml;
 
+  XSLT_NORMALIZE = ./normalize.xslt;
   WP4321_97997_BASE64 = fetchurl {
     name = "WP4321_97997.gpml.base64";
     url = "http://webservice.wikipathways.org/getPathwayAs?fileType=gpml&pwId=WP4321&revision=97997";
@@ -37,6 +38,7 @@ stdenv.mkDerivation rec {
     sha256 = "0nxrf0rkhqlljdjfallmkb9vn0siwdmxh6gys8r5lldf1az1wq9q";
   };
   WP1243_69897_BPSS_SHASUM = ./WP1243_69897.bpss.shasum;
+  WP1243_69897_OWL = ./WP1243_69897.owl;
   WP1243_69897_OWL_SHASUM = ./WP1243_69897.owl.shasum;
   WP1243_69897_PNG_SHASUM = ./WP1243_69897.png.shasum;
 
@@ -227,9 +229,12 @@ EOF
     #./gpmlconvert ../example-data/Hs_Apoptosis.gpml Hs_Apoptosis-2013a.gpml
 
     ./gpmlconvert ${WP1243_69897} ./WP1243_69897.owl
+    xmlstarlet tr ${XSLT_NORMALIZE} WP1243_69897.owl > WP1243_69897.owl.norm
+    mv WP1243_69897.owl.norm WP1243_69897.owl
     cp ${WP1243_69897_BPSS_SHASUM} ./WP1243_69897.bpss.shasum
     cp ${WP1243_69897_OWL_SHASUM} ./WP1243_69897.owl.shasum
     ${coreutils}/bin/sha256sum -c WP1243_69897.bpss.shasum
+    #diff ${WP1243_69897_OWL} WP1243_69897.owl
     ${coreutils}/bin/sha256sum -c WP1243_69897.owl.shasum
     rm WP1243_69897.owl WP1243_69897.owl.shasum WP1243_69897.bpss WP1243_69897.bpss.shasum
 
