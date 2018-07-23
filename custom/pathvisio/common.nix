@@ -170,7 +170,6 @@ EOF
   '';
 
   buildPhase = (if ! desktop then ''
-    echo "coreutils: ${coreutils}"
     ant
   '' else if stdenv.system == "x86_64-darwin" then ''
     ant appbundler
