@@ -1,4 +1,4 @@
-with import <unstable> { config.allowUnfree = true; };
+with import <nixpkgs> { config.allowUnfree = true; };
 
 {
 

@@ -48,8 +48,11 @@ fi
 If not already set (see `nix-channel --list`), set the channels:
 
 ```sh
-nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
-nix-channel --add https://nixos.org/channels/nixos-17.09 stable
+nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
+nix-channel --add https://nixos.org/channels/nixos-17.09 nixos
+nix-channel --list # does the output correspond to the above?
+# TODO what about a NixOS vs. non-NixOS system?
+# For the NixOS system, nixpkgs is supposed to be the same as nixos, right?
 ```
 
 Install packages managed by Nix (same command to update):
