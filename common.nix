@@ -2,6 +2,7 @@
 with import <stable> { config.allowUnfree = true; };
 let
   custom = import ./custom/all-custom.nix;
+  nixos = import <nixos> { config.allowUnfree = true; };
 in [
   # nix-prefetch-scripts is a dependency of composer2nix
   pkgs.nix-prefetch-scripts
@@ -26,7 +27,7 @@ in [
   pkgs.pypi2nix
   pkgs.nix-repl
   pkgs.nox
-  pkgs.nodePackages.node2nix
+  nixos.nodePackages.node2nix
   custom.tosheets
   custom.vim
   pkgs.wget

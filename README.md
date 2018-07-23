@@ -52,6 +52,8 @@ nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
 nix-channel --add https://nixos.org/channels/nixos-17.09 stable
 ```
 
+(NOTE: may need to source .bashrc or something to update at this point.)
+
 Install packages managed by Nix (same command to update):
 
 ```sh
