@@ -1,5 +1,5 @@
 # See README.md for instructions on installing/updating.
-with import <stable> { config.allowUnfree = true; };
+with import <nixpkgs> { config.allowUnfree = true; };
 let
   custom = import ./custom/all-custom.nix;
   nixos = import <nixos> { config.allowUnfree = true; };

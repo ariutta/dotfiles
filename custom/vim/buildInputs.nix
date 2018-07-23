@@ -5,7 +5,7 @@
 # https://github.com/NixOS/nixpkgs/issues/26146
 ###################################################
 
-with import <unstable> { config.allowUnfree = true; };
+with import <nixpkgs> { config.allowUnfree = true; };
 let
   custom = import ../all-custom.nix;
   nixos = import <nixos> { config.allowUnfree = true; };

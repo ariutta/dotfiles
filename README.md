@@ -52,12 +52,14 @@ nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
 nix-channel --add https://nixos.org/channels/nixos-17.09 stable
 ```
 
-(NOTE: may need to source .bashrc or something to update at this point.)
-
 Install packages managed by Nix (same command to update):
 
 ```sh
 nix-channel --update
+# NOTE: ~/dotfiles/.profile.public sets $NIX_PATH based on nix-channels.
+# If nix-channels are added or removed, we need to source .profile.public again.
+# TODO: test that this step is correct!
+source ~/dotfiles/.profile.public
 nix-env -f dotfiles/common.nix -ri
 nix-env -f dotfiles/local.nix -ri
 ```
