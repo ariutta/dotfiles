@@ -1,4 +1,4 @@
-{ stdenv, coreutils, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, xmlstarlet, desktop ? true, organism ? "Homo sapiens", datasources ? [] }:
+{ stdenv, coreutils, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, xmlstarlet, headless ? false, organism ? "Homo sapiens", datasources ? [] }:
 # TODO allow for specifying plugins to install
 
 with builtins;
@@ -67,6 +67,7 @@ if [ ! -e "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar" ];
 then
   ln -s "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
   cat ${pathvisioPlugins} > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
+  # TODO: should we use xmlstarlet here instead of sed?
   sed -i.bak "s#HOME_REPLACE_ME#\$HOME#g" "\$HOME/.PathVisio/.bundles/pathvisio.xml"
 fi
 
@@ -90,7 +91,11 @@ if [ ! "\$target_file_raw" ];
 then
   # We don't want to overwrite an existing file.
   suffix=\$(date -j -f "%a %b %d %T %Z %Y" "\$(date)" "+%s")
-  target_file_raw="./pathway-\$suffix.gpml"
+  target_dir="."
+  if [ ! -w "\$target_dir/" ]; then
+    target_dir="\$HOME"
+  fi
+  target_file_raw="\$target_dir/pathway-\$suffix.gpml"
 fi
 
 target_file=\$("${coreutils}/bin/readlink" -f "\$target_file_raw")
@@ -104,6 +109,7 @@ then
         echo "Opening new file: \$target_file"
         cat "${pathwayStub}" > "\$target_file"
         chmod u+rw "\$target_file"
+        # TODO: should we use xmlstarlet here instead of sed?
         sed -i.bak "s#Homo sapiens#${organism}#" "\$target_file"
         rm "\$target_file.bak"
         patchedFlags="\$@ \$target_file"
@@ -119,6 +125,7 @@ current_organism="${organism}"
 # TODO when, if ever, do we want to use the "-x" flag?
 if [ ! \$(grep -Fq "${organism}" \$target_file) ];
 then
+  # TODO: should we use xmlstarlet here instead of sed?
   current_organism=\$(grep -o 'Organism="\\(.*\\)"' \$target_file | sed 's#.*"\\(.*\\)".*#\\1#')
 fi
 
@@ -132,10 +139,19 @@ then
   echo "BRIDGEDB_CONNECTION_1=idmapper-bridgerest\\:http\\://webservice.bridgedb.org\\:80/\$current_organism" >> "\$PREFS_FILE"
 fi
 
-# NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
-nohup ${javaPath} -jar -Dfile.encoding=UTF-8 "${sharePath1}/pathvisio.jar" \$patchedFlags &
-EOF
+# TODO: will the CFProcessPath export or the -Xdock flags
+# mess up the Linux desktop app builder?
 
+# enable drag&drop to the dock icon
+export CFProcessPath="$0"
+
+# NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
+nohup ${javaPath} \
+  -Xdock:icon="${iconSrc}" \
+  -Xdock:name="${name}" \
+  -jar -Dfile.encoding=UTF-8 \
+  "${sharePath1}/pathvisio.jar" \$patchedFlags &
+EOF
     chmod a+x $out/bin/pathvisio
 
     mkdir -p "${sharePath1}"
@@ -147,8 +163,6 @@ EOF
     repo = "pathvisio";
     rev = "61f15de96b676ee581858f0485f9c6d8f61a3476";
     sha256 = "1n2897290g6kph1l04d2lj6n7137w0gnavzp9rjz43hi1ggyw6f9";
-    #sha256 = "0qng251kz1mj8pff9mhrngz836ihmpdh7577xipg62dx0yklz5ql";
-    #stripRoot = false;
   };
 
   biopax3GPMLSrc = fetchurl {
@@ -169,7 +183,7 @@ EOF
     done
   '';
 
-  buildPhase = (if ! desktop then ''
+  buildPhase = (if headless then ''
     ant
   '' else if stdenv.system == "x86_64-darwin" then ''
     ant appbundler
@@ -224,6 +238,7 @@ EOF
     # TODO are we running the existing tests?
     cd ./bin
 
+    # TODO: should we use xmlstarlet here instead of sed?
     cat ${WP4321_98000_BASE64} | sed -n 2p | sed -E "s#.*<ns1:data>(.+)</ns1:data>.*#\1#g" | base64 -d - > WP4321_98000.gpml
     cat ${WP4321_98055_BASE64} | sed -n 2p | sed -E "s#.*<ns1:data>(.+)</ns1:data>.*#\1#g" | base64 -d - > WP4321_98055.gpml
     ./gpmldiff WP4321_98000.gpml WP4321_98055.gpml > WP4321_98000_98055.patch
@@ -269,6 +284,8 @@ EOF
   desktopItem = makeDesktopItem {
     name = name;
     exec = "pathvisio";
+    #exec = "pathvisio ~/pathway-\$(${date} -j -f \"%a %b %d %T %Z %Y\" \"\$(${date})\" \"+%s\").gpml";
+    #exec = "pathvisio ~/pathway-test.gpml";
     icon = "${pngIconSrc}";
     desktopName = baseName;
     genericName = "Pathway Editor";
@@ -276,6 +293,7 @@ EOF
     # See https://specifications.freedesktop.org/menu-spec/latest/apa.html
     categories = "Editor;Science;Biology;DataVisualization;";
     mimeType = "application/gpml+xml";
+    # TODO what is the terminal option?
     terminal = "false";
   };
 
@@ -308,7 +326,7 @@ EOF
     echo '  # Patch'
     echo '  gpmlpatch WP1243_69897.gpml < test.patch'
   '' + (
-  if ! desktop then ''
+  if headless then ''
     echo 'Desktop functionality not enabled.'
   '' else ''
     ${installPathVisioExecutable}
@@ -316,9 +334,18 @@ EOF
     if stdenv.system == "x86_64-darwin" then ''
       mkdir -p "$out/Applications"
       unzip -o release/${baseName}.app.zip -d "$out/Applications/"
-      substituteInPlace ./JavaApplicationStub \
-            --replace "JAVACMD=\"JAVACMD_REPLACE_ME\"" "JAVACMD=\"${javaPath}\""
-      cp ./JavaApplicationStub $out/Applications/PathVisio.app/Contents/MacOS/JavaApplicationStub
+
+      # TODO develop a good script for this. I can do one of two options:
+
+#      # 1. use semi-generic JavaApplicationStub
+#      substituteInPlace ./JavaApplicationStub \
+#            --replace "JAVACMD=\"JAVACMD_REPLACE_ME\"" "JAVACMD=\"${javaPath}\""
+#      cp ./JavaApplicationStub $out/Applications/PathVisio.app/Contents/MacOS/JavaApplicationStub
+
+      # 2. use my own pathvisio script
+      cp $out/bin/pathvisio $out/Applications/PathVisio.app/Contents/MacOS/pathvisio
+      substituteInPlace $out/Applications/PathVisio.app/Contents/Info.plist \
+            --replace "JavaApplicationStub" "pathvisio"
     '' else ''
       mkdir -p "$out/share/applications"
       ln -s ${desktopItem}/share/applications/* "$out/share/applications/"
@@ -326,16 +353,24 @@ EOF
   ));
 
   meta = with stdenv.lib;
-    { description = "A tool to edit and analyze biological pathways";
+    { description = "A tool to create, edit and analyze biological pathways";
       longDescription = ''
-        You can specify a species:
+        There are several options you can specify:
+
+        * organism: the species to automatically use for new pathways (default: "Homo sapiens")
         nix-env -iA nixos.pathvisio --arg organism "Mus musculus"
 
         The available species are listed here:
         https://github.com/bridgedb/BridgeDb/blob/master/org.bridgedb.bio/resources/org/bridgedb/bio/organisms.txt
 
-        You can also specify whether to use a local datasource or the BridgeDb webservice:
-        nix-env -iA nixos.pathvisio --arg organism "Homo sapiens" --arg genes "webservice" --arg interactions local --arg metabolites "webservice"
+        * genes, interactions, metabolites: use local datasource or BridgeDb webservice (default: webservice for genes and metabolites; local for interactions)
+        nix-env -iA nixos.pathvisio --arg genes "local" --arg interactions "local" --arg metabolites "local"
+
+        * headless: CLI only (default: false)
+        nix-env -iA nixos.pathvisio --arg headless true
+
+        * Any combination of the above
+        nix-env -iA nixos.pathvisio --arg organism "Mus musculus" --arg headless true --arg genes "local" --arg interactions "local"
       '';
       homepage = https://www.pathvisio.org/;
       license = licenses.asl20;

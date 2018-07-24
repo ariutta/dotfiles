@@ -9,5 +9,5 @@ with builtins;
 
 callPackage ./default.nix {
   inherit organism genes interactions metabolites;
-  desktop = false;
+  headless = true;
 }

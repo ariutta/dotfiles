@@ -1,12 +1,12 @@
 { callPackage,
   organism ? "Homo sapiens",
-  desktop ? true
+  headless ? false
 }:
 
 with builtins;
 
 callPackage ./default.nix {
-  inherit organism desktop;
+  inherit organism headless;
   genes = "local";
   interactions = "local";
   metabolites = "local";

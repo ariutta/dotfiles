@@ -126,6 +126,8 @@ export NIX_REMOTE=daemon
 if [ -e "/usr/local/etc/profile.d/nix.sh" ]; then . "/usr/local/etc/profile.d/nix.sh"; fi
 if [ -e "$HOME/.nix-channels" ]; then export NIX_PATH=`cat $HOME/.nix-channels | sed -e "s~\(.*\)\ \(.*\)~\2=$HOME/.nix-defexpr/channels/\2~g" | paste -sd ":" -`; fi
 if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . "$HOME/.nix-profile/etc/profile.d/nix.sh"; fi
+# TODO: this is slow., Should it really be in .profile, or does it belong in .bashrc?
+if [ -e "$HOME/.nix-profile/Applications" ]; then ln -sfh "$HOME/.nix-profile/Applications" "$HOME/Applications/Nix Apps"; fi
 
 # Make the Nix packages that were installed as root available to all users
 if [ -d "/nix/var/nix/profiles/default/bin" ]; then PATH="$PATH:/nix/var/nix/profiles/default/bin"; fi

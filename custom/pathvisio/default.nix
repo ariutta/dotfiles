@@ -1,6 +1,6 @@
 { callPackage,
 organism ? "Homo sapiens",
-desktop ? true,
+headless ? false,
 genes ? "webservice",
 interactions ? false,
 metabolites ? "webservice"
@@ -9,5 +9,5 @@ metabolites ? "webservice"
 with builtins;
 
 getAttr organism (callPackage ./all.nix {
-  inherit desktop genes interactions metabolites;
+  inherit headless genes interactions metabolites;
 })

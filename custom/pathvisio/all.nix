@@ -1,6 +1,6 @@
 { callPackage,
 fetchzip,
-desktop,
+headless,
 genes,
 interactions,
 metabolites
@@ -21,7 +21,7 @@ in
     {
       name = organism;
       value = callPackage ./common.nix {
-        inherit desktop;
+        inherit headless;
         organism = organism;
         datasources = []
         ++ (if genes == "local" then [{
