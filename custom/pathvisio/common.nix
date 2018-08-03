@@ -77,7 +77,6 @@ stdenv.mkDerivation rec {
     "${libPath0}/com.springsource.org.jdom-1.1.0.jar"
     "${libPath0}/org.bridgedb.jar"
     "${libPath0}/org.bridgedb.bio.jar"
-    "${libPath0}/org.bridgedb.bio.jar"
     "${libPath0}/org.apache.batik.bridge_1.7.0.v201011041433.jar"
     "${libPath0}/org.apache.batik.css_1.7.0.v201011041433.jar"
     "${libPath0}/org.apache.batik.dom_1.7.0.v201011041433.jar"
@@ -110,9 +109,38 @@ stdenv.mkDerivation rec {
     "${libPath0}/org.bridgedb.bio.jar"
   ];
 
+  # TODO: gui launcher classes vs. jar?
+  guiClasses = [
+    "${modulesPath0}/org.pathvisio.core.jar"
+    "${modulesPath0}/org.pathvisio.launcher.jar"
+    "${libPath0}/com.springsource.org.jdom-1.1.0.jar"
+    "${libPath0}/org.bridgedb.jar"
+    "${libPath0}/org.bridgedb.bio.jar"
+    "${libPath0}/org.apache.batik.bridge_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.css_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.dom_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.dom.svg_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.ext.awt_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.extension_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.parser_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.svggen_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.transcoder_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.util_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.util.gui_1.7.0.v200903091627.jar"
+    "${libPath0}/org.apache.batik.xml_1.7.0.v201011041433.jar"
+    "${libPath0}/org.pathvisio.pdftranscoder.jar"
+    "${libPath0}/org.w3c.css.sac_1.3.1.v200903091627.jar"
+    "${libPath0}/org.w3c.dom.events_3.0.0.draft20060413_v201105210656.jar"
+    "${libPath0}/org.w3c.dom.smil_1.0.1.v200903091627.jar"
+    "${libPath0}/org.w3c.dom.svg_1.1.0.v201011041433.jar"
+    biopax3GPMLSrc
+  ];
+
   converterCLASSPATH = concatStringsSep ":" (converterClasses);
   differCLASSPATH = concatStringsSep ":" (differClasses);
   patcherCLASSPATH = concatStringsSep ":" (patcherClasses);
+
+  guiCLASSPATH = concatStringsSep ":" (guiClasses);
 
   installPathVisioGUILauncher = ''
     cat > $out/bin/pathvisio <<EOF
@@ -248,9 +276,12 @@ EOF
     mkdir -p ./bin
     cd ./bin
 
+# see these refs:
+# https://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html
+# https://medium.com/@matt_rasband/dockerizing-a-spring-boot-application-6ec9b9b41faf
 get_java_opts () {
   CLASSPATH=$1
-  JAVA_CUSTOM_OPTS=$2
+  VM_OPTS=$2
 
   APPLICATION_SIZE_ON_DISK_IN_MB=`${coreutils}/bin/du -cm $(echo $CLASSPATH | tr ':' ' ') | tail -1 | cut -f1`
   loaded_classes=$(${coreutils}/bin/expr "400" "*" "$APPLICATION_SIZE_ON_DISK_IN_MB")
@@ -261,25 +292,18 @@ get_java_opts () {
           -poolType metaspace \
           -stackThreads $stack_threads \
           -totMemory ${memory} \
-          -vmOptions "$JAVA_CUSTOM_OPTS"`
+          -vmOptions "$VM_OPTS"`
 
-  echo "$java_opts_calc"
+  echo "$java_opts_calc -Dfile.encoding=UTF-8"
 }
 
     converter_java_opts=$(get_java_opts "${converterCLASSPATH}")
     differ_java_opts=$(get_java_opts "${differCLASSPATH}")
     patcher_java_opts=$(get_java_opts "${patcherCLASSPATH}")
-    cd ./..
 
-#    for f in ./scripts/{gpmldiff.sh,gpmlpatch.sh}; do
-#      substituteInPlace $f \
-#            --replace "java -ea" "${javaPath} $converter_java_opts -ea" \
-#            --replace "#!/bin/sh" "#!$shell" \
-#            --replace "#!/bin/bash" "#!$shell"
-#    done
-#
-#    cp ./scripts/gpmldiff.sh ./bin/gpmldiff
-#    cp ./scripts/gpmlpatch.sh ./bin/gpmlpatch
+    gui_java_opts=$(get_java_opts "${guiCLASSPATH}")
+
+    cd ./..
 
     cat > ./bin/gpmlconvert <<EOF
 #! $shell
@@ -302,6 +326,208 @@ EOF
     chmod a+x ./bin/gpmlconvert
     chmod a+x ./bin/gpmldiff
     chmod a+x ./bin/gpmlpatch
+
+    cat > ./bin/pvjava <<EOF
+#! $shell
+SUBCOMMAND=""
+
+if [[ "\$1" =~ ^(convert|diff|patch|launch)$ ]]; then
+  SUBCOMMAND="\$1"
+  shift
+elif [[ "\$1" =~ ^(\-.*)$ ]]; then
+  SUBCOMMAND=false
+else
+  echo "Invalid subcommand \$1" >&2
+  exit 1
+fi
+
+OPTS1=\$("${getopt}/bin/getopt" -o hX: --long help:,icon: \
+             -n 'pvjava' -- "\$@")
+
+if [ \$? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
+
+# Note the quotes around \$OPTS1: they are essential!
+eval set -- "\$OPTS1"
+
+HELP=false
+JAVA_CUSTOM_OPTS_ARR=()
+ICON=
+while true; do
+  case "\$1" in
+    -h | --help ) HELP=true; shift ;;
+    -X ) JAVA_CUSTOM_OPTS_ARR+=("-X\$2"); shift 2 ;;
+    --icon ) ICON="\$2"; shift 2 ;;
+    -- ) shift; break ;;
+    * ) break ;;
+  esac
+done
+
+#echo "OPTS1"
+#echo "\$OPTS1"
+#echo "HELP: \$HELP"
+#echo "SUBCOMMAND: \$SUBCOMMAND"
+
+JAVA_CUSTOM_OPTS=\$(IFS=" " ; echo "\$\{JAVA_CUSTOM_OPTS_ARR[*]\}")
+
+if [ \$SUBCOMMAND == false ] && [ \$HELP == true ]; then
+  echo 'some help'
+  exit 0
+elif [ \$SUBCOMMAND = 'convert' ]; then
+  CLASSPATH="${converterCLASSPATH}"
+  ${javaPath} $converter_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
+  exit 0
+elif [ \$SUBCOMMAND = 'diff' ]; then
+  CLASSPATH="${differCLASSPATH}"
+  ${javaPath} $differ_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.GpmlDiff "\$@"
+  exit 0
+elif [ \$SUBCOMMAND = 'patch' ]; then
+  CLASSPATH="${patcherCLASSPATH}"
+  ${javaPath} $patcher_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.PatchMain "\$@"
+  exit 0
+elif [ \$SUBCOMMAND = 'launch' ]; then
+  echo 'Launching...'
+
+  echo '$1'
+  echo "\$1"
+
+  # TODO: watch this issue:
+  # https://github.com/PathVisio/pathvisio/issues/97
+  # and when --help and --version are supported,
+  # update here (but note that the following regex
+  # is probably not quite correct):
+  #info_re='\\-h|\\-v|\\-\\-help|\\-\\-version'
+  info_re='\\-h|\\-v'
+  if [[ "\$1" =~ \$info_re ]];
+  then
+    ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar \$1
+    exit 0
+  fi
+
+  # GUI launcher section
+  mkdir -p "\$HOME/.PathVisio/.bundles"
+  PREFS_FILE="\$HOME/.PathVisio/.PathVisio"
+  if [ ! -e "\$PREFS_FILE" ];
+  then
+    echo "#" > "\$PREFS_FILE";
+    echo "#Wed Jun 27 16:21:04 PDT 2018" >> "\$PREFS_FILE";
+  fi
+
+  if [ ! -e "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar" ];
+  then
+    ln -s "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
+    cat ${pathvisioPlugins} > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
+    # TODO: should we use xmlstarlet here instead of sed?
+    sed -i.bak "s#HOME_REPLACE_ME#\$HOME#g" "\$HOME/.PathVisio/.bundles/pathvisio.xml"
+  fi
+  '' + concatStringsSep "" (map (d: d.linkCmd) datasources) + ''
+
+  target_file_raw=\$(echo "\$@" | sed "s#.*\\ \\([^\\ ]*\\.gpml\\(\\.xml\\)\\{0,1\\}\\)#\\1#")
+
+  if [ ! "\$target_file_raw" ];
+  then
+    # We don't want to overwrite an existing file.
+    suffix=\$(date -j -f "%a %b %d %T %Z %Y" "\$(date)" "+%s")
+    target_dir="."
+    if [ ! -w "\$target_dir/" ]; then
+      target_dir="\$HOME"
+    fi
+    target_file_raw="\$target_dir/pathway-\$suffix.gpml"
+  fi
+
+  target_file=\$("${coreutils}/bin/readlink" -f "\$target_file_raw")
+
+  patchedFlags=""
+
+  # If no target file specified, or if it is specified but doesn't exist,
+  # we create a starter file and open that.
+  if [ ! -e "\$target_file" ];
+  then
+          echo "Opening new file: \$target_file"
+          cat "${pathwayStub}" > "\$target_file"
+          chmod u+rw "\$target_file"
+          # TODO: should we use xmlstarlet here instead of sed?
+          sed -i.bak "s#Homo sapiens#${organism}#" "\$target_file"
+          rm "\$target_file.bak"
+          patchedFlags="\$@ \$target_file"
+  else
+          echo "Opening specified file: \$target_file"
+          patchedFlags=\$(echo "\$@" | sed "s#\$target_file_raw#\$target_file#")
+  fi
+
+  # TODO how should we handle the case of opening a GPML file having
+  # a species not matching organism specified above?
+
+  current_organism="${organism}"
+  # TODO when, if ever, do we want to use the "-x" flag?
+  if [ ! \$(grep -Fq "${organism}" \$target_file) ];
+  then
+    # TODO: should we use xmlstarlet here instead of sed?
+    current_organism=\$(grep -o 'Organism="\\(.*\\)"' \$target_file | sed 's#.*"\\(.*\\)".*#\\1#')
+  fi
+
+  # TODO verify that if a local gene or metabolite db is specified, it's used
+  # even if we have the webservice running for the other.
+  if ! grep -q "^BRIDGEDB_CONNECTION.*\$current_organism" "\$PREFS_FILE";
+  then
+    echo "Setting BRIDGEDB_CONNECTION_1 for \$current_organism"
+    sed -i.bak "/^BRIDGEDB_CONNECTION_.*$/d" "\$PREFS_FILE"
+    rm "\$PREFS_FILE.bak"
+    echo "BRIDGEDB_CONNECTION_1=idmapper-bridgerest\\:http\\://webservice.bridgedb.org\\:80/\$current_organism" >> "\$PREFS_FILE"
+  fi
+
+  # TODO: will the CFProcessPath export or the -Xdock flags
+  #   mess up the Linux desktop app builder?
+  # TODO: there are probably other settings/options from Info.plist
+  #   https://github.com/PathVisio/pathvisio/blob/master/Info.plist
+  #   that should be used for Darwin. Should we modify JavaApplicationStub
+  #   to work with this pathvisio script, or should we move content from
+  #   Info.plist into here?
+
+  # enable drag&drop to the dock icon
+  export CFProcessPath="$0"
+
+  # NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
+  nohup ${javaPath} $gui_java_opts \
+    -Xdock:icon="${iconSrc}" \
+    -Xdock:name="${name}" \
+    -jar "${sharePath1}/pathvisio.jar" \$patchedFlags &
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  #echo "launch it: nohup ${javaPath} \$JAVA_CUSTOM_OPTS -jar pathvisio.jar &"
+#  # NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
+#  nohup ${javaPath} $gui_java_opts \
+#    -Xdock:icon="${iconSrc}" \
+#    -Xdock:name="${name}" \
+#    -jar "${sharePath1}/pathvisio.jar" "\$@" &
+
+  #nohup ${javaPath} \$JAVA_CUSTOM_OPTS -jar pathvisio.jar &
+  #CLASSPATH="${guiCLASSPATH}"
+  #${javaPath} $gui_java_opts -ea -classpath \$CLASSPATH org.pathvisio.launcher.PathVisioMain "\$@"
+  #${javaPath} $gui_java_opts -ea -classpath \$CLASSPATH org.pathvisio.launcher.PathVisioMain "\$@"
+  #exit 0
+else
+  echo "Invalid subcommand \$1" >&2
+  exit 1
+fi
+EOF
+    chmod a+x ./bin/pvjava
   '';
 
   doCheck = true;
