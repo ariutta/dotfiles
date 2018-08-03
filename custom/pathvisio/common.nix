@@ -1,4 +1,5 @@
 { ant,
+callPackage,
 coreutils,
 fetchFromGitHub,
 fetchurl,
@@ -19,22 +20,28 @@ with builtins;
 let
   baseName = "PathVisio";
   version = "3.3.0";
-  custom = import ../all-custom.nix;
-  java-buildpack-memory-calculator = custom.java-buildpack-memory-calculator;
+  sensible-jvm-opts = callPackage ./sensible-jvm-opts.nix {}; 
 in
 stdenv.mkDerivation rec {
   name = replaceStrings [" "] ["_"] (concatStringsSep "-" (filter (x: isString x) [baseName version organism]));
 
-  # should this be nativeBuildInputs or just buildInputs?
-  nativeBuildInputs = [ unzip ant jdk xmlstarlet ];
-  buildInputs = map (d: d.src) datasources;
+  # TODO: should this be nativeBuildInputs or just buildInputs?
+  # TODO: I initially assumed these were on the PATH even after
+  #       building, but they are not, so it might make sense to
+  #       remove some of these from nativeBuildInputs/buildInputs.
+  nativeBuildInputs = [ unzip ant jdk sensible-jvm-opts xmlstarlet ];
+  buildInputs = [ coreutils sensible-jvm-opts ] ++ map (d: d.src) datasources;
+
+  # aliases for command-line tool binaries
+  sha256sumX="${coreutils}/bin/sha256sum";
+  xmlstarletX = "${xmlstarlet}/bin/xmlstarlet";
 
   bridgedbSettings = fetchurl {
     url = "http://repository.pathvisio.org/plugins/pvplugins-bridgedbSettings/1.0.0/pvplugins-bridgedbSettings-1.0.0.jar";
     sha256 = "0gq5ybdv4ci5k01vr80ixlji463l9mdqmkjvhb753dbxhhcnxzjy";
   };
 
-  pathvisioPlugins = ./pathvisio.xml;
+  pathvisioPluginsXML = ./pathvisio.xml;
   pathwayStub = ./pathway.gpml;
 
   XSLT_NORMALIZE = ./normalize.xslt;
@@ -142,119 +149,6 @@ stdenv.mkDerivation rec {
 
   guiCLASSPATH = concatStringsSep ":" (guiClasses);
 
-  installPathVisioGUILauncher = ''
-    cat > $out/bin/pathvisio <<EOF
-#! $shell
-# TODO: watch this issue:
-# https://github.com/PathVisio/pathvisio/issues/97
-# and when --help and --version are supported,
-# update here (but note that the following regex
-# is probably not quite correct):
-#info_re='\\-h|\\-v|\\-\\-help|\\-\\-version'
-info_re='\\-h|\\-v'
-if [[ "\$1" =~ \$info_re ]];
-then
-  ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar \$1
-  exit 0
-fi
-
-# GUI launcher section
-mkdir -p "\$HOME/.PathVisio/.bundles"
-PREFS_FILE="\$HOME/.PathVisio/.PathVisio"
-if [ ! -e "\$PREFS_FILE" ];
-then
-  echo "#" > "\$PREFS_FILE";
-  echo "#Wed Jun 27 16:21:04 PDT 2018" >> "\$PREFS_FILE";
-fi
-
-if [ ! -e "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar" ];
-then
-  ln -s "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
-  cat ${pathvisioPlugins} > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
-  # TODO: should we use xmlstarlet here instead of sed?
-  sed -i.bak "s#HOME_REPLACE_ME#\$HOME#g" "\$HOME/.PathVisio/.bundles/pathvisio.xml"
-fi
-'' + concatStringsSep "" (map (d: d.linkCmd) datasources) + ''
-
-target_file_raw=\$(echo "\$@" | sed "s#.*\\ \\([^\\ ]*\\.gpml\\(\\.xml\\)\\{0,1\\}\\)#\\1#")
-
-if [ ! "\$target_file_raw" ];
-then
-  # We don't want to overwrite an existing file.
-  suffix=\$(date -j -f "%a %b %d %T %Z %Y" "\$(date)" "+%s")
-  target_dir="."
-  if [ ! -w "\$target_dir/" ]; then
-    target_dir="\$HOME"
-  fi
-  target_file_raw="\$target_dir/pathway-\$suffix.gpml"
-fi
-
-target_file=\$("${coreutils}/bin/readlink" -f "\$target_file_raw")
-
-patchedFlags=""
-
-# If no target file specified, or if it is specified but doesn't exist,
-# we create a starter file and open that.
-if [ ! -e "\$target_file" ];
-then
-        echo "Opening new file: \$target_file"
-        cat "${pathwayStub}" > "\$target_file"
-        chmod u+rw "\$target_file"
-        # TODO: should we use xmlstarlet here instead of sed?
-        sed -i.bak "s#Homo sapiens#${organism}#" "\$target_file"
-        rm "\$target_file.bak"
-        patchedFlags="\$@ \$target_file"
-else
-        echo "Opening specified file: \$target_file"
-        patchedFlags=\$(echo "\$@" | sed "s#\$target_file_raw#\$target_file#")
-fi
-
-# TODO how should we handle the case of opening a GPML file having
-# a species not matching organism specified above?
-
-current_organism="${organism}"
-# TODO when, if ever, do we want to use the "-x" flag?
-if [ ! \$(grep -Fq "${organism}" \$target_file) ];
-then
-  # TODO: should we use xmlstarlet here instead of sed?
-  current_organism=\$(grep -o 'Organism="\\(.*\\)"' \$target_file | sed 's#.*"\\(.*\\)".*#\\1#')
-fi
-
-# TODO verify that if a local gene or metabolite db is specified, it's used
-# even if we have the webservice running for the other.
-if ! grep -q "^BRIDGEDB_CONNECTION.*\$current_organism" "\$PREFS_FILE";
-then
-  echo "Setting BRIDGEDB_CONNECTION_1 for \$current_organism"
-  sed -i.bak "/^BRIDGEDB_CONNECTION_.*$/d" "\$PREFS_FILE"
-  rm "\$PREFS_FILE.bak"
-  echo "BRIDGEDB_CONNECTION_1=idmapper-bridgerest\\:http\\://webservice.bridgedb.org\\:80/\$current_organism" >> "\$PREFS_FILE"
-fi
-
-# TODO: will the CFProcessPath export or the -Xdock flags
-#   mess up the Linux desktop app builder?
-# TODO: there are probably other settings/options from Info.plist
-#   https://github.com/PathVisio/pathvisio/blob/master/Info.plist
-#   that should be used for Darwin. Should we modify JavaApplicationStub
-#   to work with this pathvisio script, or should we move content from
-#   Info.plist into here?
-
-# enable drag&drop to the dock icon
-export CFProcessPath="$0"
-
-# NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
-nohup ${javaPath} \
-  -Xdock:icon="${iconSrc}" \
-  -Xdock:name="${name}" \
-  -Xmx${memory}
-  -jar -Dfile.encoding=UTF-8 \
-  "${sharePath1}/pathvisio.jar" \$patchedFlags &
-EOF
-    chmod a+x $out/bin/pathvisio
-
-    mkdir -p "${sharePath1}"
-    cp ./pathvisio.jar "${sharePath1}/pathvisio.jar"
-  '';
-
   src = fetchFromGitHub {
     owner = "PathVisio";
     repo = "pathvisio";
@@ -276,58 +170,14 @@ EOF
     mkdir -p ./bin
     cd ./bin
 
-# see these refs:
-# https://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html
-# https://medium.com/@matt_rasband/dockerizing-a-spring-boot-application-6ec9b9b41faf
-get_java_opts () {
-  CLASSPATH=$1
-  VM_OPTS=$2
-
-  APPLICATION_SIZE_ON_DISK_IN_MB=`${coreutils}/bin/du -cm $(echo $CLASSPATH | tr ':' ' ') | tail -1 | cut -f1`
-  loaded_classes=$(${coreutils}/bin/expr "400" "*" "$APPLICATION_SIZE_ON_DISK_IN_MB")
-  stack_threads=$(${coreutils}/bin/expr "15" "+" "$APPLICATION_SIZE_ON_DISK_IN_MB" "*" "6" "/" "10")
-
-  java_opts_calc=`${java-buildpack-memory-calculator}/bin/java-buildpack-memory-calculator \
-          -loadedClasses $loaded_classes \
-          -poolType metaspace \
-          -stackThreads $stack_threads \
-          -totMemory ${memory} \
-          -vmOptions "$VM_OPTS"`
-
-  echo "$java_opts_calc -Dfile.encoding=UTF-8"
-}
-
-    converter_java_opts=$(get_java_opts "${converterCLASSPATH}")
-    differ_java_opts=$(get_java_opts "${differCLASSPATH}")
-    patcher_java_opts=$(get_java_opts "${patcherCLASSPATH}")
-
-    gui_java_opts=$(get_java_opts "${guiCLASSPATH}")
+    converter_java_opts=$(sensible-jvm-opts "${converterCLASSPATH}" "${memory}")
+    differ_java_opts=$(sensible-jvm-opts "${differCLASSPATH}" "${memory}")
+    gui_java_opts=$(sensible-jvm-opts "${guiCLASSPATH}" "${memory}")
+    patcher_java_opts=$(sensible-jvm-opts "${patcherCLASSPATH}" "${memory}")
 
     cd ./..
 
-    cat > ./bin/gpmlconvert <<EOF
-#! $shell
-CLASSPATH=${converterCLASSPATH}
-${javaPath} $converter_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
-EOF
-
-    cat > ./bin/gpmldiff <<EOF
-#! $shell
-CLASSPATH=${differCLASSPATH}
-${javaPath} $differ_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.GpmlDiff "\$@"
-EOF
-
-    cat > ./bin/gpmlpatch <<EOF
-#! $shell
-CLASSPATH=${patcherCLASSPATH}
-${javaPath} $patcher_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.PatchMain "\$@"
-EOF
-
-    chmod a+x ./bin/gpmlconvert
-    chmod a+x ./bin/gpmldiff
-    chmod a+x ./bin/gpmlpatch
-
-    cat > ./bin/pvjava <<EOF
+    cat > ./bin/pathvisio <<EOF
 #! $shell
 SUBCOMMAND=""
 
@@ -341,20 +191,22 @@ else
   exit 1
 fi
 
-OPTS1=\$("${getopt}/bin/getopt" -o hX: --long help:,icon: \
-             -n 'pvjava' -- "\$@")
+TOP_OPTS=\$("${getopt}/bin/getopt" -o hvX: --long help,version:,icon: \
+             -n 'pathvisio' -- "\$@")
 
 if [ \$? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 
-# Note the quotes around \$OPTS1: they are essential!
-eval set -- "\$OPTS1"
+# NOTE: keep the quotes
+eval set -- "\$TOP_OPTS"
 
 HELP=false
+VERSION=false
 JAVA_CUSTOM_OPTS_ARR=()
 ICON=
 while true; do
   case "\$1" in
     -h | --help ) HELP=true; shift ;;
+    -v | --version ) VERSION=true; shift ;;
     -X ) JAVA_CUSTOM_OPTS_ARR+=("-X\$2"); shift 2 ;;
     --icon ) ICON="\$2"; shift 2 ;;
     -- ) shift; break ;;
@@ -362,15 +214,14 @@ while true; do
   esac
 done
 
-#echo "OPTS1"
-#echo "\$OPTS1"
-#echo "HELP: \$HELP"
-#echo "SUBCOMMAND: \$SUBCOMMAND"
-
 JAVA_CUSTOM_OPTS=\$(IFS=" " ; echo "\$\{JAVA_CUSTOM_OPTS_ARR[*]\}")
 
-if [ \$SUBCOMMAND == false ] && [ \$HELP == true ]; then
-  echo 'some help'
+if [ \$VERSION == true ]; then
+  ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar -v
+  exit 0
+elif [ \$SUBCOMMAND == false ] && [ \$HELP == true ]; then
+  echo 'usage: pathvisio [--version] [--help] [<command> <args>]'
+  echo 'commands: convert, diff, patch, launch'
   exit 0
 elif [ \$SUBCOMMAND = 'convert' ]; then
   CLASSPATH="${converterCLASSPATH}"
@@ -385,25 +236,14 @@ elif [ \$SUBCOMMAND = 'patch' ]; then
   ${javaPath} $patcher_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.PatchMain "\$@"
   exit 0
 elif [ \$SUBCOMMAND = 'launch' ]; then
-  echo 'Launching...'
-
-  echo '$1'
-  echo "\$1"
-
-  # TODO: watch this issue:
+  # TODO: close this issue:
   # https://github.com/PathVisio/pathvisio/issues/97
-  # and when --help and --version are supported,
-  # update here (but note that the following regex
-  # is probably not quite correct):
-  #info_re='\\-h|\\-v|\\-\\-help|\\-\\-version'
-  info_re='\\-h|\\-v'
-  if [[ "\$1" =~ \$info_re ]];
+  if [ \$HELP == true ];
   then
-    ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar \$1
+    ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar -h | sed 's/pathvisio/pathvisio launch/'
     exit 0
   fi
 
-  # GUI launcher section
   mkdir -p "\$HOME/.PathVisio/.bundles"
   PREFS_FILE="\$HOME/.PathVisio/.PathVisio"
   if [ ! -e "\$PREFS_FILE" ];
@@ -415,9 +255,7 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
   if [ ! -e "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar" ];
   then
     ln -s "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
-    cat ${pathvisioPlugins} > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
-    # TODO: should we use xmlstarlet here instead of sed?
-    sed -i.bak "s#HOME_REPLACE_ME#\$HOME#g" "\$HOME/.PathVisio/.bundles/pathvisio.xml"
+    cat ${pathvisioPluginsXML} | ${xmlstarletX} ed -u '/ns2:pvRepository/url' -v "$HOME/.PathVisio/.bundles" > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
   fi
   '' + concatStringsSep "" (map (d: d.linkCmd) datasources) + ''
 
@@ -486,48 +324,17 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
   # enable drag&drop to the dock icon
   export CFProcessPath="$0"
 
-  # NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
-  nohup ${javaPath} $gui_java_opts \
-    -Xdock:icon="${iconSrc}" \
-    -Xdock:name="${name}" \
-    -jar "${sharePath1}/pathvisio.jar" \$patchedFlags &
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  #echo "launch it: nohup ${javaPath} \$JAVA_CUSTOM_OPTS -jar pathvisio.jar &"
 #  # NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
 #  nohup ${javaPath} $gui_java_opts \
 #    -Xdock:icon="${iconSrc}" \
 #    -Xdock:name="${name}" \
-#    -jar "${sharePath1}/pathvisio.jar" "\$@" &
-
-  #nohup ${javaPath} \$JAVA_CUSTOM_OPTS -jar pathvisio.jar &
-  #CLASSPATH="${guiCLASSPATH}"
-  #${javaPath} $gui_java_opts -ea -classpath \$CLASSPATH org.pathvisio.launcher.PathVisioMain "\$@"
-  #${javaPath} $gui_java_opts -ea -classpath \$CLASSPATH org.pathvisio.launcher.PathVisioMain "\$@"
-  #exit 0
+#    -jar "${sharePath1}/pathvisio.jar" \$patchedFlags &
 else
   echo "Invalid subcommand \$1" >&2
   exit 1
 fi
 EOF
-    chmod a+x ./bin/pvjava
+    chmod a+x ./bin/pathvisio
   '';
 
   doCheck = true;
@@ -536,42 +343,58 @@ EOF
     # TODO are we running the existing tests?
     cd ./bin
 
-    # TODO: should we use xmlstarlet here instead of sed?
-    cat ${WP4321_98000_BASE64} | sed -n 2p | sed -E "s#.*<ns1:data>(.+)</ns1:data>.*#\1#g" | base64 -d - > WP4321_98000.gpml
-    cat ${WP4321_98055_BASE64} | sed -n 2p | sed -E "s#.*<ns1:data>(.+)</ns1:data>.*#\1#g" | base64 -d - > WP4321_98055.gpml
-    ./gpmldiff WP4321_98000.gpml WP4321_98055.gpml > WP4321_98000_98055.patch
-    cp WP4321_98000.gpml WP4321_98055.roundtrip.gpml
-    ./gpmlpatch WP4321_98055.roundtrip.gpml < WP4321_98000_98055.patch
+    cat ${WP4321_98000_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98000.gpml
+    cat ${WP4321_98055_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98055.gpml
 
-#    # TODO gpmlpatch doesn't fully patch the diff between these two:
+    echo "diff"
+    ./pathvisio diff WP4321_98000.gpml WP4321_98055.gpml > WP4321_98000_98055.patch
+
+    echo "patch"
+    cp WP4321_98000.gpml WP4321_98055.roundtrip.gpml
+    ./pathvisio patch WP4321_98055.roundtrip.gpml < WP4321_98000_98055.patch
+
+    # TODO pathvisio patch doesn't fully patch the diff between WP4321_98000 and
+    # WP4321_98055, so we're forced to use the kludge of comparing just the
+    # element structure instead of the actual output.
 #    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.gpml > WP4321_98055.norm.gpml
 #    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.roundtrip.gpml > WP4321_98055.roundtrip.norm.gpml
-#    diff -dy --suppress-common-lines WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml
-#    rm WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml
-
+    echo "verify patcha"
+    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.gpml | xmlstarlet el > WP4321_98055.norm.gpml
+    echo "verify patchb"
+    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.roundtrip.gpml | xmlstarlet el > WP4321_98055.roundtrip.norm.gpml
+    echo "verify patch382"
+    common=$(comm -3 --nocheck-order WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml)
+    if [[ "$common" != "" ]]; then
+      echo "Error: pathvisio patch test failed. Mis-matched content:"
+      echo "-----------------"
+      echo "$common"
+      echo "-----------------"
+      exit 1;
+    fi
+    rm WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml
     rm WP4321_98000_98055.patch WP4321_98000.gpml WP4321_98055.gpml
 
     # TODO convert this old GPML file to use an updated schema:
-    #./gpmlconvert ../example-data/Hs_Apoptosis.gpml Hs_Apoptosis-2013a.gpml
+    #./pathvisio convert ../example-data/Hs_Apoptosis.gpml Hs_Apoptosis-2013a.gpml
 
-    ./gpmlconvert ${WP1243_69897} ./WP1243_69897.owl
+    ./pathvisio convert ${WP1243_69897} ./WP1243_69897.owl
     xmlstarlet tr ${XSLT_NORMALIZE} WP1243_69897.owl > WP1243_69897.owl.norm
     mv WP1243_69897.owl.norm WP1243_69897.owl
     cp ${WP1243_69897_BPSS_SHASUM} ./WP1243_69897.bpss.shasum
     cp ${WP1243_69897_OWL_SHASUM} ./WP1243_69897.owl.shasum
-    ${coreutils}/bin/sha256sum -c WP1243_69897.bpss.shasum
+    ${sha256sumX} -c WP1243_69897.bpss.shasum
     # NOTE: if they don't match, try this to see the diff:
     #diff -dy --suppress-common-lines ${WP1243_69897_OWL} WP1243_69897.owl
-    ${coreutils}/bin/sha256sum -c WP1243_69897.owl.shasum
+    sha256sum -c WP1243_69897.owl.shasum
     rm WP1243_69897.owl WP1243_69897.owl.shasum WP1243_69897.bpss WP1243_69897.bpss.shasum
 
-    ./gpmlconvert ${WP1243_69897} ./WP1243_69897.png
+    ./pathvisio convert ${WP1243_69897} ./WP1243_69897.png
     cp ${WP1243_69897_PNG_SHASUM} ./WP1243_69897.png.shasum
     # TODO why does the sha256sum differ between Linux and Darwin?
-    #${coreutils}/bin/sha256sum -c WP1243_69897.png.shasum
+    #sha256sum -c WP1243_69897.png.shasum
     rm WP1243_69897.png WP1243_69897.png.shasum
 
-    ./gpmlconvert ${WP1243_69897} WP1243_69897.pdf
+    ./pathvisio convert ${WP1243_69897} WP1243_69897.pdf
     # NOTE: PDF conversion produces a different output every time,
     # so we can't use shasum to verify.
     rm WP1243_69897.pdf
@@ -614,20 +437,21 @@ EOF
     echo '  wget https://cdn.rawgit.com/PathVisio/GPML/fa76a73d/test/2013a/WP1243_69897.gpml'
     echo '  cp WP1243_69897.gpml test.gpml'
     echo '  # GPML -> BioPAX/OWL'
-    echo '  gpmlconvert WP1243_69897.gpml WP1243_69897.owl'
+    echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.owl'
     echo '  # GPML -> PDF'
-    echo '  gpmlconvert WP1243_69897.gpml WP1243_69897.pdf'
+    echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.pdf'
     echo '  # GPML -> PNG'
-    echo '  gpmlconvert WP1243_69897.gpml WP1243_69897.png'
+    echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.png'
     echo '  # Diff'
-    echo '  gpmldiff WP1243_69897.gpml test.gpml > test.patch'
+    echo '  pathvisio diff WP1243_69897.gpml test.gpml > test.patch'
     echo '  # Patch'
-    echo '  gpmlpatch WP1243_69897.gpml < test.patch'
+    echo '  pathvisio patch WP1243_69897.gpml < test.patch'
   '' + (
   if headless then ''
     echo 'Desktop functionality not enabled.'
   '' else ''
-    ${installPathVisioGUILauncher}
+    mkdir -p "${sharePath1}"
+    cp ./pathvisio.jar "${sharePath1}/pathvisio.jar"
   '' + (
     if stdenv.system == "x86_64-darwin" then ''
       mkdir -p "$out/Applications"
