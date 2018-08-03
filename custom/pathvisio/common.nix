@@ -1,4 +1,17 @@
-{ stdenv, coreutils, fetchurl, fetchFromGitHub, makeDesktopItem, unzip, ant, jdk, xmlstarlet, headless ? false, organism ? "Homo sapiens", datasources ? [] }:
+{ ant,
+coreutils,
+fetchFromGitHub,
+fetchurl,
+getopt,
+jdk,
+makeDesktopItem,
+stdenv,
+unzip,
+xmlstarlet,
+headless ? false,
+organism ? "Homo sapiens",
+datasources ? [],
+memory ? "1024m" }:
 # TODO allow for specifying plugins to install
 
 with builtins;
@@ -6,6 +19,8 @@ with builtins;
 let
   baseName = "PathVisio";
   version = "3.3.0";
+  custom = import ../all-custom.nix;
+  java-buildpack-memory-calculator = custom.java-buildpack-memory-calculator;
 in
 stdenv.mkDerivation rec {
   name = replaceStrings [" "] ["_"] (concatStringsSep "-" (filter (x: isString x) [baseName version organism]));
@@ -52,9 +67,70 @@ stdenv.mkDerivation rec {
 
   sharePath1 = "$out/share/pathvisio";
 
-  installPathVisioExecutable = ''
+  biopax3GPMLSrc = fetchurl {
+    url = "https://cdn.rawgit.com/wikipathways/wikipathways.org/e8fae01e/wpi/bin/Biopax3GPML.jar";
+    sha256 = "1jm5khh6n78fghd7wp0m5dcb6s2zp23pgsbw56rpajfxgx1sz7lg";
+  };
+
+  converterClasses = [
+    "${modulesPath0}/org.pathvisio.core.jar"
+    "${libPath0}/com.springsource.org.jdom-1.1.0.jar"
+    "${libPath0}/org.bridgedb.jar"
+    "${libPath0}/org.bridgedb.bio.jar"
+    "${libPath0}/org.bridgedb.bio.jar"
+    "${libPath0}/org.apache.batik.bridge_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.css_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.dom_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.dom.svg_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.ext.awt_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.extension_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.parser_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.svggen_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.transcoder_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.util_1.7.0.v201011041433.jar"
+    "${libPath0}/org.apache.batik.util.gui_1.7.0.v200903091627.jar"
+    "${libPath0}/org.apache.batik.xml_1.7.0.v201011041433.jar"
+    "${libPath0}/org.pathvisio.pdftranscoder.jar"
+    "${libPath0}/org.w3c.css.sac_1.3.1.v200903091627.jar"
+    "${libPath0}/org.w3c.dom.events_3.0.0.draft20060413_v201105210656.jar"
+    "${libPath0}/org.w3c.dom.smil_1.0.1.v200903091627.jar"
+    "${libPath0}/org.w3c.dom.svg_1.1.0.v201011041433.jar"
+    biopax3GPMLSrc
+  ];
+  differClasses = [
+    "${modulesPath0}/org.pathvisio.core.jar"
+    "${libPath0}/com.springsource.org.jdom-1.1.0.jar"
+    "${libPath0}/org.bridgedb.jar"
+    "${libPath0}/org.bridgedb.bio.jar"
+  ];
+  patcherClasses = [
+    "${modulesPath0}/org.pathvisio.core.jar"
+    "${libPath0}/com.springsource.org.jdom-1.1.0.jar"
+    "${libPath0}/org.bridgedb.jar"
+    "${libPath0}/org.bridgedb.bio.jar"
+  ];
+
+  converterCLASSPATH = concatStringsSep ":" (converterClasses);
+  differCLASSPATH = concatStringsSep ":" (differClasses);
+  patcherCLASSPATH = concatStringsSep ":" (patcherClasses);
+
+  installPathVisioGUILauncher = ''
     cat > $out/bin/pathvisio <<EOF
 #! $shell
+# TODO: watch this issue:
+# https://github.com/PathVisio/pathvisio/issues/97
+# and when --help and --version are supported,
+# update here (but note that the following regex
+# is probably not quite correct):
+#info_re='\\-h|\\-v|\\-\\-help|\\-\\-version'
+info_re='\\-h|\\-v'
+if [[ "\$1" =~ \$info_re ]];
+then
+  ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar \$1
+  exit 0
+fi
+
+# GUI launcher section
 mkdir -p "\$HOME/.PathVisio/.bundles"
 PREFS_FILE="\$HOME/.PathVisio/.PathVisio"
 if [ ! -e "\$PREFS_FILE" ];
@@ -69,19 +145,6 @@ then
   cat ${pathvisioPlugins} > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
   # TODO: should we use xmlstarlet here instead of sed?
   sed -i.bak "s#HOME_REPLACE_ME#\$HOME#g" "\$HOME/.PathVisio/.bundles/pathvisio.xml"
-fi
-
-# TODO: watch this issue:
-# https://github.com/PathVisio/pathvisio/issues/97
-# and when --help and --version are supported,
-# update here (but note that the following regex
-# is probably not quite correct):
-#info_re='\\-h|\\-v|\\-\\-help|\\-\\-version'
-info_re='\\-h|\\-v'
-if [[ "\$1" =~ \$info_re ]];
-then
-  ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar \$1
-  exit 0
 fi
 '' + concatStringsSep "" (map (d: d.linkCmd) datasources) + ''
 
@@ -140,7 +203,12 @@ then
 fi
 
 # TODO: will the CFProcessPath export or the -Xdock flags
-# mess up the Linux desktop app builder?
+#   mess up the Linux desktop app builder?
+# TODO: there are probably other settings/options from Info.plist
+#   https://github.com/PathVisio/pathvisio/blob/master/Info.plist
+#   that should be used for Darwin. Should we modify JavaApplicationStub
+#   to work with this pathvisio script, or should we move content from
+#   Info.plist into here?
 
 # enable drag&drop to the dock icon
 export CFProcessPath="$0"
@@ -149,6 +217,7 @@ export CFProcessPath="$0"
 nohup ${javaPath} \
   -Xdock:icon="${iconSrc}" \
   -Xdock:name="${name}" \
+  -Xmx${memory}
   -jar -Dfile.encoding=UTF-8 \
   "${sharePath1}/pathvisio.jar" \$patchedFlags &
 EOF
@@ -165,23 +234,9 @@ EOF
     sha256 = "1n2897290g6kph1l04d2lj6n7137w0gnavzp9rjz43hi1ggyw6f9";
   };
 
-  biopax3GPMLSrc = fetchurl {
-    url = "https://cdn.rawgit.com/wikipathways/wikipathways.org/e8fae01e/wpi/bin/Biopax3GPML.jar";
-    sha256 = "1jm5khh6n78fghd7wp0m5dcb6s2zp23pgsbw56rpajfxgx1sz7lg";
-  };
-
   pngIconSrc = "${src}/www/bigcateye_135x135.png";
 
   iconSrc = "${src}/lib-build/bigcateye.icns";
-
-  postPatch = ''
-    for f in ./scripts/*; do
-      substituteInPlace $f \
-            --replace "java -ea" "${javaPath} -ea" \
-            --replace "#!/bin/sh" "#!$shell" \
-            --replace "#!/bin/bash" "#!$shell"
-    done
-  '';
 
   buildPhase = (if headless then ''
     ant
@@ -190,42 +245,59 @@ EOF
   '' else ''
     ant exe
   '') + ''
-
     mkdir -p ./bin
-    cp ./scripts/gpmldiff.sh ./bin/gpmldiff
-    cp ./scripts/gpmlpatch.sh ./bin/gpmlpatch
+    cd ./bin
+
+get_java_opts () {
+  CLASSPATH=$1
+  JAVA_CUSTOM_OPTS=$2
+
+  APPLICATION_SIZE_ON_DISK_IN_MB=`${coreutils}/bin/du -cm $(echo $CLASSPATH | tr ':' ' ') | tail -1 | cut -f1`
+  loaded_classes=$(${coreutils}/bin/expr "400" "*" "$APPLICATION_SIZE_ON_DISK_IN_MB")
+  stack_threads=$(${coreutils}/bin/expr "15" "+" "$APPLICATION_SIZE_ON_DISK_IN_MB" "*" "6" "/" "10")
+
+  java_opts_calc=`${java-buildpack-memory-calculator}/bin/java-buildpack-memory-calculator \
+          -loadedClasses $loaded_classes \
+          -poolType metaspace \
+          -stackThreads $stack_threads \
+          -totMemory ${memory} \
+          -vmOptions "$JAVA_CUSTOM_OPTS"`
+
+  echo "$java_opts_calc"
+}
+
+    converter_java_opts=$(get_java_opts "${converterCLASSPATH}")
+    differ_java_opts=$(get_java_opts "${differCLASSPATH}")
+    patcher_java_opts=$(get_java_opts "${patcherCLASSPATH}")
+    cd ./..
+
+#    for f in ./scripts/{gpmldiff.sh,gpmlpatch.sh}; do
+#      substituteInPlace $f \
+#            --replace "java -ea" "${javaPath} $converter_java_opts -ea" \
+#            --replace "#!/bin/sh" "#!$shell" \
+#            --replace "#!/bin/bash" "#!$shell"
+#    done
+#
+#    cp ./scripts/gpmldiff.sh ./bin/gpmldiff
+#    cp ./scripts/gpmlpatch.sh ./bin/gpmlpatch
 
     cat > ./bin/gpmlconvert <<EOF
-    #! $shell
-    #CLASSPATH=${modulesPath0}/org.pathvisio.core.jar:${libPath0}/*:${biopax3GPMLSrc}
+#! $shell
+CLASSPATH=${converterCLASSPATH}
+${javaPath} $converter_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
+EOF
 
-    CLASSPATH=\\
-    ${modulesPath0}/org.pathvisio.core.jar:\\
-    ${libPath0}/com.springsource.org.jdom-1.1.0.jar:\\
-    ${libPath0}/org.bridgedb.jar:\\
-    ${libPath0}/org.bridgedb.bio.jar:\\
-    ${libPath0}/org.bridgedb.bio.jar:\\
-    ${libPath0}/org.apache.batik.bridge_1.7.0.v201011041433.jar:\\
-    ${libPath0}/org.apache.batik.css_1.7.0.v201011041433.jar:\\
-    ${libPath0}/org.apache.batik.dom_1.7.0.v201011041433.jar:\\
-    ${libPath0}/org.apache.batik.dom.svg_1.7.0.v201011041433.jar:\\
-    ${libPath0}/org.apache.batik.ext.awt_1.7.0.v201011041433.jar:\\
-    ${libPath0}/org.apache.batik.extension_1.7.0.v201011041433.jar:\\
-    ${libPath0}/org.apache.batik.parser_1.7.0.v201011041433.jar:\\
-    ${libPath0}/org.apache.batik.svggen_1.7.0.v201011041433.jar:\\
-    ${libPath0}/org.apache.batik.transcoder_1.7.0.v201011041433.jar:\\
-    ${libPath0}/org.apache.batik.util_1.7.0.v201011041433.jar:\\
-    ${libPath0}/org.apache.batik.util.gui_1.7.0.v200903091627.jar:\\
-    ${libPath0}/org.apache.batik.xml_1.7.0.v201011041433.jar:\\
-    ${libPath0}/org.pathvisio.pdftranscoder.jar:\\
-    ${libPath0}/org.w3c.css.sac_1.3.1.v200903091627.jar:\\
-    ${libPath0}/org.w3c.dom.events_3.0.0.draft20060413_v201105210656.jar:\\
-    ${libPath0}/org.w3c.dom.smil_1.0.1.v200903091627.jar:\\
-    ${libPath0}/org.w3c.dom.svg_1.1.0.v201011041433.jar:\\
-    ${biopax3GPMLSrc}
+    cat > ./bin/gpmldiff <<EOF
+#! $shell
+CLASSPATH=${differCLASSPATH}
+${javaPath} $differ_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.GpmlDiff "\$@"
+EOF
 
-    ${javaPath} -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
-    EOF
+    cat > ./bin/gpmlpatch <<EOF
+#! $shell
+CLASSPATH=${patcherCLASSPATH}
+${javaPath} $patcher_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.PatchMain "\$@"
+EOF
 
     chmod a+x ./bin/gpmlconvert
     chmod a+x ./bin/gpmldiff
@@ -329,7 +401,7 @@ EOF
   if headless then ''
     echo 'Desktop functionality not enabled.'
   '' else ''
-    ${installPathVisioExecutable}
+    ${installPathVisioGUILauncher}
   '' + (
     if stdenv.system == "x86_64-darwin" then ''
       mkdir -p "$out/Applications"
@@ -373,6 +445,11 @@ EOF
         nix-env -iA nixos.pathvisio --arg organism "Mus musculus" --arg headless true --arg genes "local" --arg interactions "local"
       '';
       homepage = https://www.pathvisio.org/;
+      # download_page = https://www.pathvisio.org/downloads/installation/
+      # homebrew/science formula (deprecated):
+      # https://github.com/Homebrew/homebrew-science/blob/51e1e3b106ced03b0e4056ef3f81d6a8729e3298/pathvisio.rb
+      # brewsci/homebrew-bio formula:
+      # https://github.com/brewsci/homebrew-bio/blob/master/Formula/pathvisio.rb
       license = licenses.asl20;
       maintainers = with maintainers; [ ariutta ];
       platforms = platforms.all;
