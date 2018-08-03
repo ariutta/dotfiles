@@ -33,8 +33,13 @@ stdenv.mkDerivation rec {
   buildInputs = [ coreutils sensible-jvm-opts ] ++ map (d: d.src) datasources;
 
   # aliases for command-line tool binaries
-  sha256sumX="${coreutils}/bin/sha256sum";
-  xmlstarletX = "${xmlstarlet}/bin/xmlstarlet";
+  # that we keep using in production (after
+  # the initial unpack/build/install phase).
+  # NOTE: not aliasing the following:
+  # echo, eval, exit, shift
+  getoptAlias = "${getopt}/bin/getopt";
+  javaAlias = "${jdk.jre}/bin/java";
+  xmlstarletAlias = "${xmlstarlet}/bin/xmlstarlet";
 
   bridgedbSettings = fetchurl {
     url = "http://repository.pathvisio.org/plugins/pvplugins-bridgedbSettings/1.0.0/pvplugins-bridgedbSettings-1.0.0.jar";
@@ -63,8 +68,6 @@ stdenv.mkDerivation rec {
   WP1243_69897_OWL = ./WP1243_69897.owl;
   WP1243_69897_OWL_SHASUM = ./WP1243_69897.owl.shasum;
   WP1243_69897_PNG_SHASUM = ./WP1243_69897.png.shasum;
-
-  javaPath = "${jdk.jre}/bin/java";
 
   libPath0 = "../lib";
   libPath1 = "$out/lib/pathvisio";
@@ -191,7 +194,7 @@ else
   exit 1
 fi
 
-TOP_OPTS=\$("${getopt}/bin/getopt" -o hvX: --long help,version:,icon: \
+TOP_OPTS=\$("${getoptAlias}" -o hvX: --long help,version:,icon: \
              -n 'pathvisio' -- "\$@")
 
 if [ \$? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
@@ -214,33 +217,68 @@ while true; do
   esac
 done
 
+# TODO
 JAVA_CUSTOM_OPTS=\$(IFS=" " ; echo "\$\{JAVA_CUSTOM_OPTS_ARR[*]\}")
 
 if [ \$VERSION == true ]; then
-  ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar -v
+  ${javaAlias} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar -v
   exit 0
 elif [ \$SUBCOMMAND == false ] && [ \$HELP == true ]; then
   echo 'usage: pathvisio [--version] [--help] [<command> <args>]'
   echo 'commands: convert, diff, patch, launch'
   exit 0
 elif [ \$SUBCOMMAND = 'convert' ]; then
+  if [ \$HELP == true ]; then
+    echo 'usage: pathvisio convert <input> <output>'
+    echo ' '
+    echo 'examples on example data WP1243_69897.gpml:'
+    echo '    wget https://cdn.rawgit.com/PathVisio/GPML/fa76a73d/test/2013a/WP1243_69897.gpml'
+    echo ' '
+    echo '  # GPML -> BioPAX/OWL'
+    echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.owl'
+    echo '  # GPML -> PDF'
+    echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.pdf'
+    echo '  # GPML -> PNG'
+    echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.png'
+    exit 0
+  fi
+
   CLASSPATH="${converterCLASSPATH}"
-  ${javaPath} $converter_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
+  ${javaAlias} $converter_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
   exit 0
 elif [ \$SUBCOMMAND = 'diff' ]; then
+  if [ \$HELP == true ]; then
+    echo 'usage: pathvisio diff <input1> <input2>'
+    echo ' '
+    echo 'example (get data as described in pathvisio convert -h):'
+    echo "  sed 's/Color=\\".*\\"/Color=\\"ff0000\\"/g' WP1243_69897.gpml > test.gpml"
+    echo ' '
+    echo '  pathvisio diff WP1243_69897.gpml test.gpml > test.patch'
+    exit 0
+  fi
+
   CLASSPATH="${differCLASSPATH}"
-  ${javaPath} $differ_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.GpmlDiff "\$@"
+  ${javaAlias} $differ_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.GpmlDiff "\$@"
   exit 0
 elif [ \$SUBCOMMAND = 'patch' ]; then
+  if [ \$HELP == true ]; then
+    echo 'usage: pathvisio patch <reference> < <patch>'
+    echo ' '
+    echo 'example (create patch file as described in pathvisio diff -h)'
+    echo ' '
+    echo '  pathvisio patch WP1243_69897.gpml < test.patch'
+    exit 0
+  fi
+
   CLASSPATH="${patcherCLASSPATH}"
-  ${javaPath} $patcher_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.PatchMain "\$@"
+  ${javaAlias} $patcher_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.PatchMain "\$@"
   exit 0
 elif [ \$SUBCOMMAND = 'launch' ]; then
   # TODO: close this issue:
   # https://github.com/PathVisio/pathvisio/issues/97
   if [ \$HELP == true ];
   then
-    ${javaPath} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar -h | sed 's/pathvisio/pathvisio launch/'
+    ${javaAlias} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar -h | sed 's/pathvisio/pathvisio launch/'
     exit 0
   fi
 
@@ -255,7 +293,7 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
   if [ ! -e "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar" ];
   then
     ln -s "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
-    cat ${pathvisioPluginsXML} | ${xmlstarletX} ed -u '/ns2:pvRepository/url' -v "$HOME/.PathVisio/.bundles" > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
+    cat ${pathvisioPluginsXML} | ${xmlstarletAlias} ed -u '/ns2:pvRepository/url' -v "$HOME/.PathVisio/.bundles" > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
   fi
   '' + concatStringsSep "" (map (d: d.linkCmd) datasources) + ''
 
@@ -325,7 +363,7 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
   export CFProcessPath="$0"
 
 #  # NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
-#  nohup ${javaPath} $gui_java_opts \
+#  nohup ${javaAlias} $gui_java_opts \
 #    -Xdock:icon="${iconSrc}" \
 #    -Xdock:name="${name}" \
 #    -jar "${sharePath1}/pathvisio.jar" \$patchedFlags &
@@ -340,49 +378,29 @@ EOF
   doCheck = true;
 
   checkPhase = ''
-    # TODO are we running the existing tests?
+    # TODO: Should we be running existing tests like these for the built versions:
+    # https://github.com/PathVisio/pathvisio/tree/master/modules/org.pathvisio.core/test/org/pathvisio/core
+
+    mkdir ./tmp
+
     cd ./bin
 
     cat ${WP4321_98000_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98000.gpml
     cat ${WP4321_98055_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98055.gpml
 
-    echo "diff"
-    ./pathvisio diff WP4321_98000.gpml WP4321_98055.gpml > WP4321_98000_98055.patch
+    echo "convert"
+    # 2007 -> 2013a
+    ./pathvisio convert ../example-data/Hs_Apoptosis.gpml ../tmp/Hs_Apoptosis.2013a.gpml
 
-    echo "patch"
-    cp WP4321_98000.gpml WP4321_98055.roundtrip.gpml
-    ./pathvisio patch WP4321_98055.roundtrip.gpml < WP4321_98000_98055.patch
-
-    # TODO pathvisio patch doesn't fully patch the diff between WP4321_98000 and
-    # WP4321_98055, so we're forced to use the kludge of comparing just the
-    # element structure instead of the actual output.
-#    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.gpml > WP4321_98055.norm.gpml
-#    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.roundtrip.gpml > WP4321_98055.roundtrip.norm.gpml
-    echo "verify patcha"
-    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.gpml | xmlstarlet el > WP4321_98055.norm.gpml
-    echo "verify patchb"
-    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.roundtrip.gpml | xmlstarlet el > WP4321_98055.roundtrip.norm.gpml
-    echo "verify patch382"
-    common=$(comm -3 --nocheck-order WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml)
-    if [[ "$common" != "" ]]; then
-      echo "Error: pathvisio patch test failed. Mis-matched content:"
-      echo "-----------------"
-      echo "$common"
-      echo "-----------------"
-      exit 1;
-    fi
-    rm WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml
-    rm WP4321_98000_98055.patch WP4321_98000.gpml WP4321_98055.gpml
-
-    # TODO convert this old GPML file to use an updated schema:
-    #./pathvisio convert ../example-data/Hs_Apoptosis.gpml Hs_Apoptosis-2013a.gpml
+    # 2010a -> 2013a
+    ./pathvisio convert ../testData/2010a/parsetest1.gpml ../tmp/parsetest1.2013a.gpml
 
     ./pathvisio convert ${WP1243_69897} ./WP1243_69897.owl
     xmlstarlet tr ${XSLT_NORMALIZE} WP1243_69897.owl > WP1243_69897.owl.norm
     mv WP1243_69897.owl.norm WP1243_69897.owl
     cp ${WP1243_69897_BPSS_SHASUM} ./WP1243_69897.bpss.shasum
     cp ${WP1243_69897_OWL_SHASUM} ./WP1243_69897.owl.shasum
-    ${sha256sumX} -c WP1243_69897.bpss.shasum
+    sha256sum -c WP1243_69897.bpss.shasum
     # NOTE: if they don't match, try this to see the diff:
     #diff -dy --suppress-common-lines ${WP1243_69897_OWL} WP1243_69897.owl
     sha256sum -c WP1243_69897.owl.shasum
@@ -399,14 +417,39 @@ EOF
     # so we can't use shasum to verify.
     rm WP1243_69897.pdf
 
+    echo "diff"
+    ./pathvisio diff WP4321_98000.gpml WP4321_98055.gpml > WP4321_98000_98055.patch
+
+    echo "patch"
+    cp WP4321_98000.gpml WP4321_98055.roundtrip.gpml
+    ./pathvisio patch WP4321_98055.roundtrip.gpml < WP4321_98000_98055.patch
+
+    # TODO pathvisio patch doesn't fully patch the diff between WP4321_98000 and
+    # WP4321_98055, so we're forced to use the kludge of comparing just the
+    # element structure instead of the actual output.
+#    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.gpml > WP4321_98055.norm.gpml
+#    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.roundtrip.gpml > WP4321_98055.roundtrip.norm.gpml
+    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.gpml | xmlstarlet el > WP4321_98055.norm.gpml
+    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.roundtrip.gpml | xmlstarlet el > WP4321_98055.roundtrip.norm.gpml
+    common=$(comm -3 --nocheck-order WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml)
+    if [[ "$common" != "" ]]; then
+      echo "Error: pathvisio patch test failed. Mis-matched content:"
+      echo "-----------------"
+      echo "$common"
+      echo "-----------------"
+      exit 1;
+    fi
+    rm WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml
+    rm WP4321_98000_98055.patch WP4321_98000.gpml WP4321_98055.gpml
+
     cd ../
   '';
 
   desktopItem = makeDesktopItem {
     name = name;
-    exec = "pathvisio";
-    #exec = "pathvisio ~/pathway-\$(${date} -j -f \"%a %b %d %T %Z %Y\" \"\$(${date})\" \"+%s\").gpml";
-    #exec = "pathvisio ~/pathway-test.gpml";
+    exec = "pathvisio launch";
+    #exec = "pathvisio launch ~/pathway-\$(${date} -j -f \"%a %b %d %T %Z %Y\" \"\$(${date})\" \"+%s\").gpml";
+    #exec = "pathvisio launch ~/pathway-test.gpml";
     icon = "${pngIconSrc}";
     desktopName = baseName;
     genericName = "Pathway Editor";
@@ -431,21 +474,6 @@ EOF
 
     cp -r ./lib/* "${libPath1}/"
     cp -r ./modules/* "${modulesPath1}/"
-
-    echo 'Sample commands:'
-    echo '  # Get some data'
-    echo '  wget https://cdn.rawgit.com/PathVisio/GPML/fa76a73d/test/2013a/WP1243_69897.gpml'
-    echo '  cp WP1243_69897.gpml test.gpml'
-    echo '  # GPML -> BioPAX/OWL'
-    echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.owl'
-    echo '  # GPML -> PDF'
-    echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.pdf'
-    echo '  # GPML -> PNG'
-    echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.png'
-    echo '  # Diff'
-    echo '  pathvisio diff WP1243_69897.gpml test.gpml > test.patch'
-    echo '  # Patch'
-    echo '  pathvisio patch WP1243_69897.gpml < test.patch'
   '' + (
   if headless then ''
     echo 'Desktop functionality not enabled.'
@@ -461,13 +489,13 @@ EOF
 
 #      # 1. use semi-generic JavaApplicationStub
 #      substituteInPlace ./JavaApplicationStub \
-#            --replace "JAVACMD=\"JAVACMD_REPLACE_ME\"" "JAVACMD=\"${javaPath}\""
+#            --replace "JAVACMD=\"JAVACMD_REPLACE_ME\"" "JAVACMD=\"${javaAlias}\""
 #      cp ./JavaApplicationStub $out/Applications/PathVisio.app/Contents/MacOS/JavaApplicationStub
 
       # 2. use my own pathvisio script
       cp $out/bin/pathvisio $out/Applications/PathVisio.app/Contents/MacOS/pathvisio
       substituteInPlace $out/Applications/PathVisio.app/Contents/Info.plist \
-            --replace "JavaApplicationStub" "pathvisio"
+            --replace "JavaApplicationStub" "pathvisio launch"
     '' else ''
       mkdir -p "$out/share/applications"
       ln -s ${desktopItem}/share/applications/* "$out/share/applications/"

@@ -1,6 +1,5 @@
 { coreutils,
 fetchurl,
-jdk,
 stdenv }:
 
 with builtins;
@@ -15,17 +14,16 @@ stdenv.mkDerivation rec {
   name = replaceStrings [" "] ["_"] (concatStringsSep "-" (filter (x: isString x) [baseName version]));
 
   # aliases for command-line tool binaries
-  # that we keep using in production, after
-  # the initial unpack/build/install phase.
-  cutX="${coreutils}/bin/cut";
-  duX="${coreutils}/bin/du";
-  exprX="${coreutils}/bin/expr";
-  tailX="${coreutils}/bin/tail";
-  trX="${coreutils}/bin/tr";
+  # that we keep using in production (after
+  # the initial unpack/build/install phase).
+  # NOTE: not aliasing echo or exit.
+  cutAlias="${coreutils}/bin/cut";
+  duAlias="${coreutils}/bin/du";
+  exprAlias="${coreutils}/bin/expr";
+  tailAlias="${coreutils}/bin/tail";
+  trAlias="${coreutils}/bin/tr";
 
-  buildInputs = [ jdk ];
-
-  javaPath = "${jdk.jre}/bin/java";
+  buildInputs = [ coreutils ];
 
   src = fetchurl {
     url = "https://introcs.cs.princeton.edu/java/11hello/HelloWorld.java";
@@ -54,9 +52,9 @@ CLASSPATH=\$1
 MAX_MEMORY=\$2
 VM_OPTS=\$3
 
-APPLICATION_SIZE_ON_DISK_IN_MB=\`${duX} -cm \$(echo \$CLASSPATH | ${trX} ':' ' ') | ${tailX} -1 | ${cutX} -f1\`
-loaded_classes=\$(${exprX} "400" "*" "\$APPLICATION_SIZE_ON_DISK_IN_MB")
-stack_threads=\$(${exprX} "15" "+" "\$APPLICATION_SIZE_ON_DISK_IN_MB" "*" "6" "/" "10")
+APPLICATION_SIZE_ON_DISK_IN_MB=\`${duAlias} -cm \$(echo \$CLASSPATH | ${trAlias} ':' ' ') | ${tailAlias} -1 | ${cutAlias} -f1\`
+loaded_classes=\$(${exprAlias} "400" "*" "\$APPLICATION_SIZE_ON_DISK_IN_MB")
+stack_threads=\$(${exprAlias} "15" "+" "\$APPLICATION_SIZE_ON_DISK_IN_MB" "*" "6" "/" "10")
 
 jvm_opts_calc=\$(${java-buildpack-memory-calculator}/bin/java-buildpack-memory-calculator \\
         -loadedClasses \$loaded_classes \\
