@@ -48,6 +48,8 @@ stdenv.mkDerivation rec {
 
   pathvisioPluginsXML = ./pathvisio.xml;
   pathwayStub = ./pathway.gpml;
+  #sums = "./sums/*";
+  sums = ./sums;
 
   XSLT_NORMALIZE = ./normalize.xslt;
   WP4321_98000_BASE64 = fetchurl {
@@ -381,7 +383,7 @@ EOF
     # TODO: Should we be running existing tests like these for the built versions:
     # https://github.com/PathVisio/pathvisio/tree/master/modules/org.pathvisio.core/test/org/pathvisio/core
 
-    mkdir ./tmp
+    mkdir ./test-results
 
     cd ./bin
 
@@ -389,11 +391,39 @@ EOF
     cat ${WP4321_98055_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98055.gpml
 
     echo "convert"
-    # 2007 -> 2013a
-    ./pathvisio convert ../example-data/Hs_Apoptosis.gpml ../tmp/Hs_Apoptosis.2013a.gpml
+    #for f in ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml; do
+    for f in $(ls -1 ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml | head -n 2) ; do
+      converted_f="../test-results/"$(basename "$f" ".gpml")
 
-    # 2010a -> 2013a
-    ./pathvisio convert ../testData/2010a/parsetest1.gpml ../tmp/parsetest1.2013a.gpml
+      # convert/update from old GPML schema to latest:
+      ./pathvisio convert "$f" "$converted_f".gpml
+      xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".gpml > "$converted_f".norm.gpml
+
+      ./pathvisio convert "$converted_f".gpml "$converted_f".owl
+      xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".owl > "$converted_f".norm.owl
+      cp "$converted_f".bpss "$converted_f".norm.bpss
+
+      ./pathvisio convert "$converted_f".gpml "$converted_f".png
+      ./pathvisio convert "$converted_f".gpml "$converted_f".pdf
+    done
+
+    cp ${sums}/* "../test-results"
+
+    for f in ../test-results/*.norm.{gpml,owl,bpss}.shasum; do
+      sha256sum -c "$f"
+    done
+    for f in ../test-results/*.{pdf,png}.sizesum; do
+      converted="../test-results/"$(basename "$f" ".sizesum")
+      actual=$(stat --printf="%s" "$converted")
+      expected=$(cat "$f")
+      if [[ "$actual" != "$expected" ]]; then
+        echo "Error: pathvisio convert test failed."
+        echo "       Unequal sizes for $converted:"
+        echo "       expected: $expected"
+        echo "       actual: $actual"
+        exit 1;
+      fi
+    done
 
     ./pathvisio convert ${WP1243_69897} ./WP1243_69897.owl
     xmlstarlet tr ${XSLT_NORMALIZE} WP1243_69897.owl > WP1243_69897.owl.norm
@@ -401,8 +431,6 @@ EOF
     cp ${WP1243_69897_BPSS_SHASUM} ./WP1243_69897.bpss.shasum
     cp ${WP1243_69897_OWL_SHASUM} ./WP1243_69897.owl.shasum
     sha256sum -c WP1243_69897.bpss.shasum
-    # NOTE: if they don't match, try this to see the diff:
-    #diff -dy --suppress-common-lines ${WP1243_69897_OWL} WP1243_69897.owl
     sha256sum -c WP1243_69897.owl.shasum
     rm WP1243_69897.owl WP1243_69897.owl.shasum WP1243_69897.bpss WP1243_69897.bpss.shasum
 
@@ -464,6 +492,25 @@ EOF
   # TODO Should we somehow take advantage of the osgi and apache capabilities?
   installPhase = ''
     mkdir -p "$out/bin" "${libPath1}" "${modulesPath1}"
+
+    # Enable this to reset the test-result sums
+    mkdir -p "$out/test-results"
+    cp -r ./test-results/*.{bpss,gpml,pdf,png,owl} "$out/test-results/"
+    here="$(pwd)"
+    cd "$out/test-results/"
+    echo "coreutils: ${coreutils}"
+    for f in $out/test-results/*.{bpss,gpml,pdf,png,owl}; do
+      echo "generating sha256sum for $f"
+      base=$(basename "$f")
+      echo "base: $base"
+      sha256sum --tag "$base" > "$base".shasum
+      stat --printf="%s" "$f" > "$base".sizesum
+    done
+    #sudo rm ./sums/*
+    #cp ./result/test-results/*.norm.{bpss,gpml,owl}.shasum sums/
+    #cp ./result/test-results/*.{pdf,png}.sizesum sums/
+
+    cd "$here"
 
     cp -r ./bin/* $out/bin/
     for f in $out/bin/*; do
