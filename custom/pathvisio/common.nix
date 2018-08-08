@@ -12,6 +12,8 @@ xmlstarlet,
 headless ? false,
 organism ? "Homo sapiens",
 datasources ? [],
+# NOTE: this seems high, but I got an error
+#       regarding memory when it was lower.
 memory ? "2048m" }:
 # TODO: allow for specifying plugins to install
 #       How? I don't think we can symlink into
@@ -389,7 +391,7 @@ EOF
   doCheck = true;
 
   checkPhase = ''
-    # TODO: Should we be running existing tests like these for the built versions:
+    # TODO: Should we be running existing tests like the following here?
     # https://github.com/PathVisio/pathvisio/tree/master/modules/org.pathvisio.core/test/org/pathvisio/core
 
     tmpBuildDir="$(pwd)"
@@ -406,13 +408,9 @@ EOF
       #     nix-build -E 'with import <nixpkgs> { }; callPackage ./default.nix { }'
     fi
 
-    # TODO
-    echo "$binDir"
-    ls "../"
     cd "$binDir"
 
     echo "convert"
-    #for f in $(ls -1 ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml | head -n 2) ; do
     for f in ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml; do
       converted_f="../test-results/"$(basename "$f" ".gpml")
 
@@ -552,15 +550,8 @@ EOF
       mkdir -p "$out/Applications"
       unzip -o release/${baseName}.app.zip -d "$out/Applications/"
 
-      # TODO develop a good script for this. I can do one of two options:
-
-#      # 1. use semi-generic JavaApplicationStub
-#      substituteInPlace ./JavaApplicationStub \
-#            --replace "JAVACMD=\"JAVACMD_REPLACE_ME\"" "JAVACMD=\"${javaAlias}\""
-#      cp ./JavaApplicationStub $out/Applications/PathVisio.app/Contents/MacOS/JavaApplicationStub
-
-      # 2. use my own pathvisio script
-    cat > $out/Applications/PathVisio.app/Contents/MacOS/JavaApplicationStub <<EOF
+      # TODO: look at previous JavaApplicationStub to see whether to include anything from it
+      cat > $out/Applications/PathVisio.app/Contents/MacOS/JavaApplicationStub <<EOF
 #! $shell
 $out/bin/pathvisio launch
 EOF
