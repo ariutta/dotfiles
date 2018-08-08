@@ -12,8 +12,12 @@ xmlstarlet,
 headless ? false,
 organism ? "Homo sapiens",
 datasources ? [],
-memory ? "1024m" }:
-# TODO allow for specifying plugins to install
+memory ? "2048m" }:
+# TODO: allow for specifying plugins to install
+#       How? I don't think we can symlink into
+#       the user's $HOME/.PathVisio dir during
+#       build/installation. Also, we don't want
+#       to mess up PathVisio's own plugin manager.
 
 with builtins;
 
@@ -25,18 +29,24 @@ in
 stdenv.mkDerivation rec {
   name = replaceStrings [" "] ["_"] (concatStringsSep "-" (filter (x: isString x) [baseName version organism]));
 
-  # TODO: should this be nativeBuildInputs or just buildInputs?
-  # TODO: I initially assumed these were on the PATH even after
-  #       building, but they are not, so it might make sense to
-  #       remove some of these from nativeBuildInputs/buildInputs.
-  nativeBuildInputs = [ unzip ant jdk sensible-jvm-opts xmlstarlet ];
-  buildInputs = [ coreutils sensible-jvm-opts ] ++ map (d: d.src) datasources;
+  # nativeBuildInputs shouldn't persist as run-time dependencies.
+  #   From the manual:
+  #   "Since these packages are able to be run at build time, that are added to
+  #    the PATH, as described above. But since these packages only are
+  #    guaranteed to be able to run then, they shouldn't persist as run-time
+  #    dependencies. This isn't currently enforced, but could be in the future."
+  nativeBuildInputs = [ ant sensible-jvm-opts unzip ];
 
-  # aliases for command-line tool binaries
-  # that we keep using in production (after
-  # the initial unpack/build/install phase).
-  # NOTE: not aliasing the following:
-  # echo, eval, exit, shift
+  # buildInputs may be used at run-time but are only on the PATH at build-time.
+  #   From the manual:
+  #   "These often are programs/libraries used by the new derivation at
+  #    run-time, but that isn't always the case."
+  buildInputs = [ coreutils getopt jdk xmlstarlet ] ++ map (d: d.src) datasources;
+
+  # aliases for command-line tool binaries that we keep using in production
+  # (after the initial unpack/build/install phase).
+  # NOTE: did not alias the following:
+  #       echo, eval, exit, shift
   getoptAlias = "${getopt}/bin/getopt";
   javaAlias = "${jdk.jre}/bin/java";
   xmlstarletAlias = "${xmlstarlet}/bin/xmlstarlet";
@@ -48,7 +58,6 @@ stdenv.mkDerivation rec {
 
   pathvisioPluginsXML = ./pathvisio.xml;
   pathwayStub = ./pathway.gpml;
-  #sums = "./sums/*";
   sums = ./sums;
 
   XSLT_NORMALIZE = ./normalize.xslt;
@@ -62,14 +71,6 @@ stdenv.mkDerivation rec {
     url = "http://webservice.wikipathways.org/getPathwayAs?fileType=gpml&pwId=WP4321&revision=98055";
     sha256 = "0d4r54hkl4fcvl85s7c1q844rbjwlg99x66l7hhr00ppb5xr17v0";
   };
-  WP1243_69897 = fetchurl {
-    url = "https://raw.githubusercontent.com/PathVisio/GPML/fa76a73db631bdffcf0f63151b752e0e0357fd26/test/2013a/WP1243_69897.gpml";
-    sha256 = "0nxrf0rkhqlljdjfallmkb9vn0siwdmxh6gys8r5lldf1az1wq9q";
-  };
-  WP1243_69897_BPSS_SHASUM = ./WP1243_69897.bpss.shasum;
-  WP1243_69897_OWL = ./WP1243_69897.owl;
-  WP1243_69897_OWL_SHASUM = ./WP1243_69897.owl.shasum;
-  WP1243_69897_PNG_SHASUM = ./WP1243_69897.png.shasum;
 
   libPath0 = "../lib";
   libPath1 = "$out/lib/pathvisio";
@@ -172,15 +173,20 @@ stdenv.mkDerivation rec {
   '' else ''
     ant exe
   '') + ''
-    mkdir -p ./bin
-    cd ./bin
+    tmpBuildDir="$(pwd)"
+    binDir="$tmpBuildDir/bin"
 
+    mkdir -p "$binDir"
+
+    # NOTE: we need to cd into the bin directory here, because the CLASSPATHs
+    #       are relative to the bin directory.
+    cd "$binDir"
     converter_java_opts=$(sensible-jvm-opts "${converterCLASSPATH}" "${memory}")
     differ_java_opts=$(sensible-jvm-opts "${differCLASSPATH}" "${memory}")
     gui_java_opts=$(sensible-jvm-opts "${guiCLASSPATH}" "${memory}")
     patcher_java_opts=$(sensible-jvm-opts "${patcherCLASSPATH}" "${memory}")
 
-    cd ./..
+    cd "$tmpBuildDir"
 
     cat > ./bin/pathvisio <<EOF
 #! $shell
@@ -219,7 +225,8 @@ while true; do
   esac
 done
 
-# TODO
+# TODO: how should we handle the case of a user passing in custom
+# JVM options?
 JAVA_CUSTOM_OPTS=\$(IFS=" " ; echo "\$\{JAVA_CUSTOM_OPTS_ARR[*]\}")
 
 if [ \$VERSION == true ]; then
@@ -321,11 +328,12 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
   if [ ! -e "\$target_file" ];
   then
           echo "Opening new file: \$target_file"
-          cat "${pathwayStub}" > "\$target_file"
-          chmod u+rw "\$target_file"
-          # TODO: should we use xmlstarlet here instead of sed?
-          sed -i.bak "s#Homo sapiens#${organism}#" "\$target_file"
-          rm "\$target_file.bak"
+          ${xmlstarletAlias} ed -N gpml='http://pathvisio.org/GPML/2013a' -u '/gpml:Pathway/@Organism' -v '${organism}' "${pathwayStub}" > "\$target_file"
+          # TODO: verify the code above, replacing sed w/ xmlstarlet, works correctly.
+#          cat "${pathwayStub}" > "\$target_file"
+#          chmod u+rw "\$target_file"
+#          sed -i.bak "s#Homo sapiens#${organism}#" "\$target_file"
+#          rm "\$target_file.bak"
           patchedFlags="\$@ \$target_file"
   else
           echo "Opening specified file: \$target_file"
@@ -339,8 +347,9 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
   # TODO when, if ever, do we want to use the "-x" flag?
   if [ ! \$(grep -Fq "${organism}" \$target_file) ];
   then
-    # TODO: should we use xmlstarlet here instead of sed?
-    current_organism=\$(grep -o 'Organism="\\(.*\\)"' \$target_file | sed 's#.*"\\(.*\\)".*#\\1#')
+    current_organism=\$(${xmlstarletAlias} sel -N gpml='http://pathvisio.org/GPML/2013a' -t -v '/gpml:Pathway/@Organism'  "\$target_file")
+    # TODO: verify the code above, replacing sed w/ xmlstarlet,  works correctly
+    #current_organism=\$(grep -o 'Organism="\\(.*\\)"' \$target_file | sed 's#.*"\\(.*\\)".*#\\1#')
   fi
 
   # TODO verify that if a local gene or metabolite db is specified, it's used
@@ -364,11 +373,11 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
   # enable drag&drop to the dock icon
   export CFProcessPath="$0"
 
-#  # NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
-#  nohup ${javaAlias} $gui_java_opts \
-#    -Xdock:icon="${iconSrc}" \
-#    -Xdock:name="${name}" \
-#    -jar "${sharePath1}/pathvisio.jar" \$patchedFlags &
+  # NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
+  nohup ${javaAlias} $gui_java_opts \
+    -Xdock:icon="${iconSrc}" \
+    -Xdock:name="${name}" \
+    -jar "${sharePath1}/pathvisio.jar" \$patchedFlags &
 else
   echo "Invalid subcommand \$1" >&2
   exit 1
@@ -383,16 +392,28 @@ EOF
     # TODO: Should we be running existing tests like these for the built versions:
     # https://github.com/PathVisio/pathvisio/tree/master/modules/org.pathvisio.core/test/org/pathvisio/core
 
-    mkdir ./test-results
+    tmpBuildDir="$(pwd)"
+    binDir="$tmpBuildDir/bin"
+    testResultsDir="$tmpBuildDir/test-results"
 
-    cd ./bin
+    mkdir "$testResultsDir"
+    if [ -z "$(ls -A ${sums})" ]; then
+       echo 'Directory "sums" is empty.'
+    else
+      cp ${sums}/* "$testResultsDir"
+      # To reset sums, run the commands below:
+      #     sudo rm ./sums/*
+      #     nix-build -E 'with import <nixpkgs> { }; callPackage ./default.nix { }'
+    fi
 
-    cat ${WP4321_98000_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98000.gpml
-    cat ${WP4321_98055_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98055.gpml
+    # TODO
+    echo "$binDir"
+    ls "../"
+    cd "$binDir"
 
     echo "convert"
-    #for f in ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml; do
-    for f in $(ls -1 ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml | head -n 2) ; do
+    #for f in $(ls -1 ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml | head -n 2) ; do
+    for f in ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml; do
       converted_f="../test-results/"$(basename "$f" ".gpml")
 
       # convert/update from old GPML schema to latest:
@@ -403,17 +424,23 @@ EOF
       xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".owl > "$converted_f".norm.owl
       cp "$converted_f".bpss "$converted_f".norm.bpss
 
-      ./pathvisio convert "$converted_f".gpml "$converted_f".png
+      ./pathvisio convert "$converted_f".gpml "$converted_f".100.png
+      #./pathvisio convert "$converted_f".gpml "$converted_f".50.png 50
+
       ./pathvisio convert "$converted_f".gpml "$converted_f".pdf
     done
 
-    cp ${sums}/* "../test-results"
-
-    for f in ../test-results/*.norm.{gpml,owl,bpss}.shasum; do
+    cd "$testResultsDir"
+    for f in ./*.norm.{gpml,owl,bpss}.shasum; do
+      echo "Checking sha256sum for $f"
       sha256sum -c "$f"
     done
-    for f in ../test-results/*.{pdf,png}.sizesum; do
-      converted="../test-results/"$(basename "$f" ".sizesum")
+    for f in ./*.{pdf,png}.sizesum; do
+      # TODO why does the sha256sum for converted PNGs differ between Linux and Darwin?
+      # NOTE: PDF conversion produces a different output every time,
+      # even on the same system, so we can't use shasum to verify.
+      # Maybe it includes a datetime of creation or something?
+      converted="./"$(basename "$f" ".sizesum")
       actual=$(stat --printf="%s" "$converted")
       expected=$(cat "$f")
       if [[ "$actual" != "$expected" ]]; then
@@ -425,41 +452,27 @@ EOF
       fi
     done
 
-    ./pathvisio convert ${WP1243_69897} ./WP1243_69897.owl
-    xmlstarlet tr ${XSLT_NORMALIZE} WP1243_69897.owl > WP1243_69897.owl.norm
-    mv WP1243_69897.owl.norm WP1243_69897.owl
-    cp ${WP1243_69897_BPSS_SHASUM} ./WP1243_69897.bpss.shasum
-    cp ${WP1243_69897_OWL_SHASUM} ./WP1243_69897.owl.shasum
-    sha256sum -c WP1243_69897.bpss.shasum
-    sha256sum -c WP1243_69897.owl.shasum
-    rm WP1243_69897.owl WP1243_69897.owl.shasum WP1243_69897.bpss WP1243_69897.bpss.shasum
+    cat ${WP4321_98000_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98000.gpml
+    cat ${WP4321_98055_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98055.gpml
 
-    ./pathvisio convert ${WP1243_69897} ./WP1243_69897.png
-    cp ${WP1243_69897_PNG_SHASUM} ./WP1243_69897.png.shasum
-    # TODO why does the sha256sum differ between Linux and Darwin?
-    #sha256sum -c WP1243_69897.png.shasum
-    rm WP1243_69897.png WP1243_69897.png.shasum
-
-    ./pathvisio convert ${WP1243_69897} WP1243_69897.pdf
-    # NOTE: PDF conversion produces a different output every time,
-    # so we can't use shasum to verify.
-    rm WP1243_69897.pdf
+    cd "$binDir"
 
     echo "diff"
-    ./pathvisio diff WP4321_98000.gpml WP4321_98055.gpml > WP4321_98000_98055.patch
+    ./pathvisio diff ../test-results/WP4321_98000.gpml ../test-results/WP4321_98055.gpml > ../test-results/WP4321_98000_98055.patch
 
     echo "patch"
-    cp WP4321_98000.gpml WP4321_98055.roundtrip.gpml
-    ./pathvisio patch WP4321_98055.roundtrip.gpml < WP4321_98000_98055.patch
+    cp ../test-results/WP4321_98000.gpml ../test-results/WP4321_98055.roundtrip.gpml
+    ./pathvisio patch ../test-results/WP4321_98055.roundtrip.gpml < ../test-results/WP4321_98000_98055.patch
 
+#    xmlstarlet tr ${XSLT_NORMALIZE} ../test-results/WP4321_98055.gpml > ../test-results/WP4321_98055.norm.gpml
+#    xmlstarlet tr ${XSLT_NORMALIZE} ../test-results/WP4321_98055.roundtrip.gpml > ../test-results/WP4321_98055.roundtrip.norm.gpml
+#    common=$(comm -3 --nocheck-order ../test-results/WP4321_98055.norm.gpml ../test-results/WP4321_98055.roundtrip.norm.gpml)
     # TODO pathvisio patch doesn't fully patch the diff between WP4321_98000 and
     # WP4321_98055, so we're forced to use the kludge of comparing just the
     # element structure instead of the actual output.
-#    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.gpml > WP4321_98055.norm.gpml
-#    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.roundtrip.gpml > WP4321_98055.roundtrip.norm.gpml
-    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.gpml | xmlstarlet el > WP4321_98055.norm.gpml
-    xmlstarlet tr ${XSLT_NORMALIZE} WP4321_98055.roundtrip.gpml | xmlstarlet el > WP4321_98055.roundtrip.norm.gpml
-    common=$(comm -3 --nocheck-order WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml)
+    xmlstarlet tr ${XSLT_NORMALIZE} ../test-results/WP4321_98055.gpml | xmlstarlet el > ../test-results/WP4321_98055.el.txt
+    xmlstarlet tr ${XSLT_NORMALIZE} ../test-results/WP4321_98055.roundtrip.gpml | xmlstarlet el > ../test-results/WP4321_98055.roundtrip.el.txt
+    common=$(comm -3 --nocheck-order ../test-results/WP4321_98055.el.txt ../test-results/WP4321_98055.roundtrip.el.txt)
     if [[ "$common" != "" ]]; then
       echo "Error: pathvisio patch test failed. Mis-matched content:"
       echo "-----------------"
@@ -467,10 +480,8 @@ EOF
       echo "-----------------"
       exit 1;
     fi
-    rm WP4321_98055.norm.gpml WP4321_98055.roundtrip.norm.gpml
-    rm WP4321_98000_98055.patch WP4321_98000.gpml WP4321_98055.gpml
 
-    cd ../
+    cd "$tmpBuildDir"
   '';
 
   desktopItem = makeDesktopItem {
@@ -490,37 +501,46 @@ EOF
   };
 
   # TODO Should we somehow take advantage of the osgi and apache capabilities?
+  #      Is the ant build process already doing this?
   installPhase = ''
-    mkdir -p "$out/bin" "${libPath1}" "${modulesPath1}"
+    tmpBuildDir="$(pwd)"
+    binDir="$(pwd)/bin"
+    outBinDir="$out/bin"
 
-    # Enable this to reset the test-result sums
-    mkdir -p "$out/test-results"
-    cp -r ./test-results/*.{bpss,gpml,pdf,png,owl} "$out/test-results/"
-    here="$(pwd)"
-    cd "$out/test-results/"
-    echo "coreutils: ${coreutils}"
-    for f in $out/test-results/*.{bpss,gpml,pdf,png,owl}; do
-      echo "generating sha256sum for $f"
-      base=$(basename "$f")
-      echo "base: $base"
-      sha256sum --tag "$base" > "$base".shasum
-      stat --printf="%s" "$f" > "$base".sizesum
-    done
-    #sudo rm ./sums/*
-    #cp ./result/test-results/*.norm.{bpss,gpml,owl}.shasum sums/
-    #cp ./result/test-results/*.{pdf,png}.sizesum sums/
+    mkdir -p "$outBinDir" "${libPath1}" "${modulesPath1}"
 
-    cd "$here"
+    cp -r ./lib/* "${libPath1}/"
+    cp -r ./modules/* "${modulesPath1}/"
 
-    cp -r ./bin/* $out/bin/
+    cp -r ./bin/* "$outBinDir/"
     for f in $out/bin/*; do
       substituteInPlace $f \
             --replace "${libPath0}" "${libPath1}" \
             --replace "${modulesPath0}" "${modulesPath1}"
     done
 
-    cp -r ./lib/* "${libPath1}/"
-    cp -r ./modules/* "${modulesPath1}/"
+    if [ -z "$(ls -A ${sums})" ]; then
+      echo 'Directory "sums" is empty.'
+      testResultsDir="$out/test-results"
+      outTestResultsDir="$out/test-results"
+      mkdir -p "$outTestResultsDir"
+      cp -r ./test-results/*.{bpss,gpml,pdf,png,owl} $out/test-results/
+      cd "$outTestResultsDir"
+      for f in $out/test-results/*.{bpss,gpml,pdf,png,owl}; do
+        echo "generating sha256sum for $f"
+        base=$(basename "$f")
+        sha256sum --tag "$base" > "$base".shasum
+        stat --printf="%s" "$base" > "$base".sizesum
+      done
+      cd "$tmpBuildDir"
+      echo 'To copy over the sums:'
+      echo 'sudo rm ./sums/*'
+      echo 'cp ./result/test-results/*.norm.{bpss,gpml,owl}.shasum sums/'
+      echo 'cp ./result/test-results/*.{pdf,png}.sizesum sums/'
+      echo ' '
+      echo "cp $outTestResultsDir/*.norm.{bpss,gpml,owl}.shasum sums/"
+      echo "cp $outTestResultsDir/*.{pdf,png}.sizesum sums/"
+    fi
   '' + (
   if headless then ''
     echo 'Desktop functionality not enabled.'
@@ -540,9 +560,10 @@ EOF
 #      cp ./JavaApplicationStub $out/Applications/PathVisio.app/Contents/MacOS/JavaApplicationStub
 
       # 2. use my own pathvisio script
-      cp $out/bin/pathvisio $out/Applications/PathVisio.app/Contents/MacOS/pathvisio
-      substituteInPlace $out/Applications/PathVisio.app/Contents/Info.plist \
-            --replace "JavaApplicationStub" "pathvisio launch"
+    cat > $out/Applications/PathVisio.app/Contents/MacOS/JavaApplicationStub <<EOF
+#! $shell
+$out/bin/pathvisio launch
+EOF
     '' else ''
       mkdir -p "$out/share/applications"
       ln -s ${desktopItem}/share/applications/* "$out/share/applications/"
