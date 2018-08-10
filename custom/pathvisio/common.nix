@@ -8,6 +8,7 @@ getopt,
 imagemagick7,
 jdk,
 makeDesktopItem,
+parallel,
 stdenv,
 unzip,
 xmlstarlet,
@@ -38,7 +39,7 @@ stdenv.mkDerivation rec {
   #    the PATH, as described above. But since these packages only are
   #    guaranteed to be able to run then, they shouldn't persist as run-time
   #    dependencies. This isn't currently enforced, but could be in the future."
-  nativeBuildInputs = [ ant bc imagemagick7 sensible-jvm-opts unzip xpdf ];
+  nativeBuildInputs = [ ant bc imagemagick7 parallel sensible-jvm-opts unzip xpdf ];
 
   # buildInputs may be used at run-time but are only on the PATH at build-time.
   #   From the manual:
@@ -410,27 +411,31 @@ EOF
 
     cd "$binDir"
 
+function gpml2many()
+{
+  local f=$1
+
+  converted_f="../test-results/"$(basename "$f" ".gpml")
+
+  # convert/update from old GPML schema to latest:
+  ./pathvisio convert "$f" "$converted_f".gpml
+  xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".gpml > "$converted_f".norm.gpml
+
+  ./pathvisio convert "$converted_f".gpml "$converted_f".owl
+  xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".owl > "$converted_f".norm.owl
+  cp "$converted_f".bpss "$converted_f".norm.bpss
+
+  # TODO why does the sha256sum for converted PNGs differ between Linux and Darwin?
+  ./pathvisio convert "$converted_f".gpml "$converted_f".png
+  ./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200
+
+  ./pathvisio convert "$converted_f".gpml "$converted_f".pdf
+}
+export -f gpml2many
+
     echo "convert"
-    for f in ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml; do
-      converted_f="../test-results/"$(basename "$f" ".gpml")
-
-      # convert/update from old GPML schema to latest:
-      ./pathvisio convert "$f" "$converted_f".gpml
-      xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".gpml > "$converted_f".norm.gpml
-
-      ./pathvisio convert "$converted_f".gpml "$converted_f".owl
-      xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".owl > "$converted_f".norm.owl
-      cp "$converted_f".bpss "$converted_f".norm.bpss
-
-      # TODO why does the sha256sum for converted PNGs differ between Linux and Darwin?
-      ./pathvisio convert "$converted_f".gpml "$converted_f"-100.png
-      ./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200
-
-      ./pathvisio convert "$converted_f".gpml "$converted_f".pdf
-      pdftohtml "$converted_f".pdf "$converted_f"
-      mv "$converted_f/page1.png" "$converted_f.pdf.png"
-      rm -rf "$converted_f"
-    done
+    ls -1 ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml | \
+      parallel -P 4 gpml2many {}
 
     cd "$testResultsDir"
 
@@ -458,8 +463,38 @@ EOF
     if [ -n "$(cat ${PHASHSUMS})" ]; then
       while IFS=" ()=" read -r alg converted blank expected;
       do
-        if [ -f $converted ]; then
+        if [ -f "$converted" ]; then
           actual=$(identify -quiet -verbose -moments -alpha off "$converted" | grep "PH[1-7]" | sed -n 's/.*: \(.*\)$/\1/p' | sed 's/ *//g' | tr "\n" ",")
+
+          sse=0
+          IFS=',' read -r -a expected_arr <<< "$expected"
+          IFS=',' read -r -a actual_arr <<< "$actual"
+
+          for index in "$'' + ''{!expected_arr[@]}"; do
+            exp=$'' + ''{expected_arr[index]}
+            act=$'' + ''{actual_arr[index]}
+            sse=$(echo "(sse + (exp - act)^2)" | bc -l)
+          done
+
+          limit=10
+          if [ "$sse" -gt "$limit" ]; then
+            echo "Error: pathvisio convert test failed."
+            echo "       $converted is too dissimilar from reference: $sse (should be <= $limit)"
+            exit 1;
+          fi
+        fi
+      done < "./PHASHSUMS"
+
+      for f in ./*.pdf; do
+        base=$(basename "$f" ".pdf")
+        png="$base.png"
+
+        if grep -Fq "$png" ./PHASHSUMS; then
+          phash=$(grep -F "$png" ./PHASHSUMS)
+          IFS=" ()=" read -r alg converted blank expected <<< "$phash";
+
+          pdftohtml "$f" "$base"
+          actual=$(identify -quiet -verbose -moments -alpha off "$base/page1.png" | grep "PH[1-7]" | sed -n 's/.*: \(.*\)$/\1/p' | sed 's/ *//g' | tr "\n" ",")
 
           sse=0
           IFS=', ' read -r -a expected_arr <<< "$expected"
@@ -470,14 +505,17 @@ EOF
             act=$'' + ''{actual_arr[index]}
             sse=$(echo "(sse + (exp - act)^2)" | bc -l)
           done
+
           limit=10
           if [ "$sse" -gt $limit ]; then
             echo "Error: pathvisio convert test failed."
-            echo "       Bad match for $converted: $sse (should be <= $limit)"
+            echo "       Bad match for $f: $sse (should be <= $limit)"
             exit 1;
           fi
+
+          rm -rf "$base"
         fi
-      done < "./PHASHSUMS"
+      done
     else
       echo ' '
       echo 'PHASHSUMS not set.'
