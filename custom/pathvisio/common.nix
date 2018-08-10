@@ -61,6 +61,12 @@ stdenv.mkDerivation rec {
   pathvisioPluginsXML = ./pathvisio.xml;
   pathwayStub = ./pathway.gpml;
   sums = ./sums;
+  SHA256SUMS = ./SHA256SUMS;
+  SIZESUMS = ./SIZESUMS;
+  # To reset sums, run the following:
+  #     rm -f ./SHA256SUMS ./SIZESUMS
+  #     touch ./SHA256SUMS ./SIZESUMS
+  #     nix-build -E 'with import <nixpkgs> { }; callPackage ./default.nix { }'
 
   XSLT_NORMALIZE = ./normalize.xslt;
   WP4321_98000_BASE64 = fetchurl {
@@ -192,18 +198,6 @@ stdenv.mkDerivation rec {
 
     cat > ./bin/pathvisio <<EOF
 #! $shell
-SUBCOMMAND=""
-
-if [[ "\$1" =~ ^(convert|diff|patch|launch)$ ]]; then
-  SUBCOMMAND="\$1"
-  shift
-elif [[ "\$1" =~ ^(\-.*)$ ]]; then
-  SUBCOMMAND=false
-else
-  echo "Invalid subcommand \$1" >&2
-  exit 1
-fi
-
 TOP_OPTS=\$("${getoptAlias}" -o hvX: --long help,version:,icon: \
              -n 'pathvisio' -- "\$@")
 
@@ -227,9 +221,19 @@ while true; do
   esac
 done
 
-# TODO: how should we handle the case of a user passing in custom
-# JVM options?
-JAVA_CUSTOM_OPTS=\$(IFS=" " ; echo "\$\{JAVA_CUSTOM_OPTS_ARR[*]\}")
+SUBCOMMAND=""
+if [[ "\$1" =~ ^(convert|diff|patch|launch)$ ]]; then
+  SUBCOMMAND="\$1"
+  shift
+elif [[ -z "\$1" ]]; then
+  SUBCOMMAND=false
+else
+  echo "Invalid subcommand \$1" >&2
+  exit 1
+fi
+
+# NOTE: if a user passes in custom JVM options, the sensible options are not used.
+JAVA_CUSTOM_OPTS=\$(IFS=" " ; echo "\$'' + ''{JAVA_CUSTOM_OPTS_ARR[*]}")
 
 if [ \$VERSION == true ]; then
   ${javaAlias} -jar -Dfile.encoding=UTF-8 ${sharePath1}/pathvisio.jar -v
@@ -255,7 +259,7 @@ elif [ \$SUBCOMMAND = 'convert' ]; then
   fi
 
   CLASSPATH="${converterCLASSPATH}"
-  ${javaAlias} $converter_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
+  ${javaAlias} $'' + ''{JAVA_CUSTOM_OPTS:-$converter_java_opts} -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
   exit 0
 elif [ \$SUBCOMMAND = 'diff' ]; then
   if [ \$HELP == true ]; then
@@ -269,7 +273,7 @@ elif [ \$SUBCOMMAND = 'diff' ]; then
   fi
 
   CLASSPATH="${differCLASSPATH}"
-  ${javaAlias} $differ_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.GpmlDiff "\$@"
+  ${javaAlias} $'' + ''{JAVA_CUSTOM_OPTS:-$differ_java_opts} -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.GpmlDiff "\$@"
   exit 0
 elif [ \$SUBCOMMAND = 'patch' ]; then
   if [ \$HELP == true ]; then
@@ -282,7 +286,7 @@ elif [ \$SUBCOMMAND = 'patch' ]; then
   fi
 
   CLASSPATH="${patcherCLASSPATH}"
-  ${javaAlias} $patcher_java_opts -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.PatchMain "\$@"
+  ${javaAlias} $'' + ''{JAVA_CUSTOM_OPTS:-$patcher_java_opts} -ea -classpath \$CLASSPATH org.pathvisio.core.gpmldiff.PatchMain "\$@"
   exit 0
 elif [ \$SUBCOMMAND = 'launch' ]; then
   # TODO: close this issue:
@@ -376,7 +380,7 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
   export CFProcessPath="$0"
 
   # NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
-  nohup ${javaAlias} $gui_java_opts \
+  nohup ${javaAlias} $'' + ''{JAVA_CUSTOM_OPTS:-$gui_java_opts} \
     -Xdock:icon="${iconSrc}" \
     -Xdock:name="${name}" \
     -jar "${sharePath1}/pathvisio.jar" \$patchedFlags &
@@ -399,14 +403,8 @@ EOF
     testResultsDir="$tmpBuildDir/test-results"
 
     mkdir "$testResultsDir"
-    if [ -z "$(ls -A ${sums})" ]; then
-       echo 'Directory "sums" is empty.'
-    else
-      cp ${sums}/* "$testResultsDir"
-      # To reset sums, run the commands below:
-      #     sudo rm ./sums/*
-      #     nix-build -E 'with import <nixpkgs> { }; callPackage ./default.nix { }'
-    fi
+    cp ${SHA256SUMS} "$testResultsDir/SHA256SUMS"
+    cp ${SIZESUMS} "$testResultsDir/SIZESUMS"
 
     cd "$binDir"
 
@@ -422,33 +420,58 @@ EOF
       xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".owl > "$converted_f".norm.owl
       cp "$converted_f".bpss "$converted_f".norm.bpss
 
-      ./pathvisio convert "$converted_f".gpml "$converted_f".100.png
-      #./pathvisio convert "$converted_f".gpml "$converted_f".50.png 50
+      # TODO why does the sha256sum for converted PNGs differ between Linux and Darwin?
+      ./pathvisio convert "$converted_f".gpml "$converted_f"-100.${stdenv.system}.png
+      #./pathvisio convert "$converted_f".gpml "$converted_f"-50.${stdenv.system}.png 50
 
-      ./pathvisio convert "$converted_f".gpml "$converted_f".pdf
+      ./pathvisio convert "$converted_f".gpml "$converted_f".${stdenv.system}.pdf
     done
 
     cd "$testResultsDir"
-    for f in ./*.norm.{gpml,owl,bpss}.shasum; do
-      echo "Checking sha256sum for $f"
-      sha256sum -c "$f"
-    done
-    for f in ./*.{pdf,png}.sizesum; do
-      # TODO why does the sha256sum for converted PNGs differ between Linux and Darwin?
-      # NOTE: PDF conversion produces a different output every time,
-      # even on the same system, so we can't use shasum to verify.
-      # Maybe it includes a datetime of creation or something?
-      converted="./"$(basename "$f" ".sizesum")
-      actual=$(stat --printf="%s" "$converted")
-      expected=$(cat "$f")
-      if [[ "$actual" != "$expected" ]]; then
-        echo "Error: pathvisio convert test failed."
-        echo "       Unequal sizes for $converted:"
-        echo "       expected: $expected"
-        echo "       actual: $actual"
-        exit 1;
-      fi
-    done
+
+    if [ -n "$(cat ${SHA256SUMS})" ]; then
+      sha256sum -c --quiet --ignore-missing "./SHA256SUMS"
+    else
+      echo ' '
+      echo 'SHA256SUMS not set.'
+      echo 'Copy the following to "./SHA256SUMS":'
+      echo ' '
+      sha256sum --tag ./*.{png,norm.{bpss,gpml,owl}}
+      echo ' '
+    fi
+
+    # NOTE: PDF conversion produces a different output every time,
+    # even on the same system, so we can't use shasum to verify.
+    # Maybe it includes a datetime of creation or something?
+    # TODO: should we use a PDF test library like this?
+    # http://jpdfunit.sourceforge.net/
+    # For now, probably not, because it appears the generated PDF
+    # is just a wrapper around a slightly changed PNG.
+    if [ -n "$(cat ${SIZESUMS})" ]; then
+      while IFS=" ()=" read -r alg converted blank expected rem;
+      do
+        if [ -f $converted ]; then
+          actual=$(stat --printf="%s" "$converted")
+          if [[ "$actual" != "$expected" ]]; then
+            echo "Error: pathvisio convert test failed."
+            echo "       Unequal sizes for $converted:"
+            echo "       expected: $expected"
+            echo "       actual: $actual"
+            exit 1;
+          fi
+        fi
+      done < "./SIZESUMS"
+    else
+      echo ' '
+      echo 'SIZESUMS not set.'
+      echo 'Copy the following to "./SIZESUMS":'
+      echo ' '
+      for f in ./*.{pdf,png}; do
+        size=$(stat --printf="%s" "$f")
+        echo "SIZE ($f) = $size"
+      done
+      echo ' '
+    fi
 
     cat ${WP4321_98000_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98000.gpml
     cat ${WP4321_98055_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98055.gpml
@@ -485,6 +508,7 @@ EOF
   desktopItem = makeDesktopItem {
     name = name;
     exec = "pathvisio launch";
+    #exec = "${sharePath1}/pathvisio-launch";
     #exec = "pathvisio launch ~/pathway-\$(${date} -j -f \"%a %b %d %T %Z %Y\" \"\$(${date})\" \"+%s\").gpml";
     #exec = "pathvisio launch ~/pathway-test.gpml";
     icon = "${pngIconSrc}";
@@ -502,7 +526,7 @@ EOF
   #      Is the ant build process already doing this?
   installPhase = ''
     tmpBuildDir="$(pwd)"
-    binDir="$(pwd)/bin"
+    binDir="$tmpBuildDir/bin"
     outBinDir="$out/bin"
 
     mkdir -p "$outBinDir" "${libPath1}" "${modulesPath1}"
@@ -516,29 +540,6 @@ EOF
             --replace "${libPath0}" "${libPath1}" \
             --replace "${modulesPath0}" "${modulesPath1}"
     done
-
-    if [ -z "$(ls -A ${sums})" ]; then
-      echo 'Directory "sums" is empty.'
-      testResultsDir="$out/test-results"
-      outTestResultsDir="$out/test-results"
-      mkdir -p "$outTestResultsDir"
-      cp -r ./test-results/*.{bpss,gpml,pdf,png,owl} $out/test-results/
-      cd "$outTestResultsDir"
-      for f in $out/test-results/*.{bpss,gpml,pdf,png,owl}; do
-        echo "generating sha256sum for $f"
-        base=$(basename "$f")
-        sha256sum --tag "$base" > "$base".shasum
-        stat --printf="%s" "$base" > "$base".sizesum
-      done
-      cd "$tmpBuildDir"
-      echo 'To copy over the sums:'
-      echo 'sudo rm ./sums/*'
-      echo 'cp ./result/test-results/*.norm.{bpss,gpml,owl}.shasum sums/'
-      echo 'cp ./result/test-results/*.{pdf,png}.sizesum sums/'
-      echo ' '
-      echo "cp $outTestResultsDir/*.norm.{bpss,gpml,owl}.shasum sums/"
-      echo "cp $outTestResultsDir/*.{pdf,png}.sizesum sums/"
-    fi
   '' + (
   if headless then ''
     echo 'Desktop functionality not enabled.'
@@ -557,6 +558,10 @@ $out/bin/pathvisio launch
 EOF
     '' else ''
       mkdir -p "$out/share/applications"
+#      cat > "${sharePath1}/pathvisio-launch" <<EOF
+##! $shell
+#$out/bin/pathvisio launch
+#EOF
       ln -s ${desktopItem}/share/applications/* "$out/share/applications/"
     ''
   ));
