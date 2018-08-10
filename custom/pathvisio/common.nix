@@ -62,10 +62,9 @@ stdenv.mkDerivation rec {
   pathwayStub = ./pathway.gpml;
   PHASHSUMS = ./PHASHSUMS;
   SHA256SUMS = ./SHA256SUMS;
-  #SIZESUMS = ./SIZESUMS;
   # To reset sums, run the following:
-  #     rm -f ./SHA256SUMS ./SIZESUMS
-  #     touch ./SHA256SUMS ./SIZESUMS
+  #     rm -f./PHASHSUMS ./SHA256SUMS
+  #     touch./PHASHSUMS ./SHA256SUMS
   #     nix-build -E 'with import <nixpkgs> { }; callPackage ./default.nix { }'
 
   XSLT_NORMALIZE = ./normalize.xslt;
@@ -407,7 +406,6 @@ EOF
     mkdir "$testResultsDir"
     cp ${PHASHSUMS} "$testResultsDir/PHASHSUMS"
     cp ${SHA256SUMS} "$testResultsDir/SHA256SUMS"
-    #cp ${SIZESUMS} "$testResultsDir/SIZESUMS"
 
     cd "$binDir"
 
@@ -443,6 +441,16 @@ EOF
       echo ' '
     fi
 
+    # NOTE: PDF conversion produces a different output every time,
+    # even on the same system, so we can't use shasum to verify.
+    # Maybe it includes a datetime of creation or something?
+    # TODO: should we use a PDF test library like this?
+    # http://jpdfunit.sourceforge.net/
+    # For now, probably not, because it appears the generated PDF
+    # is just a wrapper around a slightly changed PNG.
+    # This PNG, however, is not identical the PNG produced via
+    # pathvisio convert FILE.gpml FILE.png
+
     if [ -n "$(cat ${PHASHSUMS})" ]; then
       while IFS=" ()=" read -r alg converted blank expected;
       do
@@ -474,7 +482,6 @@ EOF
       # NOTE: PNGs larger than limit are too big to calculate the phash
       limit=200000
       for f in ./*.png; do
-        echo "$f"
         size=$(stat --printf="%s" "$f")
         if [ $size -lt $limit ]; then
           phash=$(identify -quiet -verbose -moments -alpha off "$f" | grep "PH[1-7]" | sed -n 's/.*: \(.*\)$/\1/p' | sed 's/ *//g' | tr "\n" ",")
@@ -483,41 +490,6 @@ EOF
       done
       echo ' '
     fi
-
-    # NOTE: PDF conversion produces a different output every time,
-    # even on the same system, so we can't use shasum to verify.
-    # Maybe it includes a datetime of creation or something?
-    # TODO: should we use a PDF test library like this?
-    # http://jpdfunit.sourceforge.net/
-    # For now, probably not, because it appears the generated PDF
-    # is just a wrapper around a slightly changed PNG.
-    # This PNG, however, is not identical the PNG produced via
-    # pathvisio convert FILE.gpml FILE.png
-#    if [ -n "$(cat ${SIZESUMS})" ] && $(grep -Fq "${stdenv.system}" ${SIZESUMS}); then
-#      while IFS=" ()=" read -r alg converted blank expected rem;
-#      do
-#        if [ -f $converted ]; then
-#          actual=$(stat --printf="%s" "$converted")
-#          if [[ "$actual" != "$expected" ]]; then
-#            echo "Error: pathvisio convert test failed."
-#            echo "       Unequal sizes for $converted:"
-#            echo "       expected: $expected"
-#            echo "       actual: $actual"
-#            exit 1;
-#          fi
-#        fi
-#      done < "./SIZESUMS"
-#    else
-#      echo ' '
-#      echo 'SIZESUMS not set.'
-#      echo 'Copy the following to "./SIZESUMS":'
-#      echo ' '
-#      for f in ./*.pdf; do
-#        size=$(stat --printf="%s" "$f")
-#        echo "SIZE ($f) = $size"
-#      done
-#      echo ' '
-#    fi
 
     cat ${WP4321_98000_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98000.gpml
     cat ${WP4321_98055_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98055.gpml

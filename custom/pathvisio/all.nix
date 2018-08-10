@@ -21,10 +21,8 @@ in
     in
     {
       name = organism;
-      name = memory;
       value = callPackage ./common.nix {
-        inherit headless;
-        organism = organism;
+        inherit headless memory organism;
         datasources = []
         ++ (if genes == "local" then [{
           src = (getAttr organism datasourcesLocal).src;
