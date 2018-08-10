@@ -60,7 +60,6 @@ stdenv.mkDerivation rec {
 
   pathvisioPluginsXML = ./pathvisio.xml;
   pathwayStub = ./pathway.gpml;
-  sums = ./sums;
   SHA256SUMS = ./SHA256SUMS;
   SIZESUMS = ./SIZESUMS;
   # To reset sums, run the following:
@@ -350,8 +349,7 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
   # a species not matching organism specified above?
 
   current_organism="${organism}"
-  # TODO when, if ever, do we want to use the "-x" flag?
-  if [ ! \$(grep -Fq "${organism}" \$target_file) ];
+  if ! grep -Fq "${organism}" \$target_file;
   then
     current_organism=\$(${xmlstarletAlias} sel -N gpml='http://pathvisio.org/GPML/2013a' -t -v '/gpml:Pathway/@Organism'  "\$target_file")
     # TODO: verify the code above, replacing sed w/ xmlstarlet,  works correctly
@@ -447,7 +445,9 @@ EOF
     # http://jpdfunit.sourceforge.net/
     # For now, probably not, because it appears the generated PDF
     # is just a wrapper around a slightly changed PNG.
-    if [ -n "$(cat ${SIZESUMS})" ]; then
+    # The PNG, however, is not identical the PNG produced via
+    # pathvisio convert FILE.gpml FILE.png
+    if [ -n "$(cat ${SIZESUMS})" ] && $(grep -Fq "${stdenv.system}" ${SIZESUMS}); then
       while IFS=" ()=" read -r alg converted blank expected rem;
       do
         if [ -f $converted ]; then
