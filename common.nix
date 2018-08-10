@@ -21,6 +21,7 @@ in [
   # http://powerline.readthedocs.io/en/master/usage/shell-prompts.html#bash-prompt
   pkgs.python36Packages.powerline
 
+  pkgs.coreutils
   pkgs.jq
   pkgs.gettext
   pkgs.ripgrep
