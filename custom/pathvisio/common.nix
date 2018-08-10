@@ -11,6 +11,7 @@ makeDesktopItem,
 stdenv,
 unzip,
 xmlstarlet,
+xpdf,
 memory,
 headless ? false,
 organism ? "Homo sapiens",
@@ -37,7 +38,7 @@ stdenv.mkDerivation rec {
   #    the PATH, as described above. But since these packages only are
   #    guaranteed to be able to run then, they shouldn't persist as run-time
   #    dependencies. This isn't currently enforced, but could be in the future."
-  nativeBuildInputs = [ ant bc imagemagick7 sensible-jvm-opts unzip ];
+  nativeBuildInputs = [ ant bc imagemagick7 sensible-jvm-opts unzip xpdf ];
 
   # buildInputs may be used at run-time but are only on the PATH at build-time.
   #   From the manual:
@@ -426,6 +427,9 @@ EOF
       ./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200
 
       ./pathvisio convert "$converted_f".gpml "$converted_f".pdf
+      pdftohtml "$converted_f".pdf "$converted_f"
+      mv "$converted_f/page1.png" "$converted_f.pdf.png"
+      rm -rf "$converted_f"
     done
 
     cd "$testResultsDir"
@@ -437,7 +441,7 @@ EOF
       echo 'SHA256SUMS not set.'
       echo 'Copy the following to "./SHA256SUMS":'
       echo ' '
-      sha256sum --tag ./*.{png,norm.{bpss,gpml,owl}}
+      sha256sum --tag ./*.norm.{bpss,gpml,owl}
       echo ' '
     fi
 
