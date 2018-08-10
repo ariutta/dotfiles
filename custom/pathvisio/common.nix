@@ -1,9 +1,11 @@
 { ant,
+bc,
 callPackage,
 coreutils,
 fetchFromGitHub,
 fetchurl,
 getopt,
+imagemagick7,
 jdk,
 makeDesktopItem,
 stdenv,
@@ -37,7 +39,7 @@ stdenv.mkDerivation rec {
   #    the PATH, as described above. But since these packages only are
   #    guaranteed to be able to run then, they shouldn't persist as run-time
   #    dependencies. This isn't currently enforced, but could be in the future."
-  nativeBuildInputs = [ ant sensible-jvm-opts unzip ];
+  nativeBuildInputs = [ ant bc imagemagick7 sensible-jvm-opts unzip ];
 
   # buildInputs may be used at run-time but are only on the PATH at build-time.
   #   From the manual:
@@ -60,6 +62,7 @@ stdenv.mkDerivation rec {
 
   pathvisioPluginsXML = ./pathvisio.xml;
   pathwayStub = ./pathway.gpml;
+  PHASHSUMS = ./PHASHSUMS;
   SHA256SUMS = ./SHA256SUMS;
   SIZESUMS = ./SIZESUMS;
   # To reset sums, run the following:
@@ -243,7 +246,8 @@ elif [ \$SUBCOMMAND == false ] && [ \$HELP == true ]; then
   exit 0
 elif [ \$SUBCOMMAND = 'convert' ]; then
   if [ \$HELP == true ]; then
-    echo 'usage: pathvisio convert <input> <output>'
+    echo 'usage: pathvisio convert <input> <output> [<scale>]'
+    echo '       scale is only for converting to PNG format.'
     echo ' '
     echo 'examples on example data WP1243_69897.gpml:'
     echo '    wget https://cdn.rawgit.com/PathVisio/GPML/fa76a73d/test/2013a/WP1243_69897.gpml'
@@ -254,6 +258,8 @@ elif [ \$SUBCOMMAND = 'convert' ]; then
     echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.pdf'
     echo '  # GPML -> PNG'
     echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.png'
+    echo '  # GPML -> PNG at 200% scale'
+    echo '  pathvisio convert WP1243_69897.gpml WP1243_69897.png 200'
     exit 0
   fi
 
@@ -412,17 +418,20 @@ EOF
 
       # convert/update from old GPML schema to latest:
       ./pathvisio convert "$f" "$converted_f".gpml
-      xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".gpml > "$converted_f".norm.gpml
+      #xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".gpml > "$converted_f".norm.gpml
 
-      ./pathvisio convert "$converted_f".gpml "$converted_f".owl
-      xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".owl > "$converted_f".norm.owl
-      cp "$converted_f".bpss "$converted_f".norm.bpss
+      #./pathvisio convert "$converted_f".gpml "$converted_f".owl
+      #xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".owl > "$converted_f".norm.owl
+      #cp "$converted_f".bpss "$converted_f".norm.bpss
 
       # TODO why does the sha256sum for converted PNGs differ between Linux and Darwin?
       ./pathvisio convert "$converted_f".gpml "$converted_f"-100.${stdenv.system}.png
-      #./pathvisio convert "$converted_f".gpml "$converted_f"-50.${stdenv.system}.png 50
+      cp "$converted_f"-100.${stdenv.system}.png "$converted_f"-100.png
+      #./pathvisio convert "$converted_f".gpml "$converted_f"-200.${stdenv.system}.png 200
+      #cp "$converted_f"-200.${stdenv.system}.png "$converted_f"-200.png
 
-      ./pathvisio convert "$converted_f".gpml "$converted_f".${stdenv.system}.pdf
+      #./pathvisio convert "$converted_f".gpml "$converted_f".${stdenv.system}.pdf
+      #cp "$converted_f".${stdenv.system}.pdf "$converted_f".pdf
     done
 
     cd "$testResultsDir"
@@ -438,6 +447,56 @@ EOF
       echo ' '
     fi
 
+    if [ -n "$(cat ${PHASHSUMS})" ]; then
+      while IFS=" ()=" read -r alg converted blank expected;
+      do
+        if [ -f $converted ]; then
+          echo 'expected:'
+          echo $expected
+          actual=$(identify -quiet -verbose -moments -alpha off "$converted" | grep "PH[1-7]" | sed -n 's/.*: \(.*\)$/\1/p' | sed 's/ *//g' | tr "\n" ",")
+          echo 'actual:'
+          echo $actual
+
+          sum=0
+          #IFS=',' read -r -a expected_arr <<< "$'' + ''{expected%?}"
+          #IFS=',' read -r -a actual_arr <<< "$'' + ''{actual%?}"
+          IFS=', ' read -r -a expected_arr <<< "$expected"
+          IFS=', ' read -r -a actual_arr <<< "$actual"
+
+          for index in "$'' + ''{!expected_arr[@]}"; do
+            exp=$'' + ''{expected_arr[index]}
+            act=$'' + ''{actual_arr[index]}
+            echo "exp: $exp"
+            echo "act: $act"
+            sum=$(echo "(sum + (exp - act)^2)" | bc -l)
+            echo 'sum'
+            echo $sum
+          done
+          echo 'final sum'
+          echo $sum
+#          actual=$(stat --printf="%s" "$converted")
+#          if [[ "$actual" != "$expected" ]]; then
+#            echo "Error: pathvisio convert test failed."
+#            echo "       Unequal sizes for $converted:"
+#            echo "       expected: $expected"
+#            echo "       actual: $actual"
+#            exit 1;
+#          fi
+        fi
+      done < "./PHASHSUMS"
+    else
+      echo ' '
+      echo 'PHASHSUMS not set.'
+      echo 'Copy the following to "./PHASHSUMS":'
+      echo ' '
+      for f in ./*.png; do
+        phash=$(identify -quiet -verbose -moments -alpha off "$f" | grep "PH[1-7]" | sed -n 's/.*: \(.*\)$/\1/p' | sed 's/ *//g' | tr "\n" ",")
+        echo "PHASH ($f) = $phash"
+      done
+      echo ' '
+      echo '*******************************************'
+    fi
+
     # NOTE: PDF conversion produces a different output every time,
     # even on the same system, so we can't use shasum to verify.
     # Maybe it includes a datetime of creation or something?
@@ -445,33 +504,33 @@ EOF
     # http://jpdfunit.sourceforge.net/
     # For now, probably not, because it appears the generated PDF
     # is just a wrapper around a slightly changed PNG.
-    # The PNG, however, is not identical the PNG produced via
+    # This PNG, however, is not identical the PNG produced via
     # pathvisio convert FILE.gpml FILE.png
-    if [ -n "$(cat ${SIZESUMS})" ] && $(grep -Fq "${stdenv.system}" ${SIZESUMS}); then
-      while IFS=" ()=" read -r alg converted blank expected rem;
-      do
-        if [ -f $converted ]; then
-          actual=$(stat --printf="%s" "$converted")
-          if [[ "$actual" != "$expected" ]]; then
-            echo "Error: pathvisio convert test failed."
-            echo "       Unequal sizes for $converted:"
-            echo "       expected: $expected"
-            echo "       actual: $actual"
-            exit 1;
-          fi
-        fi
-      done < "./SIZESUMS"
-    else
-      echo ' '
-      echo 'SIZESUMS not set.'
-      echo 'Copy the following to "./SIZESUMS":'
-      echo ' '
-      for f in ./*.{pdf,png}; do
-        size=$(stat --printf="%s" "$f")
-        echo "SIZE ($f) = $size"
-      done
-      echo ' '
-    fi
+#    if [ -n "$(cat ${SIZESUMS})" ] && $(grep -Fq "${stdenv.system}" ${SIZESUMS}); then
+#      while IFS=" ()=" read -r alg converted blank expected rem;
+#      do
+#        if [ -f $converted ]; then
+#          actual=$(stat --printf="%s" "$converted")
+#          if [[ "$actual" != "$expected" ]]; then
+#            echo "Error: pathvisio convert test failed."
+#            echo "       Unequal sizes for $converted:"
+#            echo "       expected: $expected"
+#            echo "       actual: $actual"
+#            exit 1;
+#          fi
+#        fi
+#      done < "./SIZESUMS"
+#    else
+#      echo ' '
+#      echo 'SIZESUMS not set.'
+#      echo 'Copy the following to "./SIZESUMS":'
+#      echo ' '
+#      for f in ./*.pdf; do
+#        size=$(stat --printf="%s" "$f")
+#        echo "SIZE ($f) = $size"
+#      done
+#      echo ' '
+#    fi
 
     cat ${WP4321_98000_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98000.gpml
     cat ${WP4321_98055_BASE64} | xmlstarlet sel -t -v '//ns1:data' | base64 -d - > WP4321_98055.gpml
