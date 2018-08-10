@@ -11,12 +11,10 @@ makeDesktopItem,
 stdenv,
 unzip,
 xmlstarlet,
+memory,
 headless ? false,
 organism ? "Homo sapiens",
-datasources ? [],
-# NOTE: this seems high, but I got an error
-#       regarding memory when it was lower.
-memory ? "2048m" }:
+datasources ? [] }:
 # TODO: allow for specifying plugins to install
 #       How? I don't think we can symlink into
 #       the user's $HOME/.PathVisio dir during
@@ -64,7 +62,7 @@ stdenv.mkDerivation rec {
   pathwayStub = ./pathway.gpml;
   PHASHSUMS = ./PHASHSUMS;
   SHA256SUMS = ./SHA256SUMS;
-  SIZESUMS = ./SIZESUMS;
+  #SIZESUMS = ./SIZESUMS;
   # To reset sums, run the following:
   #     rm -f ./SHA256SUMS ./SIZESUMS
   #     touch ./SHA256SUMS ./SIZESUMS
@@ -407,8 +405,9 @@ EOF
     testResultsDir="$tmpBuildDir/test-results"
 
     mkdir "$testResultsDir"
+    cp ${PHASHSUMS} "$testResultsDir/PHASHSUMS"
     cp ${SHA256SUMS} "$testResultsDir/SHA256SUMS"
-    cp ${SIZESUMS} "$testResultsDir/SIZESUMS"
+    #cp ${SIZESUMS} "$testResultsDir/SIZESUMS"
 
     cd "$binDir"
 
@@ -418,20 +417,17 @@ EOF
 
       # convert/update from old GPML schema to latest:
       ./pathvisio convert "$f" "$converted_f".gpml
-      #xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".gpml > "$converted_f".norm.gpml
+      xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".gpml > "$converted_f".norm.gpml
 
-      #./pathvisio convert "$converted_f".gpml "$converted_f".owl
-      #xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".owl > "$converted_f".norm.owl
-      #cp "$converted_f".bpss "$converted_f".norm.bpss
+      ./pathvisio convert "$converted_f".gpml "$converted_f".owl
+      xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".owl > "$converted_f".norm.owl
+      cp "$converted_f".bpss "$converted_f".norm.bpss
 
       # TODO why does the sha256sum for converted PNGs differ between Linux and Darwin?
-      ./pathvisio convert "$converted_f".gpml "$converted_f"-100.${stdenv.system}.png
-      cp "$converted_f"-100.${stdenv.system}.png "$converted_f"-100.png
-      #./pathvisio convert "$converted_f".gpml "$converted_f"-200.${stdenv.system}.png 200
-      #cp "$converted_f"-200.${stdenv.system}.png "$converted_f"-200.png
+      ./pathvisio convert "$converted_f".gpml "$converted_f"-100.png
+      ./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200
 
-      #./pathvisio convert "$converted_f".gpml "$converted_f".${stdenv.system}.pdf
-      #cp "$converted_f".${stdenv.system}.pdf "$converted_f".pdf
+      ./pathvisio convert "$converted_f".gpml "$converted_f".pdf
     done
 
     cd "$testResultsDir"
@@ -451,37 +447,23 @@ EOF
       while IFS=" ()=" read -r alg converted blank expected;
       do
         if [ -f $converted ]; then
-          echo 'expected:'
-          echo $expected
           actual=$(identify -quiet -verbose -moments -alpha off "$converted" | grep "PH[1-7]" | sed -n 's/.*: \(.*\)$/\1/p' | sed 's/ *//g' | tr "\n" ",")
-          echo 'actual:'
-          echo $actual
 
-          sum=0
-          #IFS=',' read -r -a expected_arr <<< "$'' + ''{expected%?}"
-          #IFS=',' read -r -a actual_arr <<< "$'' + ''{actual%?}"
+          sse=0
           IFS=', ' read -r -a expected_arr <<< "$expected"
           IFS=', ' read -r -a actual_arr <<< "$actual"
 
           for index in "$'' + ''{!expected_arr[@]}"; do
             exp=$'' + ''{expected_arr[index]}
             act=$'' + ''{actual_arr[index]}
-            echo "exp: $exp"
-            echo "act: $act"
-            sum=$(echo "(sum + (exp - act)^2)" | bc -l)
-            echo 'sum'
-            echo $sum
+            sse=$(echo "(sse + (exp - act)^2)" | bc -l)
           done
-          echo 'final sum'
-          echo $sum
-#          actual=$(stat --printf="%s" "$converted")
-#          if [[ "$actual" != "$expected" ]]; then
-#            echo "Error: pathvisio convert test failed."
-#            echo "       Unequal sizes for $converted:"
-#            echo "       expected: $expected"
-#            echo "       actual: $actual"
-#            exit 1;
-#          fi
+          limit=10
+          if [ "$sse" -gt $limit ]; then
+            echo "Error: pathvisio convert test failed."
+            echo "       Bad match for $converted: $sse (should be <= $limit)"
+            exit 1;
+          fi
         fi
       done < "./PHASHSUMS"
     else
@@ -489,12 +471,17 @@ EOF
       echo 'PHASHSUMS not set.'
       echo 'Copy the following to "./PHASHSUMS":'
       echo ' '
+      # NOTE: PNGs larger than limit are too big to calculate the phash
+      limit=200000
       for f in ./*.png; do
-        phash=$(identify -quiet -verbose -moments -alpha off "$f" | grep "PH[1-7]" | sed -n 's/.*: \(.*\)$/\1/p' | sed 's/ *//g' | tr "\n" ",")
-        echo "PHASH ($f) = $phash"
+        echo "$f"
+        size=$(stat --printf="%s" "$f")
+        if [ $size -lt $limit ]; then
+          phash=$(identify -quiet -verbose -moments -alpha off "$f" | grep "PH[1-7]" | sed -n 's/.*: \(.*\)$/\1/p' | sed 's/ *//g' | tr "\n" ",")
+          echo "PHASH ($f) = $phash"
+        fi
       done
       echo ' '
-      echo '*******************************************'
     fi
 
     # NOTE: PDF conversion produces a different output every time,

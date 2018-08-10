@@ -3,7 +3,8 @@ fetchzip,
 headless,
 genes,
 interactions,
-metabolites
+metabolites,
+memory
 }:
 
 with builtins;
@@ -20,6 +21,7 @@ in
     in
     {
       name = organism;
+      name = memory;
       value = callPackage ./common.nix {
         inherit headless;
         organism = organism;
