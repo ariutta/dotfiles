@@ -51,6 +51,7 @@ stdenv.mkDerivation rec {
   # (after the initial unpack/build/install phase).
   # NOTE: did not alias the following:
   #       echo, eval, exit, shift
+  dateAlias = "${coreutils}/bin/date";
   getoptAlias = "${getopt}/bin/getopt";
   javaAlias = "${jdk.jre}/bin/java";
   xmlstarletAlias = "${xmlstarlet}/bin/xmlstarlet";
@@ -262,6 +263,17 @@ elif [ \$SUBCOMMAND = 'convert' ]; then
     exit 0
   fi
 
+  # LocalSettings.php sets $wgMaxShellMemory:
+  # https://github.com/wikipathways/wikipathways.org/blob/f6e9c337c0a9029f0f329dc1ab156858b1433406/LocalSettings.php#L27
+  #
+  # $wgMaxShellMemory = 512 * 1024;
+
+  # pathvisio convert command called like this in Pathway.php:
+  # https://github.com/wikipathways/wikipathways.org/blob/f6e9c337c0a9029f0f329dc1ab156858b1433406/wpi/extensions/Pathways/Pathway.php#L1243
+  #
+  # $maxMemoryM = intval($wgMaxShellMemory / 1024); //Max script memory on java program in megabytes
+  # java -Xmx{$maxMemoryM}M -jar $basePath/bin/pathvisio_core.jar \"$gpmlFile\" \"$outFile\" 2>&1"
+
   CLASSPATH="${converterCLASSPATH}"
   ${javaAlias} $'' + ''{JAVA_CUSTOM_OPTS:-$converter_java_opts} -ea -classpath \$CLASSPATH org.pathvisio.core.util.Converter "\$@"
   exit 0
@@ -321,7 +333,7 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
   if [ ! "\$target_file_raw" ];
   then
     # We don't want to overwrite an existing file.
-    suffix=\$(date -j -f "%a %b %d %T %Z %Y" "\$(date)" "+%s")
+    suffix=\$(${dateAlias} +%s)
     target_dir="."
     if [ ! -w "\$target_dir/" ]; then
       target_dir="\$HOME"
@@ -418,18 +430,18 @@ function gpml2many()
   converted_f="../test-results/"$(basename "$f" ".gpml")
 
   # convert/update from old GPML schema to latest:
-  ./pathvisio convert "$f" "$converted_f".gpml
+  ./pathvisio convert "$f" "$converted_f".gpml >> message.log 2>> error.log
   xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".gpml > "$converted_f".norm.gpml
 
-  ./pathvisio convert "$converted_f".gpml "$converted_f".owl
+  ./pathvisio convert "$converted_f".gpml "$converted_f".owl >> message.log 2>> error.log
   xmlstarlet tr ${XSLT_NORMALIZE} "$converted_f".owl > "$converted_f".norm.owl
   cp "$converted_f".bpss "$converted_f".norm.bpss
 
   # TODO why does the sha256sum for converted PNGs differ between Linux and Darwin?
-  ./pathvisio convert "$converted_f".gpml "$converted_f".png
-  ./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200
+  ./pathvisio convert "$converted_f".gpml "$converted_f".png >> message.log 2>> error.log
+  ./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200 >> message.log 2>> error.log
 
-  ./pathvisio convert "$converted_f".gpml "$converted_f".pdf
+  ./pathvisio convert "$converted_f".gpml "$converted_f".pdf >> message.log 2>> error.log
 }
 export -f gpml2many
 
@@ -539,11 +551,11 @@ export -f gpml2many
     cd "$binDir"
 
     echo "diff"
-    ./pathvisio diff ../test-results/WP4321_98000.gpml ../test-results/WP4321_98055.gpml > ../test-results/WP4321_98000_98055.patch
+    ./pathvisio diff ../test-results/WP4321_98000.gpml ../test-results/WP4321_98055.gpml > ../test-results/WP4321_98000_98055.patch >> message.log 2>> error.log
 
     echo "patch"
     cp ../test-results/WP4321_98000.gpml ../test-results/WP4321_98055.roundtrip.gpml
-    ./pathvisio patch ../test-results/WP4321_98055.roundtrip.gpml < ../test-results/WP4321_98000_98055.patch
+    ./pathvisio patch ../test-results/WP4321_98055.roundtrip.gpml < ../test-results/WP4321_98000_98055.patch >> message.log 2>> error.log
 
 #    xmlstarlet tr ${XSLT_NORMALIZE} ../test-results/WP4321_98055.gpml > ../test-results/WP4321_98055.norm.gpml
 #    xmlstarlet tr ${XSLT_NORMALIZE} ../test-results/WP4321_98055.roundtrip.gpml > ../test-results/WP4321_98055.roundtrip.norm.gpml
@@ -567,9 +579,10 @@ export -f gpml2many
 
   desktopItem = makeDesktopItem {
     name = name;
-    exec = "pathvisio launch";
-    #exec = "${sharePath1}/pathvisio-launch";
-    #exec = "pathvisio launch ~/pathway-\$(${date} -j -f \"%a %b %d %T %Z %Y\" \"\$(${date})\" \"+%s\").gpml";
+    exec = "${sharePath1}/pathvisio-launch";
+    #exec = "pathvisio launch";
+    #exec = "pathvisio launch ~/pathway-\$(${dateAlias} -j -f \"%a %b %d %T %Z %Y\" \"\$(${dateAlias})\" \"+%s\").gpml";
+    #exec = "pathvisio launch ~/pathway-\$(${dateAlias} \"+%s\").gpml";
     #exec = "pathvisio launch ~/pathway-test.gpml";
     icon = "${pngIconSrc}";
     desktopName = baseName;
@@ -600,6 +613,12 @@ export -f gpml2many
             --replace "${libPath0}" "${libPath1}" \
             --replace "${modulesPath0}" "${modulesPath1}"
     done
+
+    echo 'message log:'
+    cat ./message.log
+
+    echo 'error log:'
+    cat ./error.log
   '' + (
   if headless then ''
     echo 'Desktop functionality not enabled.'
