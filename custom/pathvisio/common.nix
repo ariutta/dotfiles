@@ -445,11 +445,12 @@ function gpml2many()
   #./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200 >> message.log 2>> error.log
 
   ./pathvisio convert "$converted_f".gpml "$converted_f".pdf >> message.log 2>> error.log
-  echo -ne 'convert: ('"$i"'%)\r'
+  i+=1
+  echo -ne 'convert: '"$i"'%\r'
 }
 export -f gpml2many
 
-    echo -ne 'convert: (0%)\r'
+    echo -ne 'convert: 0%\r'
     ls -1 ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml | \
       parallel -P 4 gpml2many {}
     echo -ne '\n'
