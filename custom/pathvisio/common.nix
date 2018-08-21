@@ -551,7 +551,7 @@ export -f gpml2many
     cd "$binDir"
 
     echo "diff"
-    ./pathvisio diff ../test-results/WP4321_98000.gpml ../test-results/WP4321_98055.gpml > ../test-results/WP4321_98000_98055.patch >> message.log 2>> error.log
+    ./pathvisio diff ../test-results/WP4321_98000.gpml ../test-results/WP4321_98055.gpml > ../test-results/WP4321_98000_98055.patch 2>> error.log
 
     echo "patch"
     cp ../test-results/WP4321_98000.gpml ../test-results/WP4321_98055.roundtrip.gpml
