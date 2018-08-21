@@ -423,6 +423,8 @@ EOF
 
     cd "$binDir"
 
+    i=0
+
 function gpml2many()
 {
   local f=$1
@@ -439,15 +441,18 @@ function gpml2many()
 
   # TODO why does the sha256sum for converted PNGs differ between Linux and Darwin?
   ./pathvisio convert "$converted_f".gpml "$converted_f".png >> message.log 2>> error.log
-  ./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200 >> message.log 2>> error.log
+  ./pathvisio convert "$converted_f".gpml "$converted_f".png 100 >> message.log 2>> error.log
+  #./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200 >> message.log 2>> error.log
 
   ./pathvisio convert "$converted_f".gpml "$converted_f".pdf >> message.log 2>> error.log
+  echo -ne 'convert: ('"$i"'%)\r'
 }
 export -f gpml2many
 
-    echo "convert"
+    echo -ne 'convert: (0%)\r'
     ls -1 ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml | \
       parallel -P 4 gpml2many {}
+    echo -ne '\n'
 
     cd "$testResultsDir"
 
@@ -614,11 +619,14 @@ export -f gpml2many
             --replace "${modulesPath0}" "${modulesPath1}"
     done
 
-    echo 'message log:'
-    cat ./message.log
-
-    echo 'error log:'
-    cat ./error.log
+    if [ -n "$(cat ./message.log)" ]; then
+      echo 'message log:'
+      cat ./message.log
+    fi
+    if [ -n "$(cat ./error.log)" ]; then
+      echo 'error log:'
+      cat ./error.log
+    fi
   '' + (
   if headless then ''
     echo 'Desktop functionality not enabled.'
