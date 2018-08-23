@@ -423,8 +423,6 @@ EOF
 
     cd "$binDir"
 
-    i=0
-
 function gpml2many()
 {
   local f=$1
@@ -445,19 +443,18 @@ function gpml2many()
   #./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200 >> message.log 2>> error.log
 
   ./pathvisio convert "$converted_f".gpml "$converted_f".pdf >> message.log 2>> error.log
-  i+=1
-  echo -ne 'convert: '"$i"'%\r'
 }
 export -f gpml2many
 
-    echo -ne 'convert: 0%\r'
+    echo 'convert...'
+    processor_count=$(nproc)
     ls -1 ../{example-data/,testData/,testData/2010a/{biopax,parsetest}}*.gpml | \
-      parallel -P 4 gpml2many {}
-    echo -ne '\n'
+      parallel --eta -k -P $processor_count gpml2many {}
 
     cd "$testResultsDir"
 
     if [ -n "$(cat ${SHA256SUMS})" ]; then
+      echo 'Verifying shasums...'
       sha256sum -c --quiet --ignore-missing "./SHA256SUMS"
     else
       echo ' '
@@ -479,6 +476,7 @@ export -f gpml2many
     # pathvisio convert FILE.gpml FILE.png
 
     if [ -n "$(cat ${PHASHSUMS})" ]; then
+      echo 'Verifying phashsums...'
       while IFS=" ()=" read -r alg converted blank expected;
       do
         if [ -f "$converted" ]; then
@@ -556,10 +554,10 @@ export -f gpml2many
 
     cd "$binDir"
 
-    echo "diff"
+    echo "diff..."
     ./pathvisio diff ../test-results/WP4321_98000.gpml ../test-results/WP4321_98055.gpml > ../test-results/WP4321_98000_98055.patch 2>> error.log
 
-    echo "patch"
+    echo "patch..."
     cp ../test-results/WP4321_98000.gpml ../test-results/WP4321_98055.roundtrip.gpml
     ./pathvisio patch ../test-results/WP4321_98055.roundtrip.gpml < ../test-results/WP4321_98000_98055.patch >> message.log 2>> error.log
 
@@ -620,11 +618,11 @@ export -f gpml2many
             --replace "${modulesPath0}" "${modulesPath1}"
     done
 
-    if [ -n "$(cat ./message.log)" ]; then
+    if [ -e "./message.log" ]; then
       echo 'message log:'
       cat ./message.log
     fi
-    if [ -n "$(cat ./error.log)" ]; then
+    if [ -e "./error.log" ]; then
       echo 'error log:'
       cat ./error.log
     fi
