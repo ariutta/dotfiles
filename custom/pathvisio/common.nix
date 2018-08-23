@@ -439,8 +439,7 @@ function gpml2many()
 
   # TODO why does the sha256sum for converted PNGs differ between Linux and Darwin?
   ./pathvisio convert "$converted_f".gpml "$converted_f".png >> message.log 2>> error.log
-  ./pathvisio convert "$converted_f".gpml "$converted_f".png 100 >> message.log 2>> error.log
-  #./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200 >> message.log 2>> error.log
+  ./pathvisio convert "$converted_f".gpml "$converted_f"-200.png 200 >> message.log 2>> error.log
 
   ./pathvisio convert "$converted_f".gpml "$converted_f".pdf >> message.log 2>> error.log
 }
@@ -455,7 +454,7 @@ export -f gpml2many
 
     if [ -n "$(cat ${SHA256SUMS})" ]; then
       echo 'Verifying shasums...'
-      sha256sum -c --quiet --ignore-missing "./SHA256SUMS"
+      sha256sum -c --quiet "./SHA256SUMS"
     else
       echo ' '
       echo 'SHA256SUMS not set.'
@@ -476,7 +475,7 @@ export -f gpml2many
     # pathvisio convert FILE.gpml FILE.png
 
     if [ -n "$(cat ${PHASHSUMS})" ]; then
-      echo 'Verifying phashsums...'
+      echo 'Verifying perceptual hash (phash) sums...'
       while IFS=" ()=" read -r alg converted blank expected;
       do
         if [ -f "$converted" ]; then
@@ -509,8 +508,18 @@ export -f gpml2many
           phash=$(grep -F "$png" ./PHASHSUMS)
           IFS=" ()=" read -r alg converted blank expected <<< "$phash";
 
-          pdftohtml "$f" "$base"
-          actual=$(identify -quiet -verbose -moments -alpha off "$base/page1.png" | grep "PH[1-7]" | sed -n 's/.*: \(.*\)$/\1/p' | sed 's/ *//g' | tr "\n" ",")
+          # NOTE: when going from gpml to pdf, pathvisio converts text into paths.
+          # But the PDF still seems to retain a record that it used to have certain
+          # fonts, and these fonts are probably not installed by Nix, in which case
+          # pdftopng will display an error such as:
+          #   "Config Error: No display font for 'Courier'"
+          # But since there are no actual fonts in the PDF, it doesn't matter and we
+          # can safely ignore it.
+          # However, for some reason, the -q option doesn't stop the font warning messages,
+          # so we need to pipe the warning to /dev/null
+          pdftopng -q "$f" "$base" 2> /dev/null
+          png="$base""-000001.png"
+          actual=$(identify -quiet -verbose -moments -alpha off "$png" | grep "PH[1-7]" | sed -n 's/.*: \(.*\)$/\1/p' | sed 's/ *//g' | tr "\n" ",")
 
           sse=0
           IFS=', ' read -r -a expected_arr <<< "$expected"
@@ -529,7 +538,7 @@ export -f gpml2many
             exit 1;
           fi
 
-          rm -rf "$base"
+          rm "$png"
         fi
       done
     else
