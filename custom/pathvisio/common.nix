@@ -382,23 +382,30 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
     rm "\$PREFS_FILE.bak"
     echo "BRIDGEDB_CONNECTION_1=idmapper-bridgerest\\:http\\://webservice.bridgedb.org\\:80/\$current_organism" >> "\$PREFS_FILE"
   fi
+  # TODO: take a look at this:
+  # https://github.com/tofi86/universalJavaApplicationStub
 
-  # TODO: will the CFProcessPath export or the -Xdock flags
-  #   mess up the Linux desktop app builder?
   # TODO: there are probably other settings/options from Info.plist
   #   https://github.com/PathVisio/pathvisio/blob/master/Info.plist
   #   that should be used for Darwin. Should we modify JavaApplicationStub
   #   to work with this pathvisio script, or should we move content from
   #   Info.plist into here?
 
-  # enable drag&drop to the dock icon
+  # NOTE: this enables drag & drop to the dock icon
   export CFProcessPath="$0"
+
+  # NOTE: the -Xdock flags are not recognize on NixOS and cause an error.
+  #       Probably only used on macOS?
 
   # NOTE: using nohup ... & to keep GUI running, even if the terminal is closed
   nohup ${javaAlias} $'' + ''{JAVA_CUSTOM_OPTS:-$gui_java_opts} \
+'' + (
+if stdenv.system == "x86_64-darwin" then ''
     -Xdock:icon="${iconSrc}" \
     -Xdock:name="${name}" \
+'' else ''
     -jar "${sharePath1}/pathvisio.jar" \$patchedFlags &
+'' ) + ''
 else
   echo "Invalid subcommand \$1" >&2
   exit 1
@@ -653,10 +660,11 @@ $out/bin/pathvisio launch
 EOF
     '' else ''
       mkdir -p "$out/share/applications"
-#      cat > "${sharePath1}/pathvisio-launch" <<EOF
-##! $shell
-#$out/bin/pathvisio launch
-#EOF
+      cat > "${sharePath1}/pathvisio-launch" <<EOF
+#! $shell
+$out/bin/pathvisio launch
+EOF
+      chmod a+x "${sharePath1}/pathvisio-launch"
       ln -s ${desktopItem}/share/applications/* "$out/share/applications/"
     ''
   ));
