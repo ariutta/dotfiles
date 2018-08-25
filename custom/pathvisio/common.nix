@@ -321,11 +321,21 @@ elif [ \$SUBCOMMAND = 'launch' ]; then
     echo "#Wed Jun 27 16:21:04 PDT 2018" >> "\$PREFS_FILE";
   fi
 
+  # Ensure we're connected to BridgeDb REST webservice
   if [ ! -e "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar" ];
   then
     ln -s "${bridgedbSettings}" "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar"
-    cat ${pathvisioPluginsXML} | ${xmlstarletAlias} ed -u '/ns2:pvRepository/url' -v "$HOME/.PathVisio/.bundles" > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
+
+    cat ${pathvisioPluginsXML} | \
+      ${xmlstarletAlias} ed \
+        -u '/ns2:pvRepository/url' \
+        -v "\$HOME/.PathVisio/.bundles" | \
+      ${xmlstarletAlias} ed \
+        -u '/ns2:pvRepository/bundle_version_list/pv_bundle_version/jar_file_url' \
+        -v "\$HOME/.PathVisio/.bundles/pvplugins-bridgedbSettings-1.0.0.jar" \
+      > "\$HOME/.PathVisio/.bundles/pathvisio.xml"
   fi
+
   '' + concatStringsSep "" (map (d: d.linkCmd) datasources) + ''
 
   target_file_raw=\$(echo "\$@" | sed "s#.*\\ \\([^\\ ]*\\.gpml\\(\\.xml\\)\\{0,1\\}\\)#\\1#")
@@ -404,8 +414,8 @@ if stdenv.system == "x86_64-darwin" then ''
     -Xdock:icon="${iconSrc}" \
     -Xdock:name="${name}" \
 '' else ''
-    -jar "${sharePath1}/pathvisio.jar" \$patchedFlags &
 '' ) + ''
+    -jar "${sharePath1}/pathvisio.jar" \$patchedFlags >> "\$HOME/.PathVisio/PathVisio.log" 2>> "\$HOME/.PathVisio/PathVisio.log" &
 else
   echo "Invalid subcommand \$1" >&2
   exit 1
