@@ -3,7 +3,7 @@
 with import <nixpkgs> { config.allowUnfree = true; };
 let
   common = import ./common.nix;
-  custom = import ./custom/all-custom.nix;
+  custom = import ./nixpkgs-custom/all-custom.nix;
   nixos = import <nixos> { config.allowUnfree = true; };
 in common ++ [
 

@@ -1,7 +1,7 @@
 # See README.md for instructions on installing/updating.
 with import <nixpkgs> { config.allowUnfree = true; };
 let
-  custom = import ./custom/all-custom.nix;
+  custom = import ./nixpkgs-custom/all-custom.nix;
   nixos = import <nixos> { config.allowUnfree = true; };
 in [
   # nix-prefetch-scripts is a dependency of composer2nix
@@ -30,6 +30,6 @@ in [
   pkgs.nox
   nixos.nodePackages.node2nix
   custom.tosheets
-  custom.vim
+  #custom.vim
   pkgs.wget
 ] ++ (if stdenv.isDarwin then [] else [])
