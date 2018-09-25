@@ -6,7 +6,7 @@ Set configuration for my dev environment.
 
 ```sh
 cd $HOME
-git clone git@github.com:ariutta/dotfiles.git
+git clone --recurse-submodules git@github.com:ariutta/dotfiles.git
 ln -s dotfiles/.gitignore_global ./.gitignore_global
 ```
 
