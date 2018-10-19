@@ -30,6 +30,6 @@ in [
   pkgs.nox
   nixos.nodePackages.node2nix
   custom.tosheets
-  #custom.vim
+  custom.vim
   pkgs.wget
 ] ++ (if stdenv.isDarwin then [] else [])

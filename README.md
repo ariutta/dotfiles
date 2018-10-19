@@ -10,39 +10,6 @@ git clone --recurse-submodules git@github.com:ariutta/dotfiles.git
 ln -s dotfiles/.gitignore_global ./.gitignore_global
 ```
 
-### Source `dotfiles` Startup Scripts
-
-This repo is only for public information, so it never manages the startup scripts in your home directory (`~/.profile`, `~/.bashrc`, etc). To source the startup scripts in `dotfiles`, make the following manual edits:
-
-#### `.profile`
-
-```sh
-if [ -f "$HOME/dotfiles/.profile.public" ]; then
-   . "$HOME/dotfiles/.profile.public"
-fi
-```
-
-#### `.bashrc`
-
-```sh
-if [ -f "$HOME/dotfiles/.bashrc.public" ]; then
-   . "$HOME/dotfiles/.bashrc.public"
-fi
-```
-
-#### `.bash_profile` (optional)
-
-If your system uses `.bash_profile`, add this to it to make login shells, macOS terminal emulators (like Terminal.app or iTerm2) and interactive shells all load the same:
-
-```sh
-if [ -f "$HOME/.profile" ]; then
-	. "$HOME/.profile"
-fi
-if [ -f "$HOME/.bashrc" ]; then
-	. "$HOME/.bashrc"
-fi
-```
-
 ### Install Nix
 
 If not already set (see `nix-channel --list`), set the channels:
@@ -92,6 +59,39 @@ Enable completions and plugins:
 ```sh
 bash-it enable completion tmux npm git ssh
 bash-it enable plugin jenv
+```
+
+### Source `dotfiles` Startup Scripts
+
+This repo is only for public information, so it never manages the startup scripts in your home directory (`~/.profile`, `~/.bashrc`, etc). To source the startup scripts in `dotfiles`, make the following manual edits:
+
+#### `.profile`
+
+```sh
+if [ -f "$HOME/dotfiles/.profile.public" ]; then
+   . "$HOME/dotfiles/.profile.public"
+fi
+```
+
+#### `.bashrc`
+
+```sh
+if [ -f "$HOME/dotfiles/.bashrc.public" ]; then
+   . "$HOME/dotfiles/.bashrc.public"
+fi
+```
+
+#### `.bash_profile` (optional)
+
+If your system uses `.bash_profile`, add this to it to make login shells, macOS terminal emulators (like Terminal.app or iTerm2) and interactive shells all load the same:
+
+```sh
+if [ -f "$HOME/.profile" ]; then
+	. "$HOME/.profile"
+fi
+if [ -f "$HOME/.bashrc" ]; then
+	. "$HOME/.bashrc"
+fi
 ```
 
 ## How to Update
