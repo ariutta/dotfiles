@@ -28,7 +28,9 @@ in [
   pkgs.pypi2nix
   pkgs.nix-repl
   pkgs.nox
+  nixos.gawkInteractive
   nixos.nodePackages.node2nix
+  custom.bash-it
   custom.tosheets
   custom.vim
   pkgs.wget

@@ -12,24 +12,12 @@ ln -s dotfiles/.gitignore_global ./.gitignore_global
 
 ### Install Nix
 
-If not already set (see `nix-channel --list`), set the channels:
-
-```sh
-nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
-nix-channel --add https://nixos.org/channels/nixos-18.03 nixos
-nix-channel --list # does the output correspond to the above?
-# TODO what about a NixOS vs. non-NixOS system?
-# For the NixOS system, nixpkgs is supposed to be the same as nixos, right?
-```
+# TODO: can we avoid setting channels on both NixOS, Ubuntu and macOS?
+~~If not already set (see `nix-channel --list`), set the channels:~~
 
 Install packages managed by Nix (same command to update):
 
 ```sh
-nix-channel --update
-# NOTE: ~/dotfiles/.profile.public sets $NIX_PATH based on nix-channels.
-# If nix-channels are added or removed, we need to source .profile.public again.
-# TODO: test that this step is correct!
-source ~/dotfiles/.profile.public
 nix-env -f dotfiles/common.nix -ri
 nix-env -f dotfiles/local.nix -ri
 ```
@@ -42,24 +30,6 @@ seq 1 10 | tosheets -c B4 --new-sheet=sample-spread-sheet-id-23sdf32543fs
 ```
 
 If browser is on a different machine, you should be able to use `--noauth_local_webserver`, but that doesn't currently work with `tosheets`.
-
-Note there is a file "/etc/nix/nix.conf" on macOS. This might be relevant to declarative package management for macOS.
-
-### Install bash-it
-
-[Install bash-it](https://github.com/Bash-it/bash-it#install)
-
-```sh
-git clone --depth=1 https://github.com/Bash-it/bash-it.git ~/.bash_it
-~/.bash_it/install.sh --no-modify-config
-```
-
-Enable completions and plugins:
-
-```sh
-bash-it enable completion tmux npm git ssh
-bash-it enable plugin jenv
-```
 
 ### Source `dotfiles` Startup Scripts
 
@@ -92,6 +62,17 @@ fi
 if [ -f "$HOME/.bashrc" ]; then
 	. "$HOME/.bashrc"
 fi
+```
+
+### Setup [bash-it](https://github.com/Bash-it/bash-it)
+
+Note that nix handles installing bash-it. TODO: clean up relationship between powerline and bash-it. Right now, .profile.public launches the powerline theme for bash.
+
+Enable completions and plugins:
+
+```sh
+bash-it enable completion tmux npm git ssh
+bash-it enable plugin jenv
 ```
 
 ## How to Update

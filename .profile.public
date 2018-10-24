@@ -146,7 +146,7 @@ if [ -d "/nix/var/nix/profiles/default/bin" ]; then PATH="$PATH:/nix/var/nix/pro
 # doesn't seem to work, maybe because it gets run too soon?
 ####################
 # Path to the bash it configuration
-export BASH_IT="$HOME/.bash_it"
+export BASH_IT="$HOME/.nix-profile/share/bash_it"
 if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
 	# Assume Bash
 
