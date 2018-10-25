@@ -121,7 +121,9 @@ fi
 # Nix settings
 ####################
 
-export NIX_REMOTE=daemon
+if [ -e "/nix/var/nix/daemon-socket" ]; then
+	export NIX_REMOTE=daemon
+fi
 
 if [ -e "/usr/local/etc/profile.d/nix.sh" ]; then . "/usr/local/etc/profile.d/nix.sh"; fi
 if [ -e "$HOME/.nix-channels" ]; then export NIX_PATH=`cat $HOME/.nix-channels | sed -e "s~\(.*\)\ \(.*\)~\2=$HOME/.nix-defexpr/channels/\2~g" | paste -sd ":" -`; fi
