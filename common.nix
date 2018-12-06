@@ -3,10 +3,6 @@ with import <nixpkgs> { config.allowUnfree = true; };
 let
   custom = import ./nixpkgs-custom/all-custom.nix;
 in [
-  # nix-prefetch-scripts is a dependency of composer2nix
-  pkgs.nix-prefetch-scripts
-  custom.composer2nix
-
   ####################
   # Deps for powerline
   ####################
@@ -24,13 +20,9 @@ in [
   pkgs.jq
   pkgs.gettext
   pkgs.ripgrep
-  pkgs.pypi2nix
-  pkgs.nix-repl
   pkgs.nox
   pkgs.gawkInteractive
-  pkgs.nodePackages.node2nix
   custom.bash-it
-  custom.tosheets
   custom.vim
   pkgs.wget
 ] ++ (if stdenv.isDarwin then [] else [])

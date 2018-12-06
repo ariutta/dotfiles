@@ -9,7 +9,7 @@
 !.gitignore_global
 !.gitconfig_sample
 !dev_helper_scripts/
-!common.nix
-!local.nix
 !lynx.lss
 !nix-pkgs-custom/
+!common.nix
+!dev-env-js.nix
