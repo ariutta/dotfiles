@@ -16,7 +16,22 @@ in [
   # http://powerline.readthedocs.io/en/master/usage/shell-prompts.html#bash-prompt
   pkgs.python36Packages.powerline
 
+  # To setup keys for GitHub:
+  # https://github.com/settings/keys
+
+  # openssh includes ssh-copy-id
+  pkgs.openssh
+
+  pkgs.gnupg
+  # TODO: do we need gpgme?
+  #pkgs.gpgme
+
+  # Suggested for use by GitHub, but does it work with Docker?
+  #pkgs.xclip
+
   pkgs.coreutils
+  pkgs.less
+  pkgs.rsync
   pkgs.jq
   pkgs.gettext
   pkgs.ripgrep

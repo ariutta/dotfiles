@@ -7,11 +7,13 @@ let
   nixos = import <nixos> { config.allowUnfree = true; };
 in common ++ [
 
+  pkgs.python2
   pkgs.nodejs-8_x
-  pkgs.nodePackages.node2nix
   pkgs.nodePackages.lerna
-
-  # openssh includes ssh-copy-id
-  pkgs.openssh
+  pkgs.yarn
+  pkgs.nodePackages.node2nix
+  # what about yarn2nix?
+  #pkgs.yarn2nix
+  pkgs.libxml2 # for xmllint
 
 ] ++ (if stdenv.isDarwin then [] else [])
