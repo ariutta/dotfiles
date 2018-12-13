@@ -48,8 +48,7 @@ in [
   pkgs.rsync
   pkgs.wget
 
-  # this isn't working well with typescript
-  #custom.vim
+  custom.vim
 
 ] ++ (if stdenv.isDarwin then [] else [
   # Suggested for use by GitHub for copying ssh or gpg keys,
