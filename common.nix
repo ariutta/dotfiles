@@ -26,18 +26,33 @@ in [
   # TODO: do we need gpgme?
   #pkgs.gpgme
 
-  # Suggested for use by GitHub, but does it work with Docker?
-  #pkgs.xclip
-
+  # To see what's included in coreutils, run:
+  # info coreutils
   pkgs.coreutils
-  pkgs.less
-  pkgs.rsync
-  pkgs.jq
-  pkgs.gettext
-  pkgs.ripgrep
-  pkgs.nox
-  pkgs.gawkInteractive
+
+  # What tools do we want for diffs?
+  pkgs.diffutils
+  # this works pretty well:
+  # wdiff ./a.xml ./b.xml | colordiff
+  pkgs.wdiff # word diff (ignore whitespace)
+  pkgs.colordiff
+  #pkgs.diffoscope
+
   custom.bash-it
-  custom.vim
+  pkgs.gawkInteractive
+  pkgs.gettext
+  pkgs.jq
+  pkgs.less
+  pkgs.nox
+  pkgs.ripgrep
+  pkgs.rsync
   pkgs.wget
-] ++ (if stdenv.isDarwin then [] else [])
+
+  # this isn't working well with typescript
+  #custom.vim
+
+] ++ (if stdenv.isDarwin then [] else [
+  # Suggested for use by GitHub for copying ssh or gpg keys,
+  # but does the clipboard work with Docker?
+  #pkgs.xclip
+])

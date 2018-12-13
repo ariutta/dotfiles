@@ -13,3 +13,4 @@
 !nix-pkgs-custom/
 !common.nix
 !dev-env-js.nix
+!dev-env-pvjs.nix
