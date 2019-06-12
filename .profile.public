@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # shellcheck disable=SC1090
 # ██████╗ ██╗   ██╗██████╗ ██╗     ██╗ ██████╗     ██████╗ ███╗   ██╗██╗  ██╗   ██╗██╗
 # ██╔══██╗██║   ██║██╔══██╗██║     ██║██╔════╝    ██╔═══██╗████╗  ██║██║  ╚██╗ ██╔╝██║
@@ -9,6 +9,13 @@
 #                                                                                     
 # Warning: this file will be made public online. Only include publicly shareable data.
 # see ~/README.md for details on purposes of .profile .profile.public .bashrc .bashrc.public .bash_profile
+
+ensure_on_path () {
+	mapfile -d ':' -t < <(echo "$PATH")
+	if [ -d "$1" ] && [[ ! "${MAPFILE[*]}" =~ ${1} ]]; then
+		export PATH="$1:$PATH"
+	fi
+}
 
 # Lynx Settings
 export LYNX_LSS=$HOME/dotfiles/lynx.lss
@@ -53,10 +60,7 @@ export RSTUDIO_WHICH_R=$HOME/.nix-profile/bin/R
 # https://support.rstudio.com/hc/en-us/articles/200486138-Using-Different-Versions-of-R
 
 # Make my dev helper scripts available from command line
-DEV_HELPER_SCRIPTS_PATH="$HOME/dev_helper_scripts"
-if [ "$PATH" != *"$DEV_HELPER_SCRIPTS_PATH"* ]; then
-	export PATH="$DEV_HELPER_SCRIPTS_PATH:$PATH"
-fi
+ensure_on_path "$HOME/dotfiles/dev_helper_scripts"
 
 # Don't check mail when opening terminal.
 unset MAILCHECK
@@ -126,7 +130,10 @@ if [ -e "/nix/var/nix/daemon-socket" ]; then
 fi
 
 if [ -e "/usr/local/etc/profile.d/nix.sh" ]; then . "/usr/local/etc/profile.d/nix.sh"; fi
-if [ -e "$HOME/.nix-channels" ]; then export NIX_PATH=`cat $HOME/.nix-channels | sed -e "s~\(.*\)\ \(.*\)~\2=$HOME/.nix-defexpr/channels/\2~g" | paste -sd ":" -`; fi
+
+# if .nix-channels file exists but NIX_PATH not set, set it
+if [ -e "$HOME/.nix-channels" ] && [ -z "$NIX_PATH" ]; then export NIX_PATH=`cat $HOME/.nix-channels | sed -e "s~\(.*\)\ \(.*\)~\2=$HOME/.nix-defexpr/channels/\2~g" | paste -sd ":" -`; fi
+
 if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . "$HOME/.nix-profile/etc/profile.d/nix.sh"; fi
 # TODO: this is slow., Should it really be in .profile, or does it belong in .bashrc?
 # NOTE: GNU ln uses "-n" to indicate "don't dereference symlinks."
@@ -134,7 +141,7 @@ if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . "$HOME/.nix-profile/
 if [ -e "$HOME/.nix-profile/Applications" ]; then ln -sfn "$HOME/.nix-profile/Applications" "$HOME/Applications/Nix Apps"; fi
 
 # Make the Nix packages that were installed as root available to all users
-if [ -d "/nix/var/nix/profiles/default/bin" ]; then PATH="$PATH:/nix/var/nix/profiles/default/bin"; fi
+ensure_on_path "/nix/var/nix/profiles/default/bin"
 
 ####################
 # Bash-it
@@ -152,17 +159,20 @@ export BASH_IT="$HOME/.nix-profile/share/bash_it"
 if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
 	# Assume Bash
 
-	export PATH=$PATH:$BASH_IT
+	ensure_on_path "$BASH_IT"
 
-	# http://powerline.readthedocs.io/en/master/usage/shell-prompts.html#bash-prompt
-	powerline-daemon -q
-	export POWERLINE_BASH_CONTINUATION=1
-	export POWERLINE_BASH_SELECT=1
-	. "$(nix-env -q --out-path --no-name 'python3.6-powerline-2.6')/lib/python3.6/site-packages/powerline/bindings/bash/powerline.sh"
+	POWERLINE_PATH="$(nix-env -q --out-path --no-name 'python3.*-powerline' | head -n 1)/lib/python3.6/site-packages/powerline/bindings/bash/powerline.sh"
+	if [ -f "$POWERLINE_PATH" ]; then
+		# http://powerline.readthedocs.io/en/master/usage/shell-prompts.html#bash-prompt
+		powerline-daemon -q
+		export POWERLINE_BASH_CONTINUATION=1
+		export POWERLINE_BASH_SELECT=1
+		. "$POWERLINE_PATH"
 
-	# Lock and Load a custom theme file
-	# location $HOME/.bash_it/themes/
-	export BASH_IT_THEME="powerline"
+		# Lock and Load a custom theme file
+		# location $HOME/.bash_it/themes/
+		export BASH_IT_THEME="powerline"
+	fi
 
 	# (Advanced): Uncomment this to make Bash-it reload itself automatically
 	# after enabling or disabling aliases, plugins, and completions.

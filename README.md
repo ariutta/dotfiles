@@ -8,11 +8,13 @@ Set configuration for my dev environment.
 cd $HOME
 git clone --recurse-submodules git@github.com:ariutta/dotfiles.git
 ln -s dotfiles/.gitignore_global ./.gitignore_global
+cp dotfiles/.gitconfig_sample ./.gitconfig # edit as needed
 ```
 
 ### Install Nix
 
 # TODO: can we avoid setting channels on both NixOS, Ubuntu and macOS?
+
 ~~If not already set (see `nix-channel --list`), set the channels:~~
 
 Install packages managed by Nix (same command to update):
@@ -35,6 +37,8 @@ If browser is on a different machine, you should be able to use `--noauth_local_
 
 This repo is only for public information, so it never manages the startup scripts in your home directory (`~/.profile`, `~/.bashrc`, etc). To source the startup scripts in `dotfiles`, make the following manual edits:
 
+#### NixOS
+
 #### `.profile`
 
 ```sh
@@ -43,7 +47,30 @@ if [ -f "$HOME/dotfiles/.profile.public" ]; then
 fi
 ```
 
-#### `.bashrc`
+##### `.bashrc`
+
+```
+# Make login shells and interactive shells load the same way:
+if [ -f "$HOME/.profile" ]; then
+  . "$HOME/.profile"
+fi
+
+if [ -f "$HOME/dotfiles/.bashrc.public" ]; then
+  . "$HOME/dotfiles/.bashrc.public"
+fi
+```
+
+#### Ubuntu
+
+##### `.profile`
+
+```sh
+if [ -f "$HOME/dotfiles/.profile.public" ]; then
+   . "$HOME/dotfiles/.profile.public"
+fi
+```
+
+##### `.bashrc`
 
 ```sh
 if [ -f "$HOME/dotfiles/.bashrc.public" ]; then
@@ -51,11 +78,31 @@ if [ -f "$HOME/dotfiles/.bashrc.public" ]; then
 fi
 ```
 
-#### `.bash_profile` (optional)
+#### macOS
 
-If your system uses `.bash_profile`, add this to it to make login shells, macOS terminal emulators (like Terminal.app or iTerm2) and interactive shells all load the same:
+##### `.profile`
 
 ```sh
+if [ -f "$HOME/dotfiles/.profile.public" ]; then
+   . "$HOME/dotfiles/.profile.public"
+fi
+```
+
+##### `.bashrc`
+
+```sh
+if [ -f "$HOME/dotfiles/.bashrc.public" ]; then
+   . "$HOME/dotfiles/.bashrc.public"
+fi
+```
+
+##### `.bash_profile`
+
+```sh
+# Make the following all load the same way:
+# * login shells
+# * interactive shells
+# * macOS terminal emulators (like Terminal.app or iTerm2)
 if [ -f "$HOME/.profile" ]; then
 	. "$HOME/.profile"
 fi
@@ -86,35 +133,35 @@ nix-env -f dotfiles/local.nix -ri
 
 ## Declarative Package Management for macOS and Linux
 
-* https://nixos.org/nixpkgs/manual/#sec-declarative-package-management
-* https://nixos.org/nix/manual/#ssec-relnotes-1.6.0
+- https://nixos.org/nixpkgs/manual/#sec-declarative-package-management
+- https://nixos.org/nix/manual/#ssec-relnotes-1.6.0
 
 Possibly related:
 
-* https://rycee.net/posts/2017-07-02-manage-your-home-with-nix.html
-* https://unix.stackexchange.com/questions/369234/how-to-configure-a-nix-environment-outside-of-nixos
-* https://github.com/ashgillman/dotfiles2/blob/master/install-ubuntu.sh
+- https://rycee.net/posts/2017-07-02-manage-your-home-with-nix.html
+- https://unix.stackexchange.com/questions/369234/how-to-configure-a-nix-environment-outside-of-nixos
+- https://github.com/ashgillman/dotfiles2/blob/master/install-ubuntu.sh
 
 ## Purposes of Shell Startup/Config Files
 
-* `.bash_profile`
-  * bash login shells
-  * Terminal.app treats every new terminal window as a login shell, so it runs this every time a new terminal window is opened
-* `.profile`
-  * All shells (not bash specific)
-  * Recommended uses
-    * env variables (export...)
-    * command line tool dir locations (PATH...)
-    * …
-* `.profile.public`: same as `.profile`, except its content is under version control in my `dotfiles` repo
-* `.bashrc`
-  * Interactive (non-login) bash shells
-  * Recommended uses
-    * aliases
-    * setting editor
-    * …
-  * rc = "run command"
-* `.bashrc.public`: same as `.bashrc`, except its content is under version control in my `dotfiles` repo
+- `.bash_profile`
+  - bash login shells
+  - Terminal.app treats every new terminal window as a login shell, so it runs this every time a new terminal window is opened
+- `.profile`
+  - All shells (not bash specific)
+  - Recommended uses
+    - env variables (export...)
+    - command line tool dir locations (PATH...)
+    - …
+- `.profile.public`: same as `.profile`, except its content is under version control in my `dotfiles` repo
+- `.bashrc`
+  - Interactive (non-login) bash shells
+  - Recommended uses
+    - aliases
+    - setting editor
+    - …
+  - rc = "run command"
+- `.bashrc.public`: same as `.bashrc`, except its content is under version control in my `dotfiles` repo
 
 ## Shell Startup/Config File Execution:
 
