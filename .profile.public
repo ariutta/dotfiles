@@ -154,6 +154,7 @@ ensure_on_path "/nix/var/nix/profiles/default/bin"
 # happen AFTER Nix is initialized above. Putting this into .bashrc.public
 # doesn't seem to work, maybe because it gets run too soon?
 ####################
+
 # Path to the bash it configuration
 export BASH_IT="$HOME/.nix-profile/share/bash_it"
 if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
@@ -161,21 +162,21 @@ if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
 
 	ensure_on_path "$BASH_IT"
 
-	POWERLINE_PATH="$(nix-env -q --out-path --no-name 'python3.*-powerline' | head -n 1)/lib/python3.6/site-packages/powerline/bindings/bash/powerline.sh"
-	if [ -f "$POWERLINE_PATH" ]; then
+	POWERLINE_PATH="$(nix-env -q --out-path --no-name python3.*-powerline.* | head -n 1)/lib/python3.*/site-packages/powerline/bindings/bash/powerline.sh"
+	if [ -f $POWERLINE_PATH ]; then
 		# http://powerline.readthedocs.io/en/master/usage/shell-prompts.html#bash-prompt
 		powerline-daemon -q
 		export POWERLINE_BASH_CONTINUATION=1
 		export POWERLINE_BASH_SELECT=1
-		. "$POWERLINE_PATH"
+		. $POWERLINE_PATH
 
 		# Lock and Load a custom theme file
 		# location $HOME/.bash_it/themes/
 		export BASH_IT_THEME="powerline"
 	fi
 
-	# (Advanced): Uncomment this to make Bash-it reload itself automatically
-	# after enabling or disabling aliases, plugins, and completions.
+	# Make Bash-it reload itself automatically after enabling
+	# or disabling aliases, plugins, and completions.
 	export BASH_IT_AUTOMATIC_RELOAD_AFTER_CONFIG_CHANGE=1
 
 	# Load Bash It
