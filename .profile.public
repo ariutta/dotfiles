@@ -175,10 +175,6 @@ if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
 		export BASH_IT_THEME="powerline"
 	fi
 
-	# Make Bash-it reload itself automatically after enabling
-	# or disabling aliases, plugins, and completions.
-	export BASH_IT_AUTOMATIC_RELOAD_AFTER_CONFIG_CHANGE=1
-
 	# Load Bash It
 	if [ -e "$BASH_IT/bash_it.sh" ]; then . "$BASH_IT/bash_it.sh"; fi
 fi

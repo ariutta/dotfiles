@@ -111,17 +111,6 @@ if [ -f "$HOME/.bashrc" ]; then
 fi
 ```
 
-### Setup [bash-it](https://github.com/Bash-it/bash-it)
-
-Note that nix handles installing bash-it. TODO: clean up relationship between powerline and bash-it. Right now, .profile.public launches the powerline theme for bash.
-
-Enable completions and plugins:
-
-```sh
-bash-it enable completion tmux npm git ssh
-bash-it enable plugin jenv
-```
-
 ## How to Update
 
 ```sh
