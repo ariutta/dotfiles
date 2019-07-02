@@ -92,6 +92,10 @@ export SCM_CHECK=true
 # https://github.com/djl/vcprompt
 #export VCPROMPT_EXECUTABLE=~/.vcprompt/bin/vcprompt
 
+# Make gpg work properly
+GPG_TTY=$(tty)
+export GPG_TTY
+
 # Fixing bug with macOS ssh-agent forgetting keys.
 #    From GH help docs:
 #       On macOS, ssh-agent will "forget" your key, once it gets restarted during reboots.
@@ -119,6 +123,8 @@ if [ "$(uname)" = "Darwin" ]; then
 	#fi
 else
 	export FONTCONFIG_PATH=/etc/fonts
+	# Start ssh agent
+	eval "$(ssh-agent -s)"
 fi
 
 ####################
