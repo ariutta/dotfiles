@@ -50,8 +50,4 @@ in [
 
   custom.vim
 
-] ++ (if stdenv.isDarwin then [] else [
-  # Suggested for use by GitHub for copying ssh or gpg keys,
-  # but does the clipboard work with Docker?
-  #pkgs.xclip
-])
+] ++ (if stdenv.isDarwin then [] else [])

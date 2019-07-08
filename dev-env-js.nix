@@ -5,6 +5,8 @@ let
   common = import ./common.nix;
 in common ++ [
 
+  pkgs.nsjail
+
   pkgs.nodejs-8_x
   pkgs.nodePackages.node2nix
 
