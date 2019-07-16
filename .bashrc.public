@@ -17,3 +17,6 @@
 # NOTE: nobackup means delete backup file after a save.
 #       nowritebackup means buffer -> new file, del original file, rename new file -> original file name. 
 alias vimcognito="vim -i NONE -u NONE -U NONE --noplugin -n --cmd 'set nobackup' --cmd 'set nowritebackup' --"
+
+# enable direnv
+eval "$(direnv hook bash)"

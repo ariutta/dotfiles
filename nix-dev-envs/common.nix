@@ -1,7 +1,7 @@
 # See README.md for instructions on installing/updating.
 with import <nixpkgs> { config.allowUnfree = true; };
 let
-  custom = import ./nixpkgs-custom/all-custom.nix;
+  custom = import ../nixpkgs-custom/all-custom.nix;
 in [
   ####################
   # Deps for powerline
@@ -14,7 +14,7 @@ in [
   # NOTE: the PyPi name is powerline-status, but the Nix name is just powerline.
   # NOTE: I added lines to ./.bashrc.public, as instructed here:
   # http://powerline.readthedocs.io/en/master/usage/shell-prompts.html#bash-prompt
-  pkgs.python36Packages.powerline
+  pkgs.python3Packages.powerline
 
   # To setup keys for GitHub:
   # https://github.com/settings/keys
@@ -37,6 +37,9 @@ in [
   pkgs.wdiff # word diff (ignore whitespace)
   pkgs.colordiff
   #pkgs.diffoscope
+
+  # load desired environment when entering a directory
+  pkgs.direnv
 
   custom.bash-it
   pkgs.gawkInteractive
