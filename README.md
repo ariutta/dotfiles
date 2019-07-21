@@ -1,28 +1,26 @@
 # dotfiles
 
-Set configuration for my dev environment.
+Set configuration for my dev environment. If anyone else wants to use this, fork [`ariutta/dotfiles`](https://github.com/ariutta/dotfiles) and [`ariutta/mynixpkgs`](https://github.com/ariutta/mynixpkgs) to your own Github user or organization and replace `ariutta` below as appropriate.
 
 ## How to Install
 
-If installing on a machine you'll be remoting into, you need to [install the Powerline Fonts](https://github.com/powerline/fonts#quick-installation) on the host machine. On macOS, you need to change the font for your terminal to one of the Powerline Fonts, e.g. `Liberation Mono Powerline 12pt`.
-
 ```sh
 cd $HOME
-git clone --recurse-submodules git@github.com:ariutta/dotfiles.git
+git clone git@github.com:ariutta/dotfiles.git
 ln -s dotfiles/.gitignore_global ./.gitignore_global
 cp dotfiles/.gitconfig_sample ./.gitconfig # edit as needed
 ```
 
-### Install Nix
+If installing on a remote system, you need to [install the Powerline Fonts](https://github.com/powerline/fonts#quick-installation) on your local machine. On macOS, you need to change your terminal font to one of the Powerline Fonts, e.g. `Liberation Mono Powerline 12pt`.
 
-# TODO: can we avoid setting channels on both NixOS, Ubuntu and macOS?
+### Install Nix Packages
 
-~~If not already set (see `nix-channel --list`), set the channels:~~
+Install [Nix](https://nixos.org/nix/download.html).
 
 Install packages managed by Nix (same command to update):
 
 ```sh
-nix-env -f dotfiles/nix-dev-envs/common.nix -i
+nix-env -f dotfiles/mynixpkgs/environments/common.nix -i
 ```
 
 `tosheets` needs to get permission the first time it runs.
@@ -114,6 +112,9 @@ fi
 
 ## How to Update
 
+TODO: how should we handle channels on NixOS, Ubuntu and macOS?
+~~If not already set (see `nix-channel --list`), set the channels:~~
+
 ```sh
 nix-channel --update
 nix-env -f dotfiles/common.nix -ri
@@ -188,3 +189,20 @@ Possibly related:
 ```
 
 [More information](https://serverfault.com/questions/261802/what-are-the-functional-differences-between-profile-bash-profile-and-bashrc)
+
+## Development
+
+If you improve `mynixpkgs`, you can contribute back to the source.
+
+Setup the `mynixpkgs` subtree, if not done already:
+```
+git remote add mynixpkgs git@github.com:ariutta/mynixpkgs.git
+git subtree add --prefix mynixpkgs --squash mynixpkgs master
+```
+
+Push your changes:
+```
+git subtree push --prefix=mynixpkgs mynixpkgs master
+```
+
+If you don't have write access to `ariutta/mynixpkgs`, make a pull request.
