@@ -1,7 +1,7 @@
 # See README.md for instructions on installing/updating.
 with import <nixpkgs> { config.allowUnfree = true; };
 let
-  custom = import ../nixpkgs-custom/all-custom.nix;
+  custom = import ../all-custom.nix;
 in [
   ####################
   # Deps for powerline

@@ -16,8 +16,8 @@ Generate Nix expressions for python packages by using pypi2nix.
 For python packages used as stand-alone applications (even if also used as dependencies):
 
 ```sh
-mkdir -p $HOME/dotfiles/custom/tosheets
-cd $HOME/dotfiles/custom/tosheets
+mkdir -p tosheets
+cd tosheets
 pypi2nix -V 3 -e tosheets==0.3.0
 ```
 
@@ -26,8 +26,8 @@ pypi2nix -V 3 -e tosheets==0.3.0
 For packages used only as dependencies (never as stand-alone applications):
 
 ```sh
-mkdir -p $HOME/dotfiles/custom/python-packages
-cd $HOME/dotfiles/custom/python-packages
+mkdir -p python-packages
+cd python-packages
 pypi2nix -V 3 -e homoglyphs==1.2.5 -e confusable_homoglyphs==3.1.1
 ```
 
