@@ -4,6 +4,8 @@ Set configuration for my dev environment.
 
 ## How to Install
 
+If installing on a machine you'll be remoting into, you need to [install the Powerline Fonts](https://github.com/powerline/fonts#quick-installation) on the host machine. On macOS, you need to change the font for your terminal to one of the Powerline Fonts, e.g. `Liberation Mono Powerline 12pt`.
+
 ```sh
 cd $HOME
 git clone --recurse-submodules git@github.com:ariutta/dotfiles.git
@@ -20,8 +22,7 @@ cp dotfiles/.gitconfig_sample ./.gitconfig # edit as needed
 Install packages managed by Nix (same command to update):
 
 ```sh
-nix-env -f dotfiles/common.nix -ri
-nix-env -f dotfiles/local.nix -ri
+nix-env -f dotfiles/nix-dev-envs/common.nix -i
 ```
 
 `tosheets` needs to get permission the first time it runs.
