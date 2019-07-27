@@ -11,7 +11,9 @@
 # see ~/README.md for details on purposes of .profile .profile.public .bashrc .bashrc.public .bash_profile
 
 ensure_on_path () {
-	mapfile -d ':' -t < <(echo "$PATH")
+	IFS=':' read -r -a MAPFILE <<< "$PATH"
+	# NOTE: not using mapfile bc macOS has on bash 3, which lacks mapfile.
+	#mapfile -d ':' -t < <(echo "$PATH")
 	if [ -d "$1" ] && [[ ! "${MAPFILE[*]}" =~ ${1} ]]; then
 		export PATH="$1:$PATH"
 	fi
@@ -166,10 +168,15 @@ if [ -e "/nix/var/nix/daemon-socket" ]; then
 	export NIX_REMOTE=daemon
 fi
 
+# source nix.sh if present. ignore ShellCheck warning if it doesn't exist.
+# shellcheck disable=SC1091
 if [ -e "/usr/local/etc/profile.d/nix.sh" ]; then . "/usr/local/etc/profile.d/nix.sh"; fi
 
 # if .nix-channels file exists but NIX_PATH not set, set it
-if [ -e "$HOME/.nix-channels" ] && [ -z "$NIX_PATH" ]; then export NIX_PATH=`cat $HOME/.nix-channels | sed -e "s~\(.*\)\ \(.*\)~\2=$HOME/.nix-defexpr/channels/\2~g" | paste -sd ":" -`; fi
+if [ -e "$HOME/.nix-channels" ] && [ -z "$NIX_PATH" ]; then
+	NIX_PATH=$(sed -e "s~\(.*\)\ \(.*\)~\2=$HOME/.nix-defexpr/channels/\2~g" "$HOME/.nix-channels" | paste -sd ":" -);
+	export NIX_PATH;
+fi
 
 if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . "$HOME/.nix-profile/etc/profile.d/nix.sh"; fi
 # TODO: this is slow., Should it really be in .profile, or does it belong in .bashrc?
@@ -200,12 +207,12 @@ if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
 	ensure_on_path "$BASH_IT"
 
 	POWERLINE_PATH="$(nix-env -q --out-path --no-name python3.*-powerline.* | head -n 1)/lib/python3.*/site-packages/powerline/bindings/bash/powerline.sh"
-	if [ -f $POWERLINE_PATH ]; then
+	if [ -f "$POWERLINE_PATH" ]; then
 		# http://powerline.readthedocs.io/en/master/usage/shell-prompts.html#bash-prompt
 		powerline-daemon -q
 		export POWERLINE_BASH_CONTINUATION=1
 		export POWERLINE_BASH_SELECT=1
-		. $POWERLINE_PATH
+		. "$POWERLINE_PATH"
 
 		# Lock and Load a custom theme file
 		# location $HOME/.bash_it/themes/
@@ -216,5 +223,7 @@ if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
 	if [ -e "$BASH_IT/bash_it.sh" ]; then . "$BASH_IT/bash_it.sh"; fi
 fi
 
-# enable direnv
-eval "$(direnv hook bash)"
+# enable direnv, if installed
+if direnv --version > /dev/null 2>&1; then
+	eval "$(direnv hook bash)"
+fi
