@@ -22,33 +22,6 @@ ensure_on_path () {
 # Lynx Settings
 export LYNX_LSS=$HOME/dotfiles/lynx.lss
 
-## Python
-#export WORKON_HOME=$HOME/.virtualenvs
-#export VIRTUALENVWRAPPER_VIRTUALENV_ARGS='--no-site-packages'
-#export PIP_VIRTUALENV_BASE=$WORKON_HOME
-#export PIP_RESPECT_VIRTUALENV=true
-##export PATH="/System/Library/Frameworks/Python.framework/Versions/2.7/Python:$PATH"
-##export VIRTUALENVWRAPPER_PYTHON=/usr/local/Cellar/python/2.7.14/bin/python2.7
-export PYTHONPATH=$HOME/.nix-profile/bin/python
-
-## Make NPM CLI programs available from command line
-#NPM_SCRIPTS_PATH="/usr/local/share/npm/bin"
-#if [ "$PATH" != *"$NPM_SCRIPTS_PATH"* ]; then
-#	export PATH="$NPM_SCRIPTS_PATH:$PATH"
-#fi
-
-## For first time, need to add a Java environment, e.g.:
-##   jenv add /Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/
-## or
-##   jenv add /Library/Java/JavaVirtualMachines/jdk1.8.0_66.jdk/Contents/Home/
-#
-## SPARK
-#export SPARK_HOME="$HOME"
-#export PATH="$HOME/spark-1.5.2-bin-hadoop2.6/bin:$PATH"
-#
-## PostgreSQL
-#export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"
-
 # RStudio
 # Setting this will make RStudio use R from specified path,
 # but only when opening from Terminal, like this:
@@ -103,23 +76,6 @@ export GPG_TTY
 #    This only runs for macOS:
 if [ "$(uname)" = "Darwin" ]; then
 	/usr/bin/ssh-add -K
-
-	## TODO the code below doesn't seem to be needed anymore -- cls works w/out it on macOS now
-	##      (at least in Terminal.app). I remember it not working before. Why?
-	##      * Is this defined somewhere else? 
-	##      * Does bash_it define this?
-	##      * Did Apple add it to Terminal.app?
-	##      * Was I using iTerm2 before, not Terminal.app?
-	##      * Something else?
-	##
-	## cls: clear terminal buffer.
-	## Uses Apple Script, so only works on macOS.
-	## Command-K does the same thing
-	#if [ -n "$(command -v osascript)" ]; then
-	#        function cls {
-	#                osascript -e 'tell application "System Events" to keystroke "k" using command down'
-	#        }
-	#fi
 elif [ "$(uname -n)" = "nixos" ]; then
 	echo '' > /dev/null;
 	# Do nothing here for NixOS.
