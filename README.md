@@ -117,9 +117,18 @@ TODO: how should we handle channels on NixOS, Ubuntu and macOS?
 
 ```sh
 nix-channel --update
-nix-env -f dotfiles/common.nix -ri
-nix-env -f dotfiles/local.nix -ri
-# nix-env -u '*' # why doesn't this work?
+nix-env -f dotfiles/mynixpkgs/environments/common.nix -i
+```
+
+Note: the `r` flag indicates remove everything else:
+```sh
+nix-env -f dotfiles/mynixpkgs/environments/common.nix -ri
+```
+
+TODO: why doesn't the following work?
+
+```sh
+nix-env -u '*'
 ```
 
 ## Declarative Package Management for macOS and Linux
