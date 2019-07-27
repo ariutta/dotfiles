@@ -215,3 +215,6 @@ if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
 	# Load Bash It
 	if [ -e "$BASH_IT/bash_it.sh" ]; then . "$BASH_IT/bash_it.sh"; fi
 fi
+
+# enable direnv
+eval "$(direnv hook bash)"
