@@ -61,9 +61,6 @@ export RSTUDIO_WHICH_R=$HOME/.nix-profile/bin/R
 # For more info, see
 # https://support.rstudio.com/hc/en-us/articles/200486138-Using-Different-Versions-of-R
 
-# Make my dev helper scripts available from command line
-ensure_on_path "$HOME/dotfiles/dev_helper_scripts"
-
 # Don't check mail when opening terminal.
 unset MAILCHECK
 
