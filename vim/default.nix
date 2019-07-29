@@ -49,6 +49,7 @@ vim_configured.customize {
     # Use the default plugin list shipped with nixpkgs
     vimrcConfig.vam.knownPlugins = pkgs.vimPlugins;
     vimrcConfig.vam.pluginDictionaries = [
+
       { names = [
         # Here you can place all your vim plugins
         # They are installed managed by `vam` (a vim plugin manager)
@@ -56,26 +57,27 @@ vim_configured.customize {
         # https://github.com/NixOS/nixpkgs/blob/master/pkgs/misc/vim-plugins/default.nix
         # and here: http://vam.mawercer.de/
 
-        # provides nix syntax highlighting, filetype detection and indentation.
-        # NOTE: using vim-nix instead of this: { config.vim.ftNix = true; }
-        "vim-nix"
-
-        # This should more properly be named dracula or dracula-theme-vim
-        # https://draculatheme.com/vim/
-        "vim"
+        # Low-blue light color scheme
+        # https://github.com/morhetz/gruvbox
+        # https://github.com/morhetz/gruvbox-contrib
+        # https://blog.jeaye.com/2018/02/01/gruvbox/
+        "gruvbox"
 
         # make vim syntax-aware
         "Syntastic"
         # syntax providers (see dependencies in vim_configured.buildInputs)
+        # NOTE: it appears necessary to put these here, because when I
+        # try putting them in the "JavaScript/TypeScript-only" section,
+        # things don't work correctly.
         "typescript-vim"
         "vim-javascript"
         "vim-jsdoc"
+        # provides nix syntax highlighting, filetype detection and indentation.
+        # NOTE: using vim-nix instead of this: { config.vim.ftNix = true; }
+        "vim-nix"
 
         # format code (see dependencies in vim_configured.buildInputs)
         "neoformat"
-
-        # provides typescript autocomplete, error checking and more.
-        "tsuquyomi"
 
         # autocomplete
         # TODO does this work? See https://nixos.wiki/wiki/Vim#YouCompleteMe
@@ -114,5 +116,13 @@ vim_configured.customize {
         #   uncomment: gcgc on a commented section
         "vim-commentary"
       ]; }
+
+      # Load for JavaScript/TypeScript
+      { names =  [
+
+        # provides typescript autocomplete, error checking and more.
+        "tsuquyomi"
+        ]; ft_regex = "^typescript\$"; }
+
     ];
 }

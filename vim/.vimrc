@@ -8,6 +8,8 @@ set encoding=utf-8
 filetype plugin indent on
 
 syntax enable
+set background=dark
+colorscheme gruvbox
 
 " Adding CLI deps for Neoformat and Syntastic.
 " In default.nix, we specify replacing CUSTOM_PATH_REPLACE_ME with a
@@ -27,10 +29,6 @@ exe 'set rtp+=' . expand("CUSTOM_PATH_REPLACE_ME")
 exe 'set rtp+=' . expand("POWER_LINE_VIM_PATH_REPLACE_ME")
 " make status bar always show:
 set laststatus=2
-" use color
-" NOTE: disabled, bc this says it shouldn't be needed:
-" https://medium.com/@xanderdunn/iterm2-vs-terminal-c06976f106ef
-"set t_Co=256
 
 " make backspace behave 'normally'
 set backspace=indent,eol,start
