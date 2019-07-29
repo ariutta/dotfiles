@@ -219,8 +219,9 @@ git remote add mynixpkgs git@github.com:ariutta/mynixpkgs.git
 git subtree add --prefix mynixpkgs --squash mynixpkgs master
 ```
 
-Push your changes:
+Sync subtree repo:
 ```
+git subtree pull --prefix=mynixpkgs mynixpkgs master --squash
 git subtree push --prefix=mynixpkgs mynixpkgs master
 ```
 
