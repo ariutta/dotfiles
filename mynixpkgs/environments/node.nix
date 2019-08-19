@@ -3,6 +3,7 @@
 with import <nixpkgs> { config.allowUnfree = true; };
 let
   common = import ./common.nix;
+  custom = import ../all-custom.nix;
 in common ++ [
 
   pkgs.nodejs-8_x
@@ -12,6 +13,8 @@ in common ++ [
   # and in the pkg for my custom vim?
   pkgs.nodePackages.prettier
   pkgs.nodePackages.typescript
+
+  custom.depcheck
 
   # Yarn ecosystem?
   #pkgs.nodePackages.lerna
