@@ -75,7 +75,11 @@ export GPG_TTY
 #       /usr/bin/ssh-add -K
 #    This only runs for macOS:
 if [ "$(uname)" = "Darwin" ]; then
-	/usr/bin/ssh-add -K
+	# The extra code is to avoid the "Identity added: ..." msg every time.
+	ssh_add_msg=$(/usr/bin/ssh-add -K 2>&1);
+	if [[ $ssh_add_msg != "Identity added: /Users/$USER/.ssh/id_rsa (/Users/$USER/.ssh/id_rsa)" ]]; then
+		echo "$ssh_add_msg" > /dev/stderr;
+	fi
 elif [ "$(uname -n)" = "nixos" ]; then
 	echo '' > /dev/null;
 	# Do nothing here for NixOS.
