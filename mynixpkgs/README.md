@@ -41,3 +41,20 @@ Get or create a Gemfile for the package. Then follow the manual's instructions t
 * Gemfile
 * Gemfile.lock
 * gemset.nix
+
+## Re-using
+
+Long-term, some of these packages may be included in Nix packages. But for the packages not yet included,
+you can use a subtree to pull them into your own project:
+
+Setup the `mynixpkgs` subtree, if not done already:
+```
+git remote add mynixpkgs git@github.com:ariutta/mynixpkgs.git
+git subtree add --prefix mynixpkgs mynixpkgs master --squash
+```
+
+Sync subtree repo:
+```
+git subtree pull --prefix mynixpkgs mynixpkgs master --squash
+git subtree push --prefix mynixpkgs mynixpkgs master
+```
