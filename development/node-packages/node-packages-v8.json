@@ -1,4 +1,1 @@
-[
-    "gpml2pvjson",
-    "@wikipathways/pvjs"
-]
+["depcheck", "typescript", "gpml2pvjson", "@wikipathways/pvjs"]

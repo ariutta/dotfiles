@@ -14,6 +14,7 @@ let
 in
 {
   nodePackages = nodePackages;
+  depcheck = nodePackages.depcheck;
   gpml2pvjson = nodePackages.gpml2pvjson;
   # TODO: fix this. It doesn't build as node 8 for some reason.
   bridgedb = nodePackages_6_x.bridgedb;
