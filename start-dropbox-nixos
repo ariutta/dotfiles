@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Only tested on NixOS, but it may work on other OS's.
+# Shouldn't enabling dropbox in configuration.nix start dropbox automatically?
+
 # 'command -v xyz' describes xyz but does not run it, allowing us to see
 # whether the command exists (dropbox is installed).
 # Piping to /dev/null means we don't have to see the description.
@@ -14,7 +17,6 @@ if command -v dropbox > /dev/null; then
   # it might be necessary to be logged into the dropbox website.
  
   # If dropbox isn't running, start it
-  #if [[ $(ps | grep dropbox | wc -l) -eq 1 ]] ; then fi
   if [[ $(pgrep -c dropbox) -eq 0 ]] ; then
     nohup dropbox &
   fi
