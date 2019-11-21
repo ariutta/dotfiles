@@ -11,7 +11,7 @@ syntax enable
 set background=dark
 colorscheme gruvbox
 
-" Adding CLI deps for Neoformat and Syntastic.
+" Adding CLI deps for Neoformat and ALE.
 " In default.nix, we specify replacing CUSTOM_PATH_REPLACE_ME with a
 " PATH variable containing the bin dir of each dep in ./buildInputs.
 " In here, we add that variable to vim's runtimepath, which is
@@ -79,7 +79,6 @@ let g:neoformat_enabled_php = ['phpcsfixer']
 " https://github.com/squizlabs/PHP_CodeSniffer
 "
 "let g:neoformat_enabled_php = ['phpcbf']
-"let g:syntastic_php_phpcs_args = \"--standard=$(nix-env -q --out-path --no-name 'composer-mediawiki-mediawiki-codesniffer')/share/php/composer-mediawiki-mediawiki-codesniffer/vendor/mediawiki/mediawiki-codesniffer/MediaWiki/ruleset.xml"
 "
 " This worked from the command line:
 " phpcbf --standard="$(nix-env -q --out-path --no-name 'composer-mediawiki-mediawiki-codesniffer')/share/php/composer-mediawiki-mediawiki-codesniffer/vendor/mediawiki/mediawiki-codesniffer/MediaWiki/ruleset.xml" ../../wow.php
@@ -173,37 +172,6 @@ let g:ale_python_flake8_options="--ignore=E501,W503"
 " Call shellcheck with param to follow files
 let g:ale_sh_shellcheck_options = "-x"
 
-"""""""""""""""""""""""""""""""
-"" Syntastic: the syntax helper
-"""""""""""""""""""""""""""""""
-"
-"let g:syntastic_mode_map = { 'mode': 'active',
-"			\ 'active_filetypes': ['html', 'javascript', 'nix', 'php', 'python', 'sh', 'sql', 'typescript' ],
-"			\ 'passive_filetypes': [] }
-"" Always stick any detected errors into the loclist:
-"let g:syntastic_always_populate_loc_list=1
-"let g:syntastic_auto_loc_list = 0
-"let g:syntastic_check_on_open = 1
-"let g:syntastic_check_on_wq = 0
-"
-"
-"" Make tsuquyomi output display in syntastic gutter (disabled now bc it freezes vim for minutes)
-""let g:tsuquyomi_disable_quickfix = 1
-"
-"let g:syntastic_html_checkers = ['eslint']
-"
-"let g:syntastic_javascript_checkers = ['eslint']
-"" strangely, when g:tsuquyomi_disable_quickfix is set to 1, I needed
-"" to add tsuquyomi as below to make the errors show in the gutter
-""let g:syntastic_javascript_checkers = ['eslint', 'tsuquyomi']
-"
-"let g:syntastic_nix_checkers = ['nix']
-"
-"let g:syntastic_php_checkers = ['phpcs']
-"" Tell phpcs to use the Mediawiki standard:
-"" TODO replace the nix-env call with a variable calculated at build
-"let g:syntastic_php_phpcs_args = "--standard=$(nix-env -q --out-path --no-name 'composer-mediawiki-mediawiki-codesniffer')/share/php/composer-mediawiki-mediawiki-codesniffer/vendor/mediawiki/mediawiki-codesniffer/MediaWiki/ruleset.xml"
-"
 "" Python Language Server <https://github.com/palantir/python-language-server>
 "" handles the following automatically:
 ""rope
@@ -221,29 +189,6 @@ let g:ale_sh_shellcheck_options = "-x"
 ""flake8
 ""pylint
 ""
-"" TODO: it appears pyls feeds at least mypy into Syntastic,
-"" even without it being specified as a checker.
-"" Do we need to specify any python checkers?
-"
-"""let g:syntastic_python_checkers = ['flake8', 'pylint', 'pycodestyle', 'pydocstyle', 'mccabe', 'pyflakes']
-"let g:syntastic_python_checkers = ['flake8', 'mypy']
-""let g:syntastic_python_checkers = ['flake8', 'pylint']
-""" E501: Black's default line length is 88 chars, but it will
-""" sometimes make long lines, e.g.: 119 chars
-""" https://github.com/python/black#line-length
-""" W503: black doesn't follow this.
-"let g:syntastic_python_flake8_args="--ignore=E501,W503"
-""" If Black always limited to 88, the following might work:
-"""let g:syntastic_python_flake8_args="--max-line-length=88"
-"""let g:syntastic_python_pylint_post_args="--max-line-length=88"
-"
-"let g:syntastic_sh_checkers = ['shellcheck']
-"" make syntastic call shellcheck with param to follow files
-"let g:syntastic_sh_shellcheck_args = "-x"
-"
-"let g:syntastic_sql_checkers = ['sqlint']
-"" TODO: getting an error when this is enabled
-""let g:syntastic_typescript_checkers = ['tsuquyomi']
 
 """""""""""""""""""""""""
 " CtrlP: better searching
