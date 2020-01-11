@@ -11,9 +11,19 @@ ln -s dotfiles/.gitignore_global ./.gitignore_global
 cp dotfiles/.gitconfig_sample ./.gitconfig # edit as needed
 ```
 
-If installing on a remote system, you need to [install the Powerline Fonts](https://github.com/powerline/fonts#quick-installation) on your local machine. On macOS, you need to change your terminal font to one of the Powerline Fonts, e.g. `Liberation Mono Powerline 12pt`.
+Note: even if you're installing this on a remote system, you still need to [install the Powerline Fonts](https://github.com/powerline/fonts#quick-installation) on your local machine to make Powerline work.
 
-### Install Nix Packages
+### Color Scheme
+
+TODO: How do I best setup using the [gruvbox](https://github.com/morhetz/gruvbox-contrib) color scheme for my terminal? For now, do it manually:
+
+#### macOS
+Use the terminal profile for macOS saved here as `./Gruvbox-powerline.terminal`. Note that the [macOS terminal profile](https://github.com/morhetz/gruvbox-contrib/blob/master/osx-terminal/Gruvbox-dark.terminal) from gruvbox-contrib uses the font `Menlo`, but I switched to using `Meslo LG S DZ` with a line spacing of `0.9` in order to work with Powerline.
+
+#### Linux
+Try finding the right option at [gruvbox-contrib](https://github.com/morhetz/gruvbox-contrib).
+
+### Nix Packages
 
 Install [Nix](https://nixos.org/nix/download.html).
 
@@ -117,9 +127,18 @@ TODO: how should we handle channels on NixOS, Ubuntu and macOS?
 
 ```sh
 nix-channel --update
-nix-env -f dotfiles/common.nix -ri
-nix-env -f dotfiles/local.nix -ri
-# nix-env -u '*' # why doesn't this work?
+nix-env -f dotfiles/mynixpkgs/environments/common.nix -i
+```
+
+Note: the `r` flag indicates remove everything else:
+```sh
+nix-env -f dotfiles/mynixpkgs/environments/common.nix -ri
+```
+
+TODO: why doesn't the following work?
+
+```sh
+nix-env -u '*'
 ```
 
 ## Declarative Package Management for macOS and Linux
@@ -197,12 +216,13 @@ If you improve `mynixpkgs`, you can contribute back to the source.
 Setup the `mynixpkgs` subtree, if not done already:
 ```
 git remote add mynixpkgs git@github.com:ariutta/mynixpkgs.git
-git subtree add --prefix mynixpkgs --squash mynixpkgs master
+git subtree add --prefix mynixpkgs mynixpkgs master --squash
 ```
 
-Push your changes:
+Sync subtree repo:
 ```
-git subtree push --prefix=mynixpkgs mynixpkgs master
+git subtree pull --prefix mynixpkgs mynixpkgs master --squash
+git subtree push --prefix mynixpkgs mynixpkgs master
 ```
 
 If you don't have write access to `ariutta/mynixpkgs`, make a pull request.

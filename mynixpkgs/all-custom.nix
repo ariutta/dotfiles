@@ -1,23 +1,11 @@
 with import <nixpkgs> { config.allowUnfree = true; };
-
+with lib.trivial;
 let
-  nodePackages_6_x = callPackage ./development/node-packages/default-v6.nix {
-    nodejs = pkgs.nodejs-6_x;
-  };
-  nodePackages_8_x = callPackage ./development/node-packages/default-v8.nix {
-    nodejs = pkgs.nodejs-8_x;
-  };
-  nodePackages_10_x = callPackage ./development/node-packages/default-v10.nix {
-    nodejs = pkgs.nodejs-10_x;
-  };
-  nodePackages = nodePackages_8_x;
+  python3Packages = import ./development/python-modules/python-packages.nix;
+  nodePackages = import ./development/node-packages/node-packages.nix;
 in
-{
-  nodePackages = nodePackages;
-  gpml2pvjson = nodePackages.gpml2pvjson;
-  # TODO: fix this. It doesn't build as node 8 for some reason.
-  bridgedb = nodePackages_6_x.bridgedb;
-  pvjs = nodePackages."@wikipathways/pvjs";
+mergeAttrs nodePackages {
+  python3Packages = python3Packages;
 
   bash-it = callPackage ./bash-it/default.nix {}; 
   black = callPackage ./black/default.nix {}; 
@@ -28,6 +16,11 @@ in
   perlPackages = callPackage ./perl-packages.nix {}; 
   pgsanity = callPackage ./pgsanity/default.nix {};
   privoxy = callPackage ./privoxy/darwin-service.nix {}; 
+
+  pywikibot = callPackage ./pywikibot/default.nix {
+    buildPythonPackage = python37Packages.buildPythonPackage;
+  };
+
   sqlint = callPackage ./sqlint/default.nix {};
   tosheets = callPackage ./tosheets/default.nix {};
   vim = callPackage ./vim/default.nix {};

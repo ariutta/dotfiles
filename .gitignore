@@ -1,6 +1,6 @@
 *
 !README.md
-!ariutta.terminal
+!Gruvbox-powerline.terminal
 !.profile.public
 !.bashrc.public
 !.jshintrc
@@ -8,9 +8,9 @@
 !.gitignore
 !.gitignore_global
 !.gitconfig_sample
-!dev_helper_scripts/
 !lynx.lss
 !nix-pkgs-custom/
 !common.nix
 !dev-env-js.nix
 !dev-env-pvjs.nix
+!start-dropbox-nixos

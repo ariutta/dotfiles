@@ -3,15 +3,20 @@
 with import <nixpkgs> { config.allowUnfree = true; };
 let
   common = import ./common.nix;
+  custom = import ../all-custom.nix;
 in common ++ [
 
-  pkgs.nodejs-8_x
+  pkgs.nodejs-10_x
   pkgs.nodePackages.node2nix
 
   # TODO: should this be specified both in here
   # and in the pkg for my custom vim?
   pkgs.nodePackages.prettier
   pkgs.nodePackages.typescript
+#  pkgs.nodePackages.webpack
+#  pkgs.nodePackages.webpack-cli
+
+  custom.depcheck
 
   # Yarn ecosystem?
   #pkgs.nodePackages.lerna

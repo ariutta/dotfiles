@@ -1,5 +1,10 @@
 { pkgs, callPackage }:
 
+# TODO: getting this warning when installing:
+# basename: invalid option -- 'w'
+# Try 'basename --help' for more information.
+
+
 let
   # TODO specifying Black in buildInputs, propagatedBuildInputs, etc.
   # doesn't put it on the PATH. (I think I tried all of the options.)
@@ -21,8 +26,9 @@ let
   vimCustomBuildInputs = import ./buildInputs.nix; 
   CUSTOM_PATH = builtins.unsafeDiscardStringContext (builtins.concatStringsSep ":" (builtins.map (b: builtins.toString (b.outPath) + "/bin") vimCustomBuildInputs));
   POWER_LINE_VIM_PATH = builtins.unsafeDiscardStringContext (pkgs.python3Packages.powerline.outPath + "/lib/python3.*/site-packages/powerline/bindings/vim");
+  PYLS_PATH = builtins.unsafeDiscardStringContext (pkgs.python3Packages.python-language-server.outPath + "/bin");
 
-  vim_configurable = pkgs.vim_configurable;
+  vim_configurable = pkgs.vim_configurable.override { python=pkgs.python3; };
 
   vim_configured = vim_configurable.overrideAttrs (oldAttrs: {
     # NOTE: we don't need to specify the following:
@@ -44,11 +50,14 @@ in
 
 vim_configured.customize {
     name = "vim";
-    vimrcConfig.customRC = builtins.replaceStrings ["CUSTOM_PATH_REPLACE_ME" "POWER_LINE_VIM_PATH_REPLACE_ME"] [CUSTOM_PATH POWER_LINE_VIM_PATH] (builtins.readFile ./.vimrc);
+    vimrcConfig.customRC = builtins.replaceStrings [
+      "CUSTOM_PATH_REPLACE_ME" "POWER_LINE_VIM_PATH_REPLACE_ME" "PYLS_PATH_REPLACE_ME"
+    ] [CUSTOM_PATH POWER_LINE_VIM_PATH PYLS_PATH] (builtins.readFile ./.vimrc);
 
     # Use the default plugin list shipped with nixpkgs
     vimrcConfig.vam.knownPlugins = pkgs.vimPlugins;
     vimrcConfig.vam.pluginDictionaries = [
+
       { names = [
         # Here you can place all your vim plugins
         # They are installed managed by `vam` (a vim plugin manager)
@@ -56,30 +65,31 @@ vim_configured.customize {
         # https://github.com/NixOS/nixpkgs/blob/master/pkgs/misc/vim-plugins/default.nix
         # and here: http://vam.mawercer.de/
 
-        # provides nix syntax highlighting, filetype detection and indentation.
-        # NOTE: using vim-nix instead of this: { config.vim.ftNix = true; }
-        "vim-nix"
+        # Low-blue light color scheme
+        # https://github.com/morhetz/gruvbox
+        # https://github.com/morhetz/gruvbox-contrib
+        # https://blog.jeaye.com/2018/02/01/gruvbox/
+        "gruvbox"
 
-        # This should more properly be named dracula or dracula-theme-vim
-        # https://draculatheme.com/vim/
-        "vim"
-
-        # make vim syntax-aware
-        "Syntastic"
+        # make vim syntax aware
+        "ale"
         # syntax providers (see dependencies in vim_configured.buildInputs)
+        # NOTE: it appears necessary to put these here, because when I
+        # try putting them in the "JavaScript/TypeScript-only" section,
+        # things don't work correctly.
         "typescript-vim"
         "vim-javascript"
         "vim-jsdoc"
+        # provides Nix syntax highlighting, filetype detection and indentation.
+        # NOTE: using vim-nix instead of this: { config.vim.ftNix = true; }
+        "vim-nix"
 
         # format code (see dependencies in vim_configured.buildInputs)
         "neoformat"
 
-        # provides typescript autocomplete, error checking and more.
-        "tsuquyomi"
-
         # autocomplete
-        # TODO does this work? See https://nixos.wiki/wiki/Vim#YouCompleteMe
         "YouCompleteMe"
+        "LanguageClient-neovim"
 
         # automatic closing of quotes, parenthesis, brackets, etc.
         # https://github.com/jiangmiao/auto-pairs
@@ -114,5 +124,13 @@ vim_configured.customize {
         #   uncomment: gcgc on a commented section
         "vim-commentary"
       ]; }
+
+      # Load for JavaScript/TypeScript
+      { names =  [
+
+        # provides typescript autocomplete, error checking and more.
+        "tsuquyomi"
+        ]; ft_regex = "^typescript\$"; }
+
     ];
 }
