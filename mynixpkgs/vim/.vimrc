@@ -55,6 +55,9 @@ imap <down> <nop>
 imap <left> <nop>
 imap <right> <nop>
 
+" Run the current file. Default <leader> is "\".
+nnoremap <leader>r :!clear; "%:p"<Enter>
+
 " make csv.vim recognize the pound sign as indicating a comment
 let g:csv_comment = '#'
 
