@@ -72,7 +72,6 @@ vim_configured.customize {
         "gruvbox"
 
         # make vim syntax aware
-        #"Syntastic"
         "ale"
         # syntax providers (see dependencies in vim_configured.buildInputs)
         # NOTE: it appears necessary to put these here, because when I
@@ -81,7 +80,7 @@ vim_configured.customize {
         "typescript-vim"
         "vim-javascript"
         "vim-jsdoc"
-        # provides nix syntax highlighting, filetype detection and indentation.
+        # provides Nix syntax highlighting, filetype detection and indentation.
         # NOTE: using vim-nix instead of this: { config.vim.ftNix = true; }
         "vim-nix"
 
