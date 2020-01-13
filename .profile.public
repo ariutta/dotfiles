@@ -179,7 +179,7 @@ ensure_on_path "/nix/var/nix/profiles/default/bin"
 # BASH_IT is the path to the bash it configuration.
 # NOTE: "$BASH_IT/bash_it.sh" expects to find an exported env var named "BASH_IT".
 export BASH_IT="$HOME/.nix-profile/share/bash_it"
-if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ]; then
+if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ] && complete --help 2>/dev/null | grep -q complete; then
 	# Assume Bash
 
 	ensure_on_path "$BASH_IT"
