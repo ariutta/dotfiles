@@ -1,7 +1,22 @@
 #!/usr/bin/env bash
 
+# TODO: should this come from an env var?
+DROPBOX_DIR="$HOME/Dropbox (Gladstone)"
+INITIAL_DIR="$(pwd)"
+
+if [ ! -d "$DROPBOX_DIR" ]; then
+  echo "Cannot start dropbox. Directory '$DROPBOX_DIR' does not exist." 1>&2
+  exit 1
+fi
+
 # Only tested on NixOS, but it may work on other OS's.
 # Shouldn't enabling dropbox in configuration.nix start dropbox automatically?
+
+# Note the different between nixos.dropbox and nixos.dropbox-cli:
+#     nix-env -iA nixos.dropbox
+#     nix-env -iA nixos.dropbox-cli
+# The former appears to only allow starting dropbox: dropbox
+# The latter allows for CLI commands, e.g.: dropbox start, dropbox status, etc.
 
 # 'command -v xyz' describes xyz but does not run it, allowing us to see
 # whether the command exists (dropbox is installed).
@@ -18,7 +33,25 @@ if command -v dropbox > /dev/null; then
  
   # If dropbox isn't running, start it
   if [[ $(pgrep -c dropbox) -eq 0 ]] ; then
-    # all this extra code is to start it without any messages
-    $(nohup dropbox >> "$HOME"/.start-dropbox-nixos.log 2>&1 &) > /dev/null
+    if nix-env -q "dropbox-cli.*"; then
+      # dropbox was installed as nixos.dropbox-cli
+
+      # the next test would preferably be 'dropbox running', but that command
+      # doesn't appear to return true even when 'dropbox status' says dropbox
+      # is doing stuff.
+
+      # TODO: is 'dropbox status | head en 1' is needed in case the status is multiline?
+      if [ "$(dropbox status | head -n 1)" == "Dropbox isn't running!" ]; then
+        cd "$DROPBOX_DIR"
+        # all this extra code is to start it without any messages
+        $(nohup dropbox start >> "$HOME"/.start-dropbox-nixos.log 2>&1 &) > /dev/null
+        cd "$INITIAL_DIR"
+      fi
+    else
+      # assume dropbox was installed as nixos.dropbox
+
+      # all this extra code is to start it without any messages
+      $(nohup dropbox >> "$HOME"/.start-dropbox-nixos.log 2>&1 &) > /dev/null
+    fi
   fi
 fi
