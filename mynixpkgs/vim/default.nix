@@ -7,7 +7,7 @@
 
 let
   # TODO specifying Black in buildInputs, propagatedBuildInputs, etc.
-  # doesn't put it on the PATH. (I think I tried all of the options.)
+  # doesn't put it on the PATH.
   # More info: https://nixos.org/nixpkgs/manual/#ssec-stdenv-dependencies
   # See also: https://github.com/NixOS/nixpkgs/issues/26146
   #
