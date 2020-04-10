@@ -1,4 +1,5 @@
 { pkgs, callPackage }:
+with builtins;
 
 # TODO: getting this warning when installing:
 # basename: invalid option -- 'w'
@@ -24,9 +25,9 @@ let
   # 3. Add Black to the vim runtimepath (rtp), which appears to be basically
   #    the PATH variable that applies for anything running inside vim.
   vimCustomBuildInputs = import ./buildInputs.nix; 
-  CUSTOM_PATH = builtins.unsafeDiscardStringContext (builtins.concatStringsSep ":" (builtins.map (b: builtins.toString (b.outPath) + "/bin") vimCustomBuildInputs));
-  POWER_LINE_VIM_PATH = builtins.unsafeDiscardStringContext (pkgs.python3Packages.powerline.outPath + "/lib/python3.*/site-packages/powerline/bindings/vim");
-  PYLS_PATH = builtins.unsafeDiscardStringContext (pkgs.python3Packages.python-language-server.outPath + "/bin");
+  CUSTOM_PATH = unsafeDiscardStringContext (concatStringsSep ":" (map (b: toString (b.outPath) + "/bin") vimCustomBuildInputs));
+  POWER_LINE_VIM_PATH = unsafeDiscardStringContext (pkgs.python3Packages.powerline.outPath + "/lib/python3.*/site-packages/powerline/bindings/vim");
+  PYLS_PATH = unsafeDiscardStringContext (pkgs.python3Packages.python-language-server.outPath + "/bin");
 
   vim_configurable = pkgs.vim_configurable.override { python=pkgs.python3; };
 
@@ -50,9 +51,15 @@ in
 
 vim_configured.customize {
     name = "vim";
-    vimrcConfig.customRC = builtins.replaceStrings [
-      "CUSTOM_PATH_REPLACE_ME" "POWER_LINE_VIM_PATH_REPLACE_ME" "PYLS_PATH_REPLACE_ME"
-    ] [CUSTOM_PATH POWER_LINE_VIM_PATH PYLS_PATH] (builtins.readFile ./.vimrc);
+    vimrcConfig.customRC = replaceStrings [
+      "CUSTOM_PATH_REPLACE_ME"
+      "POWER_LINE_VIM_PATH_REPLACE_ME"
+      "PYLS_PATH_REPLACE_ME"
+    ] [
+      CUSTOM_PATH
+      POWER_LINE_VIM_PATH
+      PYLS_PATH
+    ] (readFile ./.vimrc + readFile ./custom.vim);
 
     # Use the default plugin list shipped with nixpkgs
     vimrcConfig.vam.knownPlugins = pkgs.vimPlugins;
