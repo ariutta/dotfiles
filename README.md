@@ -4,6 +4,11 @@ Set configuration for my dev environment. If anyone else wants to use this, fork
 
 ## How to Install
 
+* Install Xcode from App Store (macOS only)
+
+* [Add SSH key to GitHub account](https://help.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account)
+
+* Clone repo:
 ```sh
 cd $HOME
 git clone git@github.com:ariutta/dotfiles.git
@@ -11,11 +16,25 @@ ln -s dotfiles/.gitignore_global ./.gitignore_global
 cp dotfiles/.gitconfig_sample ./.gitconfig # edit as needed
 ```
 
-Note: even if you're installing this on a remote system, you still need to [install the Powerline Fonts](https://github.com/powerline/fonts#quick-installation) on your local machine to make Powerline work.
+* [Install Nix](https://nixos.org/nix/manual/#chap-installation):
+```sh
+sh <(curl https://nixos.org/nix/install) --daemon
+```
 
-### Color Scheme
+* Install [Powerline Fonts](https://github.com/powerline/fonts#quick-installation)
 
-TODO: How do I best setup using the [gruvbox](https://github.com/morhetz/gruvbox-contrib) color scheme for my terminal? For now, do it manually:
+#### macOS
+
+```
+nix-env -iA nixpkgs.powerline-fonts
+cp "$HOME"/.nix-profile/share/fonts/truetype/"Meslo LG S DZ"* /Library/Fonts/
+sudo chown root:wheel /Library/Fonts/"Meslo LG S DZ"*
+sudo chmod 644 /Library/Fonts/"Meslo LG S DZ"*
+```
+
+Note: even if you're installing this on a remote system, you still need the [Powerline Fonts](https://github.com/powerline/fonts#quick-installation) installed on your local machine for the terminal Powerline.
+
+* Setup terminal theme: [gruvbox](https://github.com/morhetz/gruvbox-contrib)
 
 #### macOS
 Use the terminal profile for macOS saved here as `./Gruvbox-powerline.terminal`. Note that the [macOS terminal profile](https://github.com/morhetz/gruvbox-contrib/blob/master/osx-terminal/Gruvbox-dark.terminal) from gruvbox-contrib uses the font `Menlo`, but I switched to using `Meslo LG S DZ` with a line spacing of `0.9` in order to work with Powerline.
@@ -23,9 +42,14 @@ Use the terminal profile for macOS saved here as `./Gruvbox-powerline.terminal`.
 #### Linux
 Try finding the right option at [gruvbox-contrib](https://github.com/morhetz/gruvbox-contrib).
 
-### Nix Packages
+TODO: right now, I'm setting up the terminal theme manually, but I could do it programmatically.
+For macOS, see these examples:
+** [zsh demo](https://github.com/JemarJones/mac-os-config/blob/23fc32c36cb0f26c65fc29e4f8c2718facfd0f5d/setup.sh#L59) and related [StackOverflow comment](https://apple.stackexchange.com/a/344464)
+** [Apple Script example](https://github.com/geerlingguy/mac-dev-playbook/issues/26#issue-197509022)
+** [bash demo](https://redlinetech.wordpress.com/2015/03/18/scripting-the-default-terminal-theme-in-os-x/)
+** [Medium post](https://medium.com/@adamtowers/how-to-customize-your-terminal-and-bash-profile-from-scratch-9ab079256380): "How to Customize Your Terminal and BASH Profile from Scratch"
 
-Install [Nix](https://nixos.org/nix/download.html).
+* Install Nix Packages
 
 Install packages managed by Nix (same command to update):
 
