@@ -44,24 +44,17 @@ in [
   pkgs.shfmt
 
   #####################################
-  # Deps for Syntastic (Syntax Checker)
+  # Deps for ALE (Syntax Checker)
   #####################################
   #custom.mediawiki-codesniffer
   # TODO phpcs is installed by mediawiki-codesniffer. Should we still use the following line?
   #pkgs.php72Packages.phpcs
 
-  # TODO look into using phpstan with Syntastic:
-  # https://github.com/vim-syntastic/syntastic/blob/master/syntax_checkers/php/phpstan.vim
+  # TODO look into using phpstan:
   # I need to create a Nix expression for installing phpstan.
   # TODO Should phpstan be in addition to phpcs? Does phpstan conflict with the MW styleguide?
 
   pkgs.nodePackages.eslint
-
-  # TODO pgsanity is not currently supported by Syntastic.
-  #      Is it worth adding it? Or should we just rely on sqlint?
-  #      Both pgsanity and sqlint currently only support PostgreSQL.
-  #      https://github.com/markdrago/pgsanity
-  #custom.pgsanity
 
   pkgs.shellcheck
   # NOTE: sqlint won't work on NixOS 18.03, because that version doesn't

@@ -3,6 +3,7 @@
 ## Test a package expression
 
 ```sh
+cd ./abc_dir
 nix-build -E 'with import <nixpkgs> { }; callPackage ./default.nix {}'
 ./result/bin/abc --help
 ```
