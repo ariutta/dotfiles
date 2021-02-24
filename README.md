@@ -4,11 +4,12 @@ Set configuration for my dev environment. If anyone else wants to use this, fork
 
 ## How to Install
 
-* Install Xcode from App Store (macOS only)
+- Install Xcode from App Store (macOS only)
 
-* [Add SSH key to GitHub account](https://help.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account)
+- [Add SSH key to GitHub account](https://help.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account)
 
-* Clone repo:
+- Clone repo:
+
 ```sh
 cd $HOME
 git clone git@github.com:ariutta/dotfiles.git
@@ -16,12 +17,13 @@ ln -s dotfiles/.gitignore_global ./.gitignore_global
 cp dotfiles/.gitconfig_sample ./.gitconfig # edit as needed
 ```
 
-* [Install Nix](https://nixos.org/nix/manual/#chap-installation):
+- [Install Nix](https://nixos.org/nix/manual/#chap-installation):
+
 ```sh
 sh <(curl https://nixos.org/nix/install) --daemon
 ```
 
-* Install [Powerline Fonts](https://github.com/powerline/fonts#quick-installation)
+- Install [Powerline Fonts](https://github.com/powerline/fonts#quick-installation)
 
 #### macOS
 
@@ -34,12 +36,14 @@ sudo chmod 644 /Library/Fonts/"Meslo LG S DZ"*
 
 Note: even if you're installing this on a remote system, you still need the [Powerline Fonts](https://github.com/powerline/fonts#quick-installation) installed on your local machine for the terminal Powerline.
 
-* Setup terminal theme: [gruvbox](https://github.com/morhetz/gruvbox-contrib)
+- Setup terminal theme: [gruvbox](https://github.com/morhetz/gruvbox-contrib)
 
 #### macOS
+
 Use the terminal profile for macOS saved here as `./Gruvbox-powerline.terminal`. Note that the [macOS terminal profile](https://github.com/morhetz/gruvbox-contrib/blob/master/osx-terminal/Gruvbox-dark.terminal) from gruvbox-contrib uses the font `Menlo`, but I switched to using `Meslo LG S DZ` with a line spacing of `0.9` in order to work with Powerline.
 
 #### Linux
+
 Try finding the right option at [gruvbox-contrib](https://github.com/morhetz/gruvbox-contrib).
 
 TODO: right now, I'm setting up the terminal theme manually, but I could do it programmatically.
@@ -49,7 +53,7 @@ For macOS, see these examples:
 ** [bash demo](https://redlinetech.wordpress.com/2015/03/18/scripting-the-default-terminal-theme-in-os-x/)
 ** [Medium post](https://medium.com/@adamtowers/how-to-customize-your-terminal-and-bash-profile-from-scratch-9ab079256380): "How to Customize Your Terminal and BASH Profile from Scratch"
 
-* Install Nix Packages
+- Install Nix Packages
 
 Install packages managed by Nix (same command to update):
 
@@ -155,6 +159,7 @@ nix-env -f dotfiles/mynixpkgs/environments/common.nix -i
 ```
 
 Note: the `r` flag indicates remove everything else:
+
 ```sh
 nix-env -f dotfiles/mynixpkgs/environments/common.nix -ri
 ```
@@ -163,6 +168,32 @@ TODO: why doesn't the following work?
 
 ```sh
 nix-env -u '*'
+```
+
+To edit/update entire NixOS, edit the configuration file to define what should
+be installed on your system. Help is available in the configuration.nix(5) man
+page and in the NixOS manual (accessible by running ‘nixos-help’).
+
+```
+sudo vim /etc/nixos/configuration.nix
+```
+
+Make changes take effect (`--upgrade` is optional):
+
+```
+sudo -i nixos-rebuild switch --upgrade
+```
+
+Rollback:
+
+```
+sudo -i nixos-rebuild switch --rollback
+```
+
+If xserver changed, save work and restart:
+
+```
+sudo -i nixos-rebuild switch && sudo systemctl restart display-manager
 ```
 
 ## Declarative Package Management for macOS and Linux
@@ -238,12 +269,14 @@ Possibly related:
 If you improve `mynixpkgs`, you can contribute back to the source.
 
 Setup the `mynixpkgs` subtree, if not done already:
+
 ```
 git remote add mynixpkgs git@github.com:ariutta/mynixpkgs.git
 git subtree add --prefix mynixpkgs mynixpkgs master --squash
 ```
 
 Sync subtree repo:
+
 ```
 git subtree pull --prefix mynixpkgs mynixpkgs master --squash
 git subtree push --prefix mynixpkgs mynixpkgs master

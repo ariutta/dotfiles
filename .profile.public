@@ -190,8 +190,9 @@ if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ] && complete --help 2>/dev/null | 
 		powerline-daemon -q
 		export POWERLINE_BASH_CONTINUATION=1
 		export POWERLINE_BASH_SELECT=1
-    # TODO: will have to bump this up from 3.6 at some point
-    # shellcheck source=../.nix-profile/lib/python3.6/site-packages/powerline/bindings/bash/powerline.sh
+
+    # TODO: will have to bump this up from 3.7 at some point
+    # shellcheck source=../.nix-profile/lib/python3.7/site-packages/powerline/bindings/bash/powerline.sh
 		. "$POWERLINE_PATH_BINDING_PATH"
 
 		# Lock and Load a custom theme file
