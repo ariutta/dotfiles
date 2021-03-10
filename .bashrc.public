@@ -1,4 +1,3 @@
-#!/bin/bash
 # shellcheck disable=SC1090
 # ██████╗ ██╗   ██╗██████╗ ██╗     ██╗ ██████╗     ██████╗ ███╗   ██╗██╗  ██╗   ██╗██╗
 # ██╔══██╗██║   ██║██╔══██╗██║     ██║██╔════╝    ██╔═══██╗████╗  ██║██║  ╚██╗ ██╔╝██║
@@ -11,9 +10,25 @@
 
 # see README.md for details on purposes of .profile .profile.public .bashrc .bashrc.public .bash_profile
 
+
 # TODO verify "-n" is the same as "--cmd 'set noswapfile'"
 # TODO is there any benefit to using --cmd 'set dir=/tmp'?
 # TODO: how about "backupskip"?
 # NOTE: nobackup means delete backup file after a save.
 #       nowritebackup means buffer -> new file, del original file, rename new file -> original file name. 
-alias vimcognito="vim -i NONE -u NONE -U NONE --noplugin -n --cmd 'set nobackup' --cmd 'set nowritebackup' --"
+if $(LC_ALL=C type -t vimcognito >/dev/null); then
+  echo "vimcognito already set" >&2
+else
+  alias vimcognito="vim -i NONE -u NONE -U NONE --noplugin -n --cmd 'set nobackup' --cmd 'set nowritebackup' --"
+fi
+
+# list the newest item in a directory
+# https://stackoverflow.com/questions/1015678/get-most-recent-file-in-a-directory-on-linux#comment77652048_23034261
+if $(LC_ALL=C type -t newest >/dev/null); then
+  echo "newest already set" >&2
+else
+  newest ()
+  {
+    find -- "$1" -type f -printf "%T@ %p\n" -ls | sort -n | cut -d' ' -f 2- | tail -n 1 |  xargs -r ls -lah
+  }
+fi
