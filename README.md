@@ -58,7 +58,7 @@ For macOS, see these examples:
 Install packages managed by Nix (same command to update):
 
 ```sh
-nix-env -f dotfiles/mynixpkgs/environments/common.nix -i
+nix-env -f mynixpkgs/environments/common.nix -i
 ```
 
 `tosheets` needs to get permission the first time it runs.
@@ -155,13 +155,13 @@ TODO: how should we handle channels on NixOS, Ubuntu and macOS?
 
 ```sh
 nix-channel --update
-nix-env -f dotfiles/mynixpkgs/environments/common.nix -i
+nix-env -f mynixpkgs/environments/common.nix -i
 ```
 
 Note: the `r` flag indicates remove everything else:
 
 ```sh
-nix-env -f dotfiles/mynixpkgs/environments/common.nix -ri
+nix-env -f mynixpkgs/environments/common.nix -ri
 ```
 
 TODO: why doesn't the following work?
@@ -263,23 +263,3 @@ Possibly related:
 ```
 
 [More information](https://serverfault.com/questions/261802/what-are-the-functional-differences-between-profile-bash-profile-and-bashrc)
-
-## Development
-
-If you improve `mynixpkgs`, you can contribute back to the source.
-
-Setup the `mynixpkgs` subtree, if not done already:
-
-```
-git remote add mynixpkgs git@github.com:ariutta/mynixpkgs.git
-git subtree add --prefix mynixpkgs mynixpkgs master --squash
-```
-
-Sync subtree repo:
-
-```
-git subtree pull --prefix mynixpkgs mynixpkgs master --squash
-git subtree push --prefix mynixpkgs mynixpkgs master
-```
-
-If you don't have write access to `ariutta/mynixpkgs`, make a pull request.
