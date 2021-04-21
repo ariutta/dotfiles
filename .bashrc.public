@@ -17,7 +17,8 @@
 # NOTE: nobackup means delete backup file after a save.
 #       nowritebackup means buffer -> new file, del original file, rename new file -> original file name. 
 if $(LC_ALL=C type -t vimcognito >/dev/null); then
-  echo "vimcognito already set" >&2
+  # Don't clobber the variable or command
+  echo "'vimcognito' already set" >&2
 else
   alias vimcognito="vim -i NONE -u NONE -U NONE --noplugin -n --cmd 'set nobackup' --cmd 'set nowritebackup' --"
 fi
@@ -25,10 +26,15 @@ fi
 # list the newest item in a directory
 # https://stackoverflow.com/questions/1015678/get-most-recent-file-in-a-directory-on-linux#comment77652048_23034261
 if $(LC_ALL=C type -t newest >/dev/null); then
-  echo "newest already set" >&2
+  # Don't clobber the variable or command
+  echo "'newest' already set" >&2
 else
   newest ()
   {
-    find -- "$1" -type f -printf "%T@ %p\n" -ls | sort -n | cut -d' ' -f 2- | tail -n 1 |  xargs -r ls -lah
+    echo "newest non-hidden:" >&2
+    find -- "$1" -type f -not -path '*/\.*' -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -rn | head -n 1 | cut -d' ' -f 2- >&2
+    echo "" >&2
+    echo "newest five (incl/ hidden):" >&2
+    find -- "$1" -type f -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -rn | head -n 5 | cut -d' ' -f 2-
   }
 fi
