@@ -31,10 +31,13 @@ if $(LC_ALL=C type -t newest >/dev/null); then
 else
   newest ()
   {
-    echo "newest non-hidden:" >&2
-    find -- "$1" -type f -not -path '*/\.*' -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -rn | head -n 1 | cut -d' ' -f 2- >&2
-    echo "" >&2
-    echo "newest five (incl/ hidden):" >&2
-    find -- "$1" -type f -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -rn | head -n 5 | cut -d' ' -f 2-
+    # TODO: use proper arg handling
+    if [ "$1" = '-a' ]; then
+      # newest including both hidden and non-hidden
+      find -- "$2" -type f -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -rn | head -n 5 | cut -d' ' -f 2-
+    else
+      # newest non-hidden
+      find -- "$1" -type f -not -path '*/\.*' -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -rn | head -n 5 | cut -d' ' -f 2-
+    fi
   }
 fi
