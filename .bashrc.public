@@ -33,11 +33,49 @@ else
   {
     # TODO: use proper arg handling
     if [ "$1" = '-a' ]; then
-      # newest including both hidden and non-hidden
-      find -- "$2" -type f -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -rn | head -n 5 | cut -d' ' -f 2-
+      NEWEST_CMD_ALL=1
+      NEWEST_CMD_TARGET_DIR="$2"
+    elif [ "$2" = '-a' ]; then
+      NEWEST_CMD_ALL=1
+      NEWEST_CMD_TARGET_DIR="$1"
     else
-      # newest non-hidden
-      find -- "$1" -type f -not -path '*/\.*' -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -rn | head -n 5 | cut -d' ' -f 2-
+      NEWEST_CMD_ALL=0
+      NEWEST_CMD_TARGET_DIR="$1"
     fi
+
+    # if target dir not specified, use cwd
+    NEWEST_CMD_TARGET_DIR=${NEWEST_CMD_TARGET_DIR:-"./"}
+
+    if [ $NEWEST_CMD_ALL -eq 1 ]; then
+      # newest, looking at all files (including both hidden and non-hidden)
+      echo "newest (looking at all files)" >&2
+      find -- "$NEWEST_CMD_TARGET_DIR" -type f -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -rn | head -n 5 | cut -d' ' -f 2-
+    else
+      if [ -d "$NEWEST_CMD_TARGET_DIR/.git" ]; then
+        # newest, excluding files ignored by git
+        # but including those just untracked by git
+        echo "newest (excluding files ignored by git)" >&2
+
+        NEWEST_CMD_PREV_DIR="$(pwd)"
+
+        # changing to the target dir to make git ls-files work
+        cd "$NEWEST_CMD_TARGET_DIR"
+
+        # tracked files: git ls-files
+        # untracked files not ignored by git: git ls-files --others --exclude-standard
+
+        # TODO: there's probably a better way to do this
+        cat <(git ls-files) <(git ls-files --others --exclude-standard) |\
+          xargs -I _ find -- ./ -type f -wholename "./_" -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" |\
+          sort -rn | head -n 5 | cut -d' ' -f 2-
+
+        cd "$NEWEST_CMD_PREV_DIR"
+      else
+        # newest, excluding hidden files
+        echo "newest (looking at non-hidden files only)" >&2
+        find -- "$NEWEST_CMD_TARGET_DIR" -type f -not -path '*/\.*' -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -rn | head -n 5 | cut -d' ' -f 2-
+      fi
+    fi
+
   }
 fi
