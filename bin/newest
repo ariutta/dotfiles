@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit 1
+
+# Based on http://linuxcommand.org/lc3_wss0140.php
+# and https://codeinthehole.com/tips/bash-error-reporting/
+PROGNAME=$(basename "$0")
+
+cleanup_complete=0
+
+NEWEST_CMD_PREV_DIR="$(pwd)"
+
+cleanup() {
+  cd "$NEWEST_CMD_PREV_DIR"
+  cleanup_complete=1
+}
+
+error_exit() {
+  #	----------------------------------------------------------------
+  #	Function for exit due to fatal program error
+  #		Accepts 1 argument:
+  #			string containing descriptive error message
+  #	----------------------------------------------------------------
+
+  read -r line file <<<"$(caller)"
+  echo "" >&2
+  echo "ERROR: file $file, line $line" >&2
+  if [ ! "$1" ]; then
+    sed "${line}q;d" "$file" >&2
+  else
+    echo "${1:-"Unknown Error"}" >&2
+  fi
+  echo "" >&2
+
+  # TODO: should error_exit call cleanup?
+  #       The EXIT trap already calls cleanup, so
+  #       calling it here means calling it twice.
+  if [ ! $cleanup_complete ]; then
+    cleanup
+  fi
+  exit 1
+}
+
+trap error_exit ERR
+trap cleanup EXIT INT QUIT TERM
+
+# list the newest item in a directory
+# https://stackoverflow.com/questions/1015678/get-most-recent-file-in-a-directory-on-linux#comment77652048_23034261
+
+# TODO: use proper arg handling
+if [ "$1" = '-a' ]; then
+  NEWEST_CMD_ALL=1
+  NEWEST_CMD_TARGET_DIR="$2"
+elif [ "$2" = '-a' ]; then
+  NEWEST_CMD_ALL=1
+  NEWEST_CMD_TARGET_DIR="$1"
+else
+  NEWEST_CMD_ALL=0
+  NEWEST_CMD_TARGET_DIR="$1"
+fi
+
+# if target dir not specified, use cwd
+NEWEST_CMD_TARGET_DIR=${NEWEST_CMD_TARGET_DIR:-"./"}
+
+# For git repos, I need to change to the target dir to make git ls-files work,
+# so I'm just doing it for all of them for consistency.
+cd "$NEWEST_CMD_TARGET_DIR"
+
+if [ $NEWEST_CMD_ALL -eq 1 ]; then
+  # newest, looking at all files (including both hidden and non-hidden)
+  echo "newest (looking at all files)" >&2
+  find -- ./ -type f -printf "%T@ %TY-%Tm-%Td %TH:%TM %P\n" | sort -rn | head -n 5 | cut -d' ' -f 2-
+else
+  # check whether we're in a git repo
+  if git status >/dev/null 2>/dev/null; then
+    # newest, excluding files ignored by git
+    # but including those just untracked by git
+    echo "newest (excluding files ignored by git)" >&2
+
+    # tracked files: git ls-files
+    # untracked files not ignored by git: git ls-files --others --exclude-standard
+
+    # TODO: there's probably a better way to do this
+    cat <(git ls-files) <(git ls-files --others --exclude-standard) |\
+      xargs -I _ find -- ./ -type f -wholename "./_" -printf "%T@ %TY-%Tm-%Td %TH:%TM %P\n" |\
+      sort -rn | head -n 5 | cut -d' ' -f 2-
+  else
+    # newest, excluding hidden files
+    echo "newest (looking at non-hidden files only)" >&2
+    find -- ./ -type f -not -path '*/\.*' -printf "%T@ %TY-%Tm-%Td %TH:%TM %P\n" | sort -rn | head -n 5 | cut -d' ' -f 2-
+  fi
+fi
