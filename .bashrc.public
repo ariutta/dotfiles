@@ -5,20 +5,30 @@
 # ██╔═══╝ ██║   ██║██╔══██╗██║     ██║██║         ██║   ██║██║╚██╗██║██║    ╚██╔╝  ╚═╝
 # ██║     ╚██████╔╝██████╔╝███████╗██║╚██████╗    ╚██████╔╝██║ ╚████║███████╗██║   ██╗
 # ╚═╝      ╚═════╝ ╚═════╝ ╚══════╝╚═╝ ╚═════╝     ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝   ╚═╝
-#                                                                                     
+#
 # Warning: this file will be made public online. Only include publicly shareable data.
 
 # see README.md for details on purposes of .profile .profile.public .bashrc .bashrc.public .bash_profile
-
 
 # TODO verify "-n" is the same as "--cmd 'set noswapfile'"
 # TODO is there any benefit to using --cmd 'set dir=/tmp'?
 # TODO: how about "backupskip"?
 # NOTE: nobackup means delete backup file after a save.
-#       nowritebackup means buffer -> new file, del original file, rename new file -> original file name. 
-if $(LC_ALL=C type -t vimcognito >/dev/null); then
-  # Don't clobber the variable or command
-  echo "'vimcognito' already set" >&2
+#       nowritebackup means buffer -> new file, del original file, rename new file -> original file name.
+if ! LC_ALL=C type -t vim >/dev/null; then
+  echo "vimcognito & vimnoautoformat require Vim, but no Vim found." >&2
 else
-  alias vimcognito="vim -i NONE -u NONE -U NONE --noplugin -n --cmd 'set nobackup' --cmd 'set nowritebackup' --"
+  if LC_ALL=C type -t vimcognito >/dev/null; then
+    # Don't clobber the variable or command
+    echo "'vimcognito' already set" >&2
+  else
+    alias vimcognito="vim -i NONE -u NONE -U NONE --noplugin -n --cmd 'set nobackup' --cmd 'set nowritebackup' --"
+  fi
+
+  if LC_ALL=C type -t vimnoautoformat >/dev/null; then
+    # Don't clobber the variable or command
+    echo "'vimnoautoformat' already set" >&2
+  else
+    alias vimnoautoformat="vim -c 'autocmd! fmt' --"
+  fi
 fi
