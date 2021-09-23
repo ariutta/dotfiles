@@ -13,5 +13,5 @@
 !common.nix
 !dev-env-js.nix
 !dev-env-pvjs.nix
-!start-dropbox-nixos
+!bin/start-dropbox-nixos
 !bin/newest
