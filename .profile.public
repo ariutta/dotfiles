@@ -4,17 +4,17 @@
 # ██╔═══╝ ██║   ██║██╔══██╗██║     ██║██║         ██║   ██║██║╚██╗██║██║    ╚██╔╝  ╚═╝
 # ██║     ╚██████╔╝██████╔╝███████╗██║╚██████╗    ╚██████╔╝██║ ╚████║███████╗██║   ██╗
 # ╚═╝      ╚═════╝ ╚═════╝ ╚══════╝╚═╝ ╚═════╝     ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝   ╚═╝
-#                                                                                     
+#
 # Warning: this file will be made public online. Only include publicly shareable data.
 # see ~/README.md for details on purposes of .profile .profile.public .bashrc .bashrc.public .bash_profile
 
-ensure_on_path () {
-	IFS=':' read -r -a MAPFILE <<< "$PATH"
-	# NOTE: not using mapfile bc macOS has on bash 3, which lacks mapfile.
-	#mapfile -d ':' -t < <(echo "$PATH")
-	if [ -d "$1" ] && [[ ! "${MAPFILE[*]}" =~ ${1} ]]; then
-		export PATH="$1:$PATH"
-	fi
+ensure_on_path() {
+  IFS=':' read -r -a MAPFILE <<<"$PATH"
+  # NOTE: not using mapfile bc macOS has on bash 3, which lacks mapfile.
+  #mapfile -d ':' -t < <(echo "$PATH")
+  if [ -d "$1" ] && [[ ! "${MAPFILE[*]}" =~ ${1} ]]; then
+    export PATH="$1:$PATH"
+  fi
 }
 
 # Lynx Settings
@@ -73,46 +73,46 @@ export GPG_TTY
 #       /usr/bin/ssh-add -K
 #    This only runs for macOS:
 if [ "$(uname)" = "Darwin" ]; then
-	# The extra code is to avoid the "Identity added: ..." msg every time.
-	ssh_add_msg=$(/usr/bin/ssh-add -K 2>&1);
-	if [[ $ssh_add_msg != "Identity added: /Users/$USER/.ssh/id_rsa (/Users/$USER/.ssh/id_rsa)" ]]; then
-		echo "$ssh_add_msg" > /dev/stderr;
-	fi
+  # The extra code is to avoid the "Identity added: ..." msg every time.
+  ssh_add_msg=$(/usr/bin/ssh-add -K 2>&1)
+  if [[ $ssh_add_msg != "Identity added: /Users/$USER/.ssh/id_rsa (/Users/$USER/.ssh/id_rsa)" ]]; then
+    echo "$ssh_add_msg" >/dev/stderr
+  fi
 elif [ "$(uname -n)" = "nixos" ]; then
-	echo '' > /dev/null;
-	# Do nothing here for NixOS.
-	# We configure SSH in /etc/nixos/configuration with:
-	#programs.ssh.startAgent = true;
-	#
-	# and KeepassXC:
-	# see https://keepassxc.org/docs/#faq-ssh-agent-how
+  echo '' >/dev/null
+  # Do nothing here for NixOS.
+  # We configure SSH in /etc/nixos/configuration with:
+  #programs.ssh.startAgent = true;
+  #
+  # and KeepassXC:
+  # see https://keepassxc.org/docs/#faq-ssh-agent-how
 elif [ "$(uname)" = "Linux" ]; then
-	###################
-	# Non-macOS, non-NixOS Linux systems
-	###################
+  ###################
+  # Non-macOS, non-NixOS Linux systems
+  ###################
 
-	# Start ssh agent
-	eval "$(ssh-agent -s)"
+  # Start ssh agent
+  eval "$(ssh-agent -s)"
 
-	# TODO: do we want to use KeepassXC? SSH_ASKPASS?
+  # TODO: do we want to use KeepassXC? SSH_ASKPASS?
 
-	# Load SSH identities.
-	# See https://stackoverflow.com/a/48509425
-	ssh-add -l &>/dev/null
-	if [ "$?" == 1 ]; then
-		# The agent has no identities.
-		# Time to add one.
-		ssh-add -t 4h
-	fi
+  # Load SSH identities.
+  # See https://stackoverflow.com/a/48509425
+  ssh-add -l &>/dev/null
+  if [ "$?" == 1 ]; then
+    # The agent has no identities.
+    # Time to add one.
+    ssh-add -t 4h
+  fi
 fi
 
 # Configure fonts. TODO: is this still needed?
 if [ ! "$(uname)" = "Darwin" ]; then
-	###################
-	# Non-macOS systems
-	###################
+  ###################
+  # Non-macOS systems
+  ###################
 
-	export FONTCONFIG_PATH=/etc/fonts
+  export FONTCONFIG_PATH=/etc/fonts
 fi
 
 ####################
@@ -120,32 +120,32 @@ fi
 ####################
 
 if [ -e "/nix/var/nix/daemon-socket" ]; then
-	export NIX_REMOTE=daemon
+  export NIX_REMOTE=daemon
 fi
 
 # source nix.sh if present.
 if [ -e "/usr/local/etc/profile.d/nix.sh" ]; then
   # shellcheck disable=SC1091 # ignore ShellCheck warning if it doesn't exist.
-  . "/usr/local/etc/profile.d/nix.sh";
+  . "/usr/local/etc/profile.d/nix.sh"
 elif [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
   # TODO: sourcing ~/.nix-profile/etc/profile.d/nix.sh used to be after the
   #       "export NIX_PATH..." code further below. Is it OK to move it up here?
   # TODO: What is the relationship between these two files:
   #           /usr/local/etc/profile.d/nix.sh
   #           ~/.nix-profile/etc/profile.d/nix.sh
-  #       Do they refer to equivalent files? 
+  #       Do they refer to equivalent files?
   #       Maybe /usr/local/... is for all users, and the other is per user?
   #       Maybe /usr/local/... is for macOS, and the other is for non-NixOS Linux?
 
   # shellcheck disable=SC1091 # ignore ShellCheck warning if it doesn't exist.
   # shellcheck source=../.nix-profile/etc/profile.d/nix.sh
-  . "$HOME/.nix-profile/etc/profile.d/nix.sh";
+  . "$HOME/.nix-profile/etc/profile.d/nix.sh"
 fi
 
 # If .nix-channels file exists but NIX_PATH is not set, then export NIX_PATH.
 if [ -e "$HOME/.nix-channels" ] && [ -z "$NIX_PATH" ]; then
-	NIX_PATH=$(sed -e "s~\(.*\)\ \(.*\)~\2=$HOME/.nix-defexpr/channels/\2~g" "$HOME/.nix-channels" | paste -sd ":" -);
-	export NIX_PATH;
+  NIX_PATH=$(sed -e "s~\(.*\)\ \(.*\)~\2=$HOME/.nix-defexpr/channels/\2~g" "$HOME/.nix-channels" | paste -sd ":" -)
+  export NIX_PATH
 fi
 
 # TODO: this is slow. Should it really be in .profile, or does it belong in .bashrc?
@@ -154,9 +154,9 @@ if [ -e "$HOME/.nix-profile/Applications" ] && [ ! -e "$HOME/Applications/Nix Ap
   #       * GNU ln: -n
   #       * macOS ln: -h
   if [ "$(uname)" = "Darwin" ]; then
-    ln -sfh "$HOME/.nix-profile/Applications" "$HOME/Applications/Nix Apps";
+    ln -sfh "$HOME/.nix-profile/Applications" "$HOME/Applications/Nix Apps"
   else
-    ln -sfn "$HOME/.nix-profile/Applications" "$HOME/Applications/Nix Apps";
+    ln -sfn "$HOME/.nix-profile/Applications" "$HOME/Applications/Nix Apps"
   fi
 fi
 
@@ -179,32 +179,45 @@ ensure_on_path "/nix/var/nix/profiles/default/bin"
 # NOTE: "$BASH_IT/bash_it.sh" expects to find an exported env var named "BASH_IT".
 export BASH_IT="$HOME/.nix-profile/share/bash_it"
 if [ -n "$BASH_VERSION" ] && [ -d "$BASH_IT" ] && complete --help 2>/dev/null | grep -q complete; then
-	# Assume Bash
+  # Assume Bash
 
-	ensure_on_path "$BASH_IT"
+  ensure_on_path "$BASH_IT"
 
-  POWERLINE_PATH_BINDING_PATH="$(echo "$(nix-env -q --out-path --no-name python3.*-powerline.* | head -n 1)"/lib/python3.*/site-packages/powerline/bindings/bash/powerline.sh)"
-	if [ -f "$POWERLINE_PATH_BINDING_PATH" ]; then
-		# http://powerline.readthedocs.io/en/master/usage/shell-prompts.html#bash-prompt
-		powerline-daemon -q
-		export POWERLINE_BASH_CONTINUATION=1
-		export POWERLINE_BASH_SELECT=1
+  POWERLINE_ROOT_DIR="$(nix-store -q "$(nix-store -qd "$(which powerline)")")"
+  # shell check suggests using bash variable search and replace instead of sed,
+  # but I need to use sed in order to use a capture group.
+  # shellcheck disable=SC2001
+  POWERLINE_PYTHON_VERSION="$(echo "$POWERLINE_ROOT_DIR" | sed 's/.*\(python3\.[0-9]\+\).*/\1/')"
+  POWERLINE_BASH_BINDING_PATH="$POWERLINE_ROOT_DIR"/lib/"$POWERLINE_PYTHON_VERSION"/site-packages/powerline/bindings/bash/powerline.sh
 
-    # TODO: will have to bump this up from 3.7 at some point
-    # shellcheck source=../.nix-profile/lib/python3.7/site-packages/powerline/bindings/bash/powerline.sh
-		. "$POWERLINE_PATH_BINDING_PATH"
+  if [ -f "$POWERLINE_BASH_BINDING_PATH" ]; then
+    # http://powerline.readthedocs.io/en/master/usage/shell-prompts.html#bash-prompt
+    powerline-daemon -q
+    export POWERLINE_BASH_CONTINUATION=1
+    export POWERLINE_BASH_SELECT=1
 
-		# Lock and Load a custom theme file
-		# location $HOME/.bash_it/themes/
-		export BASH_IT_THEME="powerline"
-	fi
+    # TODO: disabled the powerline bash binding, b/c it places the cursor on
+    # the far right when in a git repo. The following issue is semi-relevant:
+    # https://github.com/powerline/powerline/issues/186
 
-	# Load Bash It
+    # shell check wants to verify $POWERLINE_BASH_BINDING_PATH represents a
+    # valid file path, but I can't do that here, because the path changes.
+    # shellcheck disable=SC1090,SC1091
+    #. "$POWERLINE_BASH_BINDING_PATH"
+
+    # Lock and Load a custom theme file
+    # location $HOME/.bash_it/themes/
+    export BASH_IT_THEME="powerline"
+  fi
+
+  unset POWERLINE_ROOT_DIR POWERLINE_PYTHON_VERSION POWERLINE_BASH_BINDING_PATH
+
+  # Load Bash It
   # shellcheck source=../.nix-profile/share/bash_it/bash_it.sh
-	if [ -e "$BASH_IT/bash_it.sh" ]; then . "$BASH_IT/bash_it.sh"; fi
+  if [ -e "$BASH_IT/bash_it.sh" ]; then . "$BASH_IT/bash_it.sh"; fi
 fi
 
 # enable direnv, if installed
-if direnv --version > /dev/null 2>&1; then
-	eval "$(direnv hook bash)"
+if direnv --version >/dev/null 2>&1; then
+  eval "$(direnv hook bash)"
 fi
