@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit 1
+
+# Based on http://linuxcommand.org/lc3_wss0140.php
+# and https://codeinthehole.com/tips/bash-error-reporting/
+PROGNAME=$(basename "$0")
+
+cleanup_complete=0
+
+ORIGINAL_DIR="$(pwd)"
+
+cleanup() {
+  cd "$ORIGINAL_DIR"
+  cleanup_complete=1
+}
+
+error_exit() {
+  #	----------------------------------------------------------------
+  #	Function for exit due to fatal program error
+  #		Accepts 1 argument:
+  #			string containing descriptive error message
+  #	----------------------------------------------------------------
+
+  read -r line file <<<"$(caller)"
+  echo "" >&2
+  echo "ERROR: file $file, line $line" >&2
+  if [ ! "$1" ]; then
+    sed "${line}q;d" "$file" >&2
+  else
+    echo "${1:-"Unknown Error"}" >&2
+  fi
+  echo "" >&2
+
+  # TODO: should error_exit call cleanup?
+  #       The EXIT trap already calls cleanup, so
+  #       calling it here means calling it twice.
+  if [ ! $cleanup_complete ]; then
+    cleanup
+  fi
+  exit 1
+}
+
+trap error_exit ERR
+trap cleanup EXIT INT QUIT TERM
+
+# copy files required for direnv to a new directory
+
+# TODO: use proper arg handling
+if [ "$1" = '-h' ]; then
+  echo "newdirenv source target" >&2
+  exit 0
+else
+  SOURCE_DIR="$1"
+  if [ ! -d "$SOURCE_DIR" ]; then
+    echo "SOURCE_DIR $SOURCE_DIR missing or not specified" >&2
+    exit 1
+  fi
+
+  # if target dir not specified, use cwd
+  TARGET_DIR=${2:-"./"}
+
+  # it it doesn't exist, create it
+  if [ ! -d "$TARGET_DIR" ]; then
+    mkdir -p "$TARGET_DIR"
+  fi
+fi
+
+direnv_files=(.envrc shell.nix .nixpkgs-version.json)
+
+for f in ${direnv_files[@]}; do
+  if [ ! -f "$SOURCE_DIR/$f" ]; then
+    echo "$SOURCE_DIR/$f missing" >&2
+    exit 1
+  fi
+  if [ -e "$TARGET_DIR/$f" ]; then
+    echo "$TARGET_DIR/$f already exists" >&2
+    exit 1
+  fi
+done
+
+for f in ${direnv_files[@]}; do
+  cp "$SOURCE_DIR/$f" "$TARGET_DIR/"
+done
