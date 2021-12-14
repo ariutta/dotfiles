@@ -10,8 +10,9 @@
 7. Change password: `passwd`
 8. Update `/etc/nixos/configuration.nix`
    - `sudo -i`
-   - `nano /etc/nixos/configuration.nix` (see [docs](https://nixos.org/manual/nixos/stable/#sec-instaling-virtualbox-guest)), plus enable ssh
-9. Apply and upgrade: `nixos-rebuild switch --upgrade`
+   - `nano /etc/nixos/configuration.nix`
+   - Make changes as per [docs](https://nixos.org/manual/nixos/stable/#sec-instaling-virtualbox-guest)), plus enable ssh
+   - apply changes and do any upgrades: `nixos-rebuild switch --upgrade`
 10. SSH
     - Enable port forwarding for VirtualBox VM: Settings/Network/Advanced/Port Forwarding. Host Port: 2222. Guest Port: 22.
     - From Mac: `ssh -p 2222 demo@localhost` (ensure nothing else is running on localhost)
