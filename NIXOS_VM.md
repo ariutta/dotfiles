@@ -6,8 +6,8 @@
 4. Open Settings
    - Specify SSD for storage
    - Compare current settings with [docs](https://nixos.org/manual/nixos/stable/#sec-instaling-virtualbox-guest)
-   - Enable port forwarding for VirtualBox VM: Settings/Network/Advanced/Port Forwarding. Host Port: 2222. Guest Port: 22.
-   - Specify shared folders
+   - Enable port forwarding for VirtualBox VM: Settings/Network/Advanced/Port Forwarding. Host Port: `2222`. Guest Port: `22`.
+   - Specify shared folders, e.g., Host: `/Users/andersriutta/Documents/vmshare` Guest: `/home/ariutta/Documents/vmshare`
 5. Start VM
 6. Change password: `passwd`
 7. Update `/etc/nixos/configuration.nix`
