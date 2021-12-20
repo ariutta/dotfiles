@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit 1
+
+# Based on http://linuxcommand.org/lc3_wss0140.php
+# and https://codeinthehole.com/tips/bash-error-reporting/
+PROGNAME=$(basename "$0")
+
+cleanup_complete=0
+
+ORIGINAL_DIR="$(pwd)"
+
+cleanup() {
+  cleanup_complete=1
+}
+
+error_exit() {
+  #	----------------------------------------------------------------
+  #	Function for exit due to fatal program error
+  #		Accepts 1 argument:
+  #			string containing descriptive error message
+  #	----------------------------------------------------------------
+
+  read -r line file <<<"$(caller)"
+  echo "" >&2
+  echo "ERROR: file $file, line $line" >&2
+  if [ ! "$1" ]; then
+    sed "${line}q;d" "$file" >&2
+  else
+    echo "${1:-"Unknown Error"}" >&2
+  fi
+  echo "" >&2
+
+  # TODO: should error_exit call cleanup?
+  #       The EXIT trap already calls cleanup, so
+  #       calling it here means calling it twice.
+  if [ ! $cleanup_complete ]; then
+    cleanup
+  fi
+  exit 1
+}
+
+trap error_exit ERR
+trap cleanup EXIT INT QUIT TERM
+
+# my subset of commands for running vbox
+
+# TODO: use proper arg handling
+if [ "$1" = '-h' ]; then
+  echo "$PROGNAME ssh" >&2
+  exit 0
+fi
+
+CMD="$1"
+
+VM_NAME="nixos"
+
+# VBoxManage Docs: https://docs.oracle.com/en/virtualization/virtualbox/6.0/user/vboxmanage-cmd-overview.html
+
+if [ "$CMD" = 'ssh' ]; then
+  if ! VBoxManage list runningvms | grep '"$VM_NAME"' >/dev/null; then
+    VBoxManage startvm "$VM_NAME" --type headless
+  fi
+  ssh -p 2222 ariutta@localhost
+else
+  echo "CMD $CMD missing or not recognized" >&2
+  exit 1
+fi
