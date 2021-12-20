@@ -58,7 +58,7 @@ VM_NAME="nixos"
 # VBoxManage Docs: https://docs.oracle.com/en/virtualization/virtualbox/6.0/user/vboxmanage-cmd-overview.html
 
 if [ "$CMD" = 'ssh' ]; then
-  if ! VBoxManage list runningvms | grep '"$VM_NAME"' >/dev/null; then
+  if ! VBoxManage list runningvms | grep "\"$VM_NAME\"" >/dev/null; then
     VBoxManage startvm "$VM_NAME" --type headless
   fi
   ssh -p 2222 ariutta@localhost

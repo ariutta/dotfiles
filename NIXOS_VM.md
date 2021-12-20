@@ -42,4 +42,4 @@ services.openssh = {
 
 ## Run
 
-1. `sh ./dotfiles/bin/vbox.sh ssh`
+1. `~/dotfiles/bin/vbox-cmd ssh`
